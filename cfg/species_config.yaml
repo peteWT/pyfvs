@@ -17,17 +17,17 @@ site_index_transformation_file: "site_index_transformation.yaml"
 species:
   # Conifers
   FR:
-    name: "fir"
-    file: "species/fr_fir.yaml"
+    name: "fraser fir"
+    file: "species/fr_fraser_fir.yaml"
   JU:
-    name: "juniper"
-    file: "species/ju_juniper.yaml"
+    name: "eastern juniper"
+    file: "species/ju_eastern_juniper.yaml"
   PI:
-    name: "spruce"
-    file: "species/pi_spruce.yaml" 
+    name: "pine species"
+    file: "species/pi_pine_species.yaml"
   PU:
-    name: "sand pine"
-    file: "species/pu_sand_pine.yaml"
+    name: "pond pine"
+    file: "species/pu_pond_pine.yaml"
   SP:
     name: "shortleaf pine"
     file: "species/sp_shortleaf_pine.yaml"
@@ -41,17 +41,17 @@ species:
     name: "longleaf pine"
     file: "species/ll_longleaf_pine.yaml"
   TM:
-    name: "table mountain pine"
-    file: "species/tm_table_mountain_pine.yaml"
+    name: "tamarack"
+    file: "species/tm_tamarack.yaml"
   PP:
-    name: "pitch pine"
-    file: "species/pp_pitch_pine.yaml"
-  PD:
     name: "pond pine"
-    file: "species/pd_pond_pine.yaml"
+    file: "species/pp_pond_pine.yaml"
+  PD:
+    name: "pitch pine"
+    file: "species/pd_pitch_pine.yaml"
   WP:
-    name: "eastern white pine"
-    file: "species/wp_eastern_white_pine.yaml"
+    name: "white pine"
+    file: "species/wp_white_pine.yaml"
   LP:
     name: "loblolly pine"
     file: "species/lp_loblolly_pine.yaml"
@@ -59,22 +59,22 @@ species:
     name: "Virginia pine"
     file: "species/vp_virginia_pine.yaml"
   BY:
-    name: "baldcypress"
-    file: "species/by_baldcypress.yaml"
+    name: "bald cypress"
+    file: "species/by_bald_cypress.yaml"
   PC:
-    name: "pondcypress"
-    file: "species/pc_pondcypress.yaml"
+    name: "pond cypress"
+    file: "species/pc_pond_cypress.yaml"
   HM:
-    name: "hemlock"
-    file: "species/hm_hemlock.yaml"
-  
+    name: "eastern hemlock"
+    file: "species/hm_eastern_hemlock.yaml"
+
   # Hardwoods
   FM:
-    name: "southern sugar maple"
-    file: "species/fm_southern_sugar_maple.yaml"
+    name: "flowering dogwood"
+    file: "species/fm_flowering_dogwood.yaml"
   BE:
-    name: "boxelder"
-    file: "species/be_boxelder.yaml"
+    name: "american beech"
+    file: "species/be_american_beech.yaml"
   RM:
     name: "red maple"
     file: "species/rm_red_maple.yaml"
@@ -88,13 +88,13 @@ species:
     name: "sweetgum"
     file: "species/su_sweetgum.yaml"
   YP:
-    name: "tuliptree"
-    file: "species/yp_tuliptree.yaml"
+    name: "yellow poplar"
+    file: "species/yp_yellow_poplar.yaml"
   WO:
     name: "white oak"
     file: "species/wo_white_oak.yaml"
-  
-  # Other categories  
+
+  # Other categories
   OS:
     name: "other softwood"
     file: "species/os_other_softwood.yaml"
@@ -102,5 +102,5 @@ species:
     name: "other hardwood"
     file: "species/oh_other_hardwood.yaml"
   OT:
-    name: "other"
-    file: "species/ot_other.yaml" 
+    name: "other tree"
+    file: "species/ot_other_tree.yaml" 

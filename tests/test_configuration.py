@@ -59,9 +59,10 @@ class TestConfigLoader:
     
     def test_yaml_loading(self, temp_config_dir):
         """Test YAML file loading."""
-        loader = ConfigLoader(temp_config_dir)
-        
-        # Create test YAML file
+        # Use the global loader to test the method (avoid reinitializing)
+        loader = get_config_loader()
+
+        # Create test YAML file in temp directory
         test_yaml = temp_config_dir / 'test.yaml'
         test_data = {
             'test_key': 'test_value',
@@ -70,21 +71,22 @@ class TestConfigLoader:
         }
         with open(test_yaml, 'w') as f:
             yaml.dump(test_data, f)
-        
+
         # Load and verify
         loaded = loader._load_config_file(test_yaml)
         assert loaded == test_data
     
     def test_toml_loading(self, temp_config_dir):
         """Test TOML file loading if available."""
-        loader = ConfigLoader(temp_config_dir)
-        
         try:
             import tomli_w
         except ImportError:
             pytest.skip("tomli_w not available for TOML testing")
-        
-        # Create test TOML file
+
+        # Use the global loader to test the method
+        loader = get_config_loader()
+
+        # Create test TOML file in temp directory
         test_toml = temp_config_dir / 'test.toml'
         test_data = {
             'section': {
@@ -94,47 +96,50 @@ class TestConfigLoader:
         }
         with open(test_toml, 'wb') as f:
             tomli_w.dump(test_data, f)
-        
+
         # Load and verify
         loaded = loader._load_config_file(test_toml)
         assert loaded == test_data
     
     def test_missing_file_error(self, temp_config_dir):
         """Test error handling for missing files."""
-        loader = ConfigLoader(temp_config_dir)
-        
+        # Use the global loader to test the method
+        loader = get_config_loader()
+
         with pytest.raises(FVSFileNotFoundError) as exc_info:
             loader._load_config_file(temp_config_dir / 'nonexistent.yaml')
-        
+
         assert 'nonexistent.yaml' in str(exc_info.value)
         assert 'configuration file' in str(exc_info.value)
     
     def test_invalid_yaml_error(self, temp_config_dir):
         """Test error handling for invalid YAML."""
-        loader = ConfigLoader(temp_config_dir)
-        
+        # Use the global loader to test the method
+        loader = get_config_loader()
+
         # Create invalid YAML file
         invalid_yaml = temp_config_dir / 'invalid.yaml'
         with open(invalid_yaml, 'w') as f:
             f.write("invalid: yaml: content: [unclosed")
-        
+
         with pytest.raises(InvalidDataError) as exc_info:
             loader._load_config_file(invalid_yaml)
-        
+
         assert 'YAML' in str(exc_info.value)
         assert 'parsing error' in str(exc_info.value)
     
     def test_unsupported_format_error(self, temp_config_dir):
         """Test error handling for unsupported file formats."""
-        loader = ConfigLoader(temp_config_dir)
-        
+        # Use the global loader to test the method
+        loader = get_config_loader()
+
         # Create file with unsupported extension
         unsupported = temp_config_dir / 'config.txt'
         unsupported.touch()
-        
+
         with pytest.raises(ConfigurationError) as exc_info:
             loader._load_config_file(unsupported)
-        
+
         assert '.txt' in str(exc_info.value)
         assert 'Unsupported' in str(exc_info.value)
     
@@ -158,9 +163,11 @@ class TestConfigLoader:
         # Create test YAML structure
         yaml_dir = temp_config_dir / 'yaml'
         yaml_dir.mkdir()
-        
-        # Create species config
+
+        # Create species config with all required fields
         species_config = {
+            'functional_forms_file': 'functional_forms.yaml',
+            'site_index_transformation_file': 'site_index_transformation.yaml',
             'species': {
                 'TEST': {
                     'name': 'test_species',
@@ -170,11 +177,21 @@ class TestConfigLoader:
         }
         with open(yaml_dir / 'species_config.yaml', 'w') as f:
             yaml.dump(species_config, f)
-        
+
+        # Create functional forms file
+        functional_forms = {'forms': {'test': 'value'}}
+        with open(yaml_dir / 'functional_forms.yaml', 'w') as f:
+            yaml.dump(functional_forms, f)
+
+        # Create site index transformation file
+        site_index = {'transformations': {'test': 'value'}}
+        with open(yaml_dir / 'site_index_transformation.yaml', 'w') as f:
+            yaml.dump(site_index, f)
+
         # Create species file directory
         species_dir = yaml_dir / 'species'
         species_dir.mkdir()
-        
+
         # Create species file
         species_data = {
             'diameter_growth': {
@@ -183,14 +200,14 @@ class TestConfigLoader:
         }
         with open(species_dir / 'test.yaml', 'w') as f:
             yaml.dump(species_data, f)
-        
+
         # Test conversion
         loader = ConfigLoader(yaml_dir)
         toml_dir = temp_config_dir / 'toml'
-        
+
         try:
             loader.create_toml_config_from_yaml(toml_dir)
-            
+
             # Verify TOML files were created
             assert (toml_dir / 'species_config.toml').exists()
             assert (toml_dir / 'species' / 'test.toml').exists()
