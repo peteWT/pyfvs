@@ -1100,4 +1100,259 @@ class Stand:
         """
         if self.harvest_history:
             return self.harvest_history[-1]
-        return None 
+        return None
+
+    # =========================================================================
+    # Tree List Output - FVS-compatible tree list generation
+    # =========================================================================
+
+    def get_tree_list(self, stand_id: str = "STAND001",
+                     include_growth: bool = True) -> List[Dict[str, Any]]:
+        """Generate FVS-compatible tree list output.
+
+        Creates a list of tree records matching the FVS_TreeList database
+        table schema for compatibility with FVS post-processing tools.
+
+        Args:
+            stand_id: Stand identifier for output
+            include_growth: Include growth calculations (DG, HtG)
+
+        Returns:
+            List of dictionaries with FVS_TreeList compatible columns:
+            - StandID: Stand identifier
+            - Year: Stand age/simulation year
+            - TreeId: Tree identifier (1-based index)
+            - Species: Species code
+            - TPA: Trees per acre (expansion factor)
+            - DBH: Diameter at breast height (inches)
+            - DG: Diameter growth (inches, 0 if include_growth=False)
+            - Ht: Total height (feet)
+            - HtG: Height growth (feet, 0 if include_growth=False)
+            - PctCr: Crown ratio as percent (0-100)
+            - CrWidth: Crown width (feet)
+            - Age: Tree age (years)
+            - BAPctile: Basal area percentile (rank 0-100)
+            - PtBAL: Point basal area in larger trees (sq ft/acre)
+            - TcuFt: Total cubic foot volume
+            - McuFt: Merchantable cubic foot volume
+            - BdFt: Board foot volume (Doyle scale)
+
+        Example:
+            >>> stand = Stand.initialize_planted(500, site_index=70)
+            >>> stand.grow(years=20)
+            >>> tree_list = stand.get_tree_list()
+            >>> print(f"Tree count: {len(tree_list)}")
+        """
+        if not self.trees:
+            return []
+
+        # Calculate competition metrics for BA percentile and PBAL
+        competition_metrics = self._calculate_competition_metrics()
+
+        tree_records = []
+        for i, (tree, metrics) in enumerate(zip(self.trees, competition_metrics)):
+            # Get competition values
+            ba_percentile = metrics.get('rank', 0) * 100  # Convert to percentage
+            pbal = metrics.get('pbal', 0)
+
+            # Generate tree record
+            record = tree.to_tree_record(
+                tree_id=i + 1,
+                year=self.age,
+                ba_percentile=ba_percentile,
+                pbal=pbal,
+                prev_dbh=None if not include_growth else None,
+                prev_height=None if not include_growth else None
+            )
+
+            # Add stand-level identifiers
+            record['StandID'] = stand_id
+
+            tree_records.append(record)
+
+        return tree_records
+
+    def get_tree_list_dataframe(self, stand_id: str = "STAND001",
+                               include_growth: bool = True):
+        """Get tree list as a pandas DataFrame.
+
+        Convenience method that returns the tree list in DataFrame format
+        for easier analysis and export.
+
+        Args:
+            stand_id: Stand identifier
+            include_growth: Include growth calculations
+
+        Returns:
+            pandas DataFrame with FVS_TreeList columns
+
+        Raises:
+            ImportError: If pandas is not available
+        """
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError("pandas is required for DataFrame output. "
+                            "Install with: pip install pandas")
+
+        tree_list = self.get_tree_list(stand_id, include_growth)
+        if not tree_list:
+            # Return empty DataFrame with correct columns
+            columns = ['StandID', 'Year', 'TreeId', 'Species', 'TPA', 'DBH',
+                      'DG', 'Ht', 'HtG', 'PctCr', 'CrWidth', 'Age',
+                      'BAPctile', 'PtBAL', 'TcuFt', 'McuFt', 'BdFt']
+            return pd.DataFrame(columns=columns)
+
+        return pd.DataFrame(tree_list)
+
+    def export_tree_list(self, filepath: str, format: str = 'csv',
+                        stand_id: str = "STAND001",
+                        include_growth: bool = True) -> str:
+        """Export tree list to file.
+
+        Args:
+            filepath: Output file path (extension added if not present)
+            format: Export format ('csv', 'json', 'excel')
+            stand_id: Stand identifier
+            include_growth: Include growth calculations
+
+        Returns:
+            Path to exported file
+
+        Example:
+            >>> stand.export_tree_list('output/treelist', format='csv')
+            'output/treelist.csv'
+        """
+        from pathlib import Path
+
+        tree_list = self.get_tree_list(stand_id, include_growth)
+
+        # Ensure filepath has correct extension
+        path = Path(filepath)
+        extensions = {'csv': '.csv', 'json': '.json', 'excel': '.xlsx'}
+        if path.suffix.lower() not in extensions.values():
+            path = path.with_suffix(extensions.get(format, '.csv'))
+
+        # Create parent directory if needed
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        if format == 'csv':
+            try:
+                import pandas as pd
+                df = pd.DataFrame(tree_list)
+                df.to_csv(path, index=False)
+            except ImportError:
+                # Fallback to manual CSV writing
+                import csv
+                if tree_list:
+                    with open(path, 'w', newline='') as f:
+                        writer = csv.DictWriter(f, fieldnames=tree_list[0].keys())
+                        writer.writeheader()
+                        writer.writerows(tree_list)
+
+        elif format == 'json':
+            import json
+            with open(path, 'w') as f:
+                json.dump({
+                    'metadata': {
+                        'stand_id': stand_id,
+                        'year': self.age,
+                        'tree_count': len(tree_list),
+                        'format': 'FVS_TreeList'
+                    },
+                    'trees': tree_list
+                }, f, indent=2)
+
+        elif format == 'excel':
+            try:
+                import pandas as pd
+                df = pd.DataFrame(tree_list)
+                df.to_excel(path, index=False, sheet_name='TreeList')
+            except ImportError:
+                raise ImportError("pandas and openpyxl required for Excel export")
+
+        else:
+            raise ValueError(f"Unsupported format: {format}. Use 'csv', 'json', or 'excel'")
+
+        return str(path)
+
+    def get_stand_stock_table(self, dbh_class_width: float = 2.0) -> List[Dict[str, Any]]:
+        """Generate stand and stock table by diameter class.
+
+        Creates a summary table similar to FVS StdStk output showing
+        trees per acre, basal area, and volumes by diameter class.
+
+        Args:
+            dbh_class_width: Width of diameter classes (default 2 inches)
+
+        Returns:
+            List of dictionaries with columns:
+            - DBHClass: Diameter class midpoint
+            - DBHMin: Minimum DBH in class
+            - DBHMax: Maximum DBH in class
+            - TPA: Trees per acre in class
+            - BA: Basal area in class (sq ft/acre)
+            - TcuFt: Total cubic volume in class
+            - McuFt: Merchantable cubic volume in class
+            - BdFt: Board foot volume in class
+        """
+        if not self.trees:
+            return []
+
+        # Determine diameter range
+        min_dbh = min(t.dbh for t in self.trees)
+        max_dbh = max(t.dbh for t in self.trees)
+
+        # Create diameter classes
+        class_min = math.floor(min_dbh / dbh_class_width) * dbh_class_width
+        class_max = math.ceil(max_dbh / dbh_class_width) * dbh_class_width
+
+        stock_table = []
+        current_min = class_min
+
+        while current_min < class_max:
+            current_max = current_min + dbh_class_width
+            class_midpoint = current_min + dbh_class_width / 2
+
+            # Find trees in this class
+            trees_in_class = [t for t in self.trees
+                            if current_min <= t.dbh < current_max]
+
+            if trees_in_class:
+                tpa = len(trees_in_class)
+                ba = sum(math.pi * (t.dbh / 24) ** 2 for t in trees_in_class)
+                tcuft = sum(t.get_volume('total_cubic') for t in trees_in_class)
+                mcuft = sum(t.get_volume('merchantable_cubic') for t in trees_in_class)
+                bdft = sum(t.get_volume('board_foot') for t in trees_in_class)
+
+                stock_table.append({
+                    'DBHClass': class_midpoint,
+                    'DBHMin': current_min,
+                    'DBHMax': current_max,
+                    'TPA': tpa,
+                    'BA': round(ba, 2),
+                    'TcuFt': round(tcuft, 1),
+                    'McuFt': round(mcuft, 1),
+                    'BdFt': round(bdft, 0)
+                })
+
+            current_min = current_max
+
+        return stock_table
+
+    def get_stand_stock_dataframe(self, dbh_class_width: float = 2.0):
+        """Get stand stock table as pandas DataFrame.
+
+        Args:
+            dbh_class_width: Width of diameter classes
+
+        Returns:
+            pandas DataFrame with stock table data
+        """
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError("pandas required for DataFrame output")
+
+        stock_table = self.get_stand_stock_table(dbh_class_width)
+        return pd.DataFrame(stock_table) 

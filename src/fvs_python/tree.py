@@ -7,6 +7,7 @@ import yaml
 import numpy as np
 from scipy.stats import weibull_min
 from pathlib import Path
+from typing import Dict, Any, Optional
 from .validation import ParameterValidator
 from .logging_config import get_logger, log_model_transition
 
@@ -472,11 +473,83 @@ class Tree:
             Dictionary with all volume types and biomass estimates
         """
         from .volume_library import calculate_tree_volume
-        
+
         result = calculate_tree_volume(
             dbh=self.dbh,
             height=self.height,
             species_code=self.species
         )
-        
-        return result.to_dict() 
+
+        return result.to_dict()
+
+    def to_tree_record(self, tree_id: int = 0, year: int = 0,
+                      ba_percentile: float = 0.0, pbal: float = 0.0,
+                      prev_dbh: Optional[float] = None,
+                      prev_height: Optional[float] = None) -> Dict[str, Any]:
+        """Convert tree to FVS-compatible tree record format.
+
+        Creates a dictionary matching the FVS_TreeList database table schema
+        for compatibility with FVS output processing tools.
+
+        Args:
+            tree_id: Unique tree identifier within stand
+            year: Stand age/simulation year
+            ba_percentile: Basal area percentile (rank) 0-100
+            pbal: Point basal area in larger trees (sq ft/acre)
+            prev_dbh: Previous period DBH (for growth calculation)
+            prev_height: Previous period height (for growth calculation)
+
+        Returns:
+            Dictionary with FVS_TreeList compatible columns:
+            - TreeId: Tree identifier
+            - Species: Species code
+            - Year: Simulation year
+            - TPA: Trees per acre (expansion factor)
+            - DBH: Diameter at breast height (inches)
+            - DG: Diameter growth since last period (inches)
+            - Ht: Total height (feet)
+            - HtG: Height growth since last period (feet)
+            - PctCr: Crown ratio as percent (0-100)
+            - CrWidth: Crown width (feet)
+            - Age: Tree age (years)
+            - BAPctile: Basal area percentile
+            - PtBAL: Point basal area larger
+            - TcuFt: Total cubic foot volume
+            - McuFt: Merchantable cubic foot volume
+            - BdFt: Board foot volume (Doyle)
+        """
+        from .crown_width import calculate_open_crown_width
+
+        # Calculate growth since last period
+        dg = self.dbh - prev_dbh if prev_dbh is not None else 0.0
+        htg = self.height - prev_height if prev_height is not None else 0.0
+
+        # Calculate crown width
+        try:
+            cr_width = calculate_open_crown_width(self.species, self.dbh)
+        except Exception:
+            cr_width = self.dbh * 1.5  # Fallback estimate
+
+        # Get volumes
+        total_cubic = self.get_volume('total_cubic')
+        merch_cubic = self.get_volume('merchantable_cubic')
+        board_feet = self.get_volume('board_foot')
+
+        return {
+            'TreeId': tree_id,
+            'Species': self.species,
+            'Year': year,
+            'TPA': 1.0,  # Each tree object represents 1 tree/acre
+            'DBH': round(self.dbh, 2),
+            'DG': round(dg, 3),
+            'Ht': round(self.height, 1),
+            'HtG': round(htg, 2),
+            'PctCr': round(self.crown_ratio * 100, 1),
+            'CrWidth': round(cr_width, 1),
+            'Age': self.age,
+            'BAPctile': round(ba_percentile, 1),
+            'PtBAL': round(pbal, 2),
+            'TcuFt': round(total_cubic, 2),
+            'McuFt': round(merch_cubic, 2),
+            'BdFt': round(board_feet, 1)
+        } 

@@ -703,4 +703,260 @@ def test_get_last_harvest():
     stand.thin_from_above(target_tpa=150)
 
     last = stand.get_last_harvest()
-    assert last.harvest_type == 'thin_from_above' 
+    assert last.harvest_type == 'thin_from_above'
+
+
+# ============================================================================
+# Tree List Output Tests
+# ============================================================================
+
+def test_get_tree_list_basic():
+    """Test basic tree list generation."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    stand.grow(years=20)
+
+    tree_list = stand.get_tree_list()
+
+    # Should have records for all trees
+    assert len(tree_list) == len(stand.trees)
+
+    # Check required FVS columns exist
+    required_columns = ['StandID', 'Year', 'TreeId', 'Species', 'TPA', 'DBH',
+                       'DG', 'Ht', 'HtG', 'PctCr', 'CrWidth', 'Age',
+                       'BAPctile', 'PtBAL', 'TcuFt', 'McuFt', 'BdFt']
+
+    for record in tree_list:
+        for col in required_columns:
+            assert col in record, f"Missing column: {col}"
+
+
+def test_tree_list_column_values():
+    """Test that tree list values are reasonable."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    stand.grow(years=25)
+
+    tree_list = stand.get_tree_list(stand_id="TEST001")
+
+    for record in tree_list:
+        # StandID should match input
+        assert record['StandID'] == "TEST001"
+
+        # Year should match stand age
+        assert record['Year'] == stand.age
+
+        # TreeId should be positive
+        assert record['TreeId'] > 0
+
+        # Species should be valid
+        assert record['Species'] == 'LP'
+
+        # TPA should be 1 (individual tree)
+        assert record['TPA'] == 1.0
+
+        # DBH should be positive
+        assert record['DBH'] > 0
+
+        # Height should be positive
+        assert record['Ht'] > 0
+
+        # Crown ratio should be 0-100
+        assert 0 <= record['PctCr'] <= 100
+
+        # Crown width should be positive
+        assert record['CrWidth'] > 0
+
+        # Age should match
+        assert record['Age'] == stand.age
+
+        # BA percentile should be 0-100
+        assert 0 <= record['BAPctile'] <= 100
+
+
+def test_tree_list_competition_metrics():
+    """Test that competition metrics are calculated correctly."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    stand.grow(years=20)
+
+    tree_list = stand.get_tree_list()
+
+    # Sort by DBH to check rankings
+    sorted_list = sorted(tree_list, key=lambda x: x['DBH'], reverse=True)
+
+    # Largest tree should have high BA percentile and low PBAL
+    largest = sorted_list[0]
+    assert largest['BAPctile'] > 80  # Should be in top percentile
+    assert largest['PtBAL'] < 10  # Few larger trees
+
+    # Smallest tree should have low BA percentile and high PBAL
+    smallest = sorted_list[-1]
+    assert smallest['BAPctile'] < 20  # Should be in bottom percentile
+
+
+def test_tree_list_dataframe():
+    """Test tree list DataFrame output."""
+    import pandas as pd
+
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    stand.grow(years=15)
+
+    df = stand.get_tree_list_dataframe()
+
+    # Should be a DataFrame
+    assert isinstance(df, pd.DataFrame)
+
+    # Should have correct number of rows
+    assert len(df) == len(stand.trees)
+
+    # Check all columns exist
+    expected_columns = ['StandID', 'Year', 'TreeId', 'Species', 'TPA', 'DBH',
+                       'DG', 'Ht', 'HtG', 'PctCr', 'CrWidth', 'Age',
+                       'BAPctile', 'PtBAL', 'TcuFt', 'McuFt', 'BdFt']
+    for col in expected_columns:
+        assert col in df.columns
+
+
+def test_tree_list_empty_stand():
+    """Test tree list with empty stand."""
+    stand = Stand(trees=[], site_index=70)
+
+    tree_list = stand.get_tree_list()
+    assert tree_list == []
+
+    # DataFrame should have correct columns but no rows
+    import pandas as pd
+    df = stand.get_tree_list_dataframe()
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) == 0
+
+
+def test_export_tree_list_csv(tmp_path):
+    """Test exporting tree list to CSV."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    stand.grow(years=15)
+
+    filepath = tmp_path / "treelist"
+    result_path = stand.export_tree_list(str(filepath), format='csv')
+
+    # File should exist with csv extension
+    assert Path(result_path).exists()
+    assert result_path.endswith('.csv')
+
+    # Read and verify content
+    import pandas as pd
+    df = pd.read_csv(result_path)
+    assert len(df) == len(stand.trees)
+    assert 'DBH' in df.columns
+
+
+def test_export_tree_list_json(tmp_path):
+    """Test exporting tree list to JSON."""
+    import json
+
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    stand.grow(years=15)
+
+    filepath = tmp_path / "treelist"
+    result_path = stand.export_tree_list(str(filepath), format='json', stand_id="TESTSTAND")
+
+    # File should exist with json extension
+    assert Path(result_path).exists()
+    assert result_path.endswith('.json')
+
+    # Read and verify content
+    with open(result_path) as f:
+        data = json.load(f)
+
+    assert 'metadata' in data
+    assert data['metadata']['stand_id'] == "TESTSTAND"
+    assert data['metadata']['format'] == 'FVS_TreeList'
+    assert 'trees' in data
+    assert len(data['trees']) == len(stand.trees)
+
+
+def test_stand_stock_table():
+    """Test stand stock table generation."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    stand.grow(years=25)
+
+    stock_table = stand.get_stand_stock_table(dbh_class_width=2.0)
+
+    # Should have at least one diameter class
+    assert len(stock_table) > 0
+
+    # Check required columns
+    required_columns = ['DBHClass', 'DBHMin', 'DBHMax', 'TPA', 'BA', 'TcuFt', 'McuFt', 'BdFt']
+    for record in stock_table:
+        for col in required_columns:
+            assert col in record
+
+    # Total TPA should match stand tree count
+    total_tpa = sum(row['TPA'] for row in stock_table)
+    assert total_tpa == len(stand.trees)
+
+    # DBH classes should be ordered
+    midpoints = [row['DBHClass'] for row in stock_table]
+    assert midpoints == sorted(midpoints)
+
+
+def test_stand_stock_table_diameter_classes():
+    """Test diameter class width configuration."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    stand.grow(years=25)
+
+    # Test 1-inch classes
+    table_1inch = stand.get_stand_stock_table(dbh_class_width=1.0)
+
+    # Test 2-inch classes
+    table_2inch = stand.get_stand_stock_table(dbh_class_width=2.0)
+
+    # 1-inch classes should have more (or equal) classes than 2-inch
+    assert len(table_1inch) >= len(table_2inch)
+
+    # Check class width is correct
+    for row in table_2inch:
+        assert row['DBHMax'] - row['DBHMin'] == 2.0
+
+
+def test_stand_stock_dataframe():
+    """Test stand stock table DataFrame output."""
+    import pandas as pd
+
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    stand.grow(years=20)
+
+    df = stand.get_stand_stock_dataframe()
+
+    # Should be a DataFrame
+    assert isinstance(df, pd.DataFrame)
+
+    # Check columns
+    assert 'DBHClass' in df.columns
+    assert 'TPA' in df.columns
+    assert 'BA' in df.columns
+
+
+def test_stock_table_empty_stand():
+    """Test stock table with empty stand."""
+    stand = Stand(trees=[], site_index=70)
+
+    stock_table = stand.get_stand_stock_table()
+    assert stock_table == []
+
+
+def test_tree_list_volume_consistency():
+    """Test that tree list volumes match stand metrics."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    stand.grow(years=30)
+
+    tree_list = stand.get_tree_list()
+    metrics = stand.get_metrics()
+
+    # Sum volumes from tree list
+    total_tcuft = sum(r['TcuFt'] for r in tree_list)
+    total_mcuft = sum(r['McuFt'] for r in tree_list)
+    total_bdft = sum(r['BdFt'] for r in tree_list)
+
+    # Should match stand metrics (with small tolerance for rounding)
+    assert abs(total_tcuft - metrics['volume']) < 1.0
+    assert abs(total_mcuft - metrics['merchantable_volume']) < 1.0
+    assert abs(total_bdft - metrics['board_feet']) < 1.0 
