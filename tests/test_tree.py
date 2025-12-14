@@ -5,7 +5,7 @@ import pytest
 import math
 from pathlib import Path
 from fvs_python.tree import Tree
-from utils import setup_test_output, plot_tree_growth_comparison, generate_test_report, plot_long_term_growth
+from tests.utils import setup_test_output, plot_tree_growth_comparison, generate_test_report, plot_long_term_growth
 
 # Setup output directory
 output_dir = setup_test_output()

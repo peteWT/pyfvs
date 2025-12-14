@@ -8,7 +8,7 @@ import numpy as np
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 from fvs_python.tree import Tree
-from utils import setup_test_output, plot_tree_growth_comparison, generate_test_report
+from tests.utils import setup_test_output, plot_tree_growth_comparison, generate_test_report
 
 # Setup output directory
 output_dir = setup_test_output()

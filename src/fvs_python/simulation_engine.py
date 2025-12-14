@@ -237,7 +237,8 @@ class SimulationEngine:
         for format_type in export_formats:
             try:
                 if format_type == 'csv':
-                    filepath = self.exporter.export_to_csv(df, base_filename)
+                    # Don't include metadata for CSV to allow easy reading back
+                    filepath = self.exporter.export_to_csv(df, base_filename, include_metadata=False)
                 elif format_type == 'json':
                     filepath = self.exporter.export_to_json(df, base_filename)
                 elif format_type == 'xml':
@@ -323,11 +324,11 @@ class SimulationEngine:
         
         # Combine results
         comparison_df = pd.concat(comparison_results, ignore_index=True)
-        
-        # Save comparison results
-        self.exporter.export_scenario_comparison(comparison_df, format='excel')
-        self.exporter.export_scenario_comparison(comparison_df, format='csv')
-        
+
+        # Save comparison results with fixed filenames
+        self.exporter.export_scenario_comparison(comparison_df, format='excel', filename='scenario_comparison')
+        self.exporter.export_scenario_comparison(comparison_df, format='csv', filename='scenario_comparison')
+
         return comparison_df
 
 
