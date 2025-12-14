@@ -302,4 +302,56 @@ def test_25_year_survival():
         period_mortality.append(period_start - period_end)
     
     # Early mortality should be highest
-    assert period_mortality[0] > period_mortality[-1] 
+    assert period_mortality[0] > period_mortality[-1]
+
+
+def test_top_height_calculation():
+    """Test top height calculation matches FVS definition (avg height of 40 largest trees by DBH)."""
+    # Create a stand with known tree distribution
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    # Grow to get size differentiation
+    stand.grow(years=15)
+
+    metrics = stand.get_metrics()
+
+    # Top height should be included in metrics
+    assert 'top_height' in metrics
+
+    # Verify top height calculation manually
+    sorted_trees = sorted(stand.trees, key=lambda t: t.dbh, reverse=True)
+    top_40 = sorted_trees[:min(40, len(sorted_trees))]
+    expected_top_height = sum(t.height for t in top_40) / len(top_40)
+
+    assert abs(metrics['top_height'] - expected_top_height) < 0.01
+
+    # Top height should be >= mean height (largest trees are tallest)
+    assert metrics['top_height'] >= metrics['mean_height']
+
+    # Top height should be positive and reasonable
+    assert 0 < metrics['top_height'] < 200  # feet
+
+
+def test_top_height_small_stand():
+    """Test top height with fewer than 40 trees."""
+    # Create a small stand with only 30 trees
+    stand = Stand.initialize_planted(trees_per_acre=30, site_index=70)
+    stand.grow(years=10)
+
+    # With fewer than 40 trees, use all trees
+    top_height = stand.calculate_top_height()
+
+    # Should use all 30 trees since n_trees < 40
+    assert top_height > 0
+
+    # Verify it uses all available trees
+    expected = sum(t.height for t in stand.trees) / len(stand.trees)
+    # When all trees are used, top_height equals mean_height
+    assert abs(top_height - expected) < 0.01
+
+
+def test_top_height_empty_stand():
+    """Test top height returns 0 for empty stand."""
+    stand = Stand(trees=[], site_index=70)
+
+    assert stand.calculate_top_height() == 0.0 

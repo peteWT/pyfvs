@@ -211,6 +211,31 @@ class Stand:
 
         return math.sqrt(sum_dbh_squared / n)
 
+    def calculate_top_height(self, n_trees: int = 40) -> float:
+        """Calculate top height (average height of largest trees by DBH).
+
+        Top height is defined in FVS as the average height of the 40 largest
+        (by DBH) trees per acre. This is used in site index calculations and
+        as a measure of dominant stand height.
+
+        Args:
+            n_trees: Number of largest trees to include (default 40 per FVS standard)
+
+        Returns:
+            Top height in feet (average height of n largest trees by DBH)
+        """
+        if not self.trees:
+            return 0.0
+
+        # Sort trees by DBH descending and take the largest n
+        sorted_trees = sorted(self.trees, key=lambda t: t.dbh, reverse=True)
+        top_trees = sorted_trees[:min(n_trees, len(sorted_trees))]
+
+        if not top_trees:
+            return 0.0
+
+        return sum(tree.height for tree in top_trees) / len(top_trees)
+
     def calculate_basal_area(self) -> float:
         """Calculate stand basal area.
 
@@ -613,6 +638,7 @@ class Stand:
             - tpa: Trees per acre
             - mean_dbh: Mean diameter at breast height (inches)
             - qmd: Quadratic mean diameter (inches)
+            - top_height: Average height of 40 largest trees by DBH (feet)
             - mean_height: Mean tree height (feet)
             - basal_area: Stand basal area (sq ft/acre)
             - volume: Total volume (cubic feet)
@@ -629,6 +655,7 @@ class Stand:
                 'tpa': 0,
                 'mean_dbh': 0.0,
                 'qmd': 0.0,
+                'top_height': 0.0,
                 'mean_height': 0.0,
                 'basal_area': 0.0,
                 'volume': 0.0,
@@ -646,6 +673,7 @@ class Stand:
             'tpa': n_trees,
             'mean_dbh': sum(tree.dbh for tree in self.trees) / n_trees,
             'qmd': self.calculate_qmd(),
+            'top_height': self.calculate_top_height(),
             'mean_height': sum(tree.height for tree in self.trees) / n_trees,
             'basal_area': self.calculate_basal_area(),
             'volume': sum(tree.get_volume() for tree in self.trees),
