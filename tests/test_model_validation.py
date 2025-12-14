@@ -67,6 +67,7 @@ class TestModelCalibration:
         assert exp_50['mean_dbh'][0] <= age_50['mean_dbh'] <= exp_50['mean_dbh'][1], \
             f"DBH at age 50: {age_50['mean_dbh']:.1f} not in expected range {exp_50['mean_dbh']}"
     
+    @pytest.mark.slow
     def test_site_index_effects(self):
         """Test that site index properly affects growth."""
         # Run simulations for different site indices
@@ -99,6 +100,7 @@ class TestModelCalibration:
         assert 1.4 <= volume_ratio <= 1.8, \
             f"Volume ratio SI90/SI70 = {volume_ratio:.2f}, expected 1.4-1.8"
     
+    @pytest.mark.slow
     def test_density_effects(self):
         """Test initial planting density effects."""
         density_factors = self.expected['density_effects']
@@ -219,6 +221,7 @@ class TestModelCalibration:
         assert max_jump < transition_params['max_discontinuity'], \
             f"Maximum growth rate discontinuity {max_jump:.3f} exceeds threshold"
     
+    @pytest.mark.slow
     def test_competition_effects(self):
         """Test that competition properly affects growth."""
         comp_thresholds = self.expected['competition_thresholds']
@@ -263,6 +266,7 @@ class TestSpeciesComparison:
         self.output_dir.mkdir(exist_ok=True)
         self.engine = SimulationEngine(self.output_dir)
     
+    @pytest.mark.slow
     def test_species_growth_differences(self):
         """Test that different species grow differently."""
         # Loblolly Pine (fastest growing)

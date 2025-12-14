@@ -104,6 +104,7 @@ def test_stand_growth(young_stand):
     assert dbh_growth[1] > dbh_growth[0]  # Age 0 to 5
     assert height_growth[1] > height_growth[0]  # Age 0 to 5
 
+@pytest.mark.slow
 def test_mortality_effects():
     """Test mortality over time with different initial densities in 1 acre."""
     # Initialize stands with different densities
@@ -175,6 +176,7 @@ def test_competition_effects(mature_stand):
     # Skip size-based competition check for now
     # We'll analyze the report to understand the patterns
 
+@pytest.mark.slow
 def test_long_term_growth():
     """Test 1-acre stand development over 40 years with different site indices."""
     # Initialize stands with different site indices

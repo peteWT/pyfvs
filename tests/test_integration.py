@@ -56,6 +56,7 @@ class TestFullSimulationPipeline:
         # Verify mortality occurred
         assert results.iloc[-1]['tpa'] < results.iloc[0]['tpa']
     
+    @pytest.mark.slow
     def test_multiple_species_yield_table(self):
         """Test yield table generation for multiple species."""
         yield_table = self.engine.simulate_yield_table(
@@ -85,6 +86,7 @@ class TestFullSimulationPipeline:
                               (yield_table['age'] == 25)]['volume'].mean()
         assert lp_si80 > lp_si60
     
+    @pytest.mark.slow
     def test_scenario_comparison(self):
         """Test scenario comparison functionality."""
         scenarios = [
@@ -120,6 +122,7 @@ class TestFullSimulationPipeline:
         assert results.iloc[-1]['mean_dbh'] > 15.0  # Large trees expected
         assert results.iloc[-1]['tpa'] >= 30  # Most should survive
     
+    @pytest.mark.slow
     def test_edge_case_very_high_density(self):
         """Test simulation with very high initial density."""
         results = self.engine.simulate_stand(
@@ -164,6 +167,7 @@ class TestFullSimulationPipeline:
         assert good_site.iloc[-1]['volume'] > 2 * poor_site.iloc[-1]['volume']
         assert good_site.iloc[-1]['mean_height'] > poor_site.iloc[-1]['mean_height'] + 20
     
+    @pytest.mark.slow
     def test_different_time_steps(self):
         """Test that different time steps produce consistent results."""
         # 5-year time steps
@@ -321,6 +325,7 @@ class TestDataPersistence:
         pd.testing.assert_frame_equal(yield_table, saved_table)
 
 
+@pytest.mark.slow
 def test_full_workflow():
     """Test a complete realistic workflow."""
     output_dir = setup_test_output() / 'workflow_test'

@@ -48,6 +48,8 @@ class TestPerformance:
         # Should be fast - less than 5ms per tree
         assert per_tree < 5.0, f"Tree growth too slow: {per_tree:.2f} ms per tree"
     
+    @pytest.mark.slow
+    @pytest.mark.benchmark
     def test_stand_simulation_speed(self):
         """Benchmark stand-level simulation speed."""
         sizes = [100, 500, 1000]
@@ -80,6 +82,8 @@ class TestPerformance:
         assert scaling_factor < expected_scaling * 1.5, \
             f"Poor scaling: {scaling_factor:.1f}x slowdown for 10x trees"
     
+    @pytest.mark.slow
+    @pytest.mark.benchmark
     def test_large_stand_performance(self):
         """Test performance with very large stands."""
         # Test with 2000 trees per acre
@@ -103,6 +107,8 @@ class TestPerformance:
         # Should complete in reasonable time (< 60 seconds)
         assert elapsed < 60.0, f"Large stand simulation too slow: {elapsed:.2f} seconds"
     
+    @pytest.mark.slow
+    @pytest.mark.benchmark
     def test_memory_usage(self):
         """Test memory usage during simulation."""
         # Start memory tracking
@@ -129,6 +135,8 @@ class TestPerformance:
         # Should use less than 500MB for 1000 trees
         assert peak_mb < 500, f"Excessive memory usage: {peak_mb:.1f} MB"
     
+    @pytest.mark.slow
+    @pytest.mark.benchmark
     def test_yield_table_generation_speed(self):
         """Benchmark yield table generation."""
         start_time = time.time()
@@ -241,6 +249,7 @@ class TestPerformance:
 class TestOptimizationOpportunities:
     """Identify optimization opportunities."""
     
+    @pytest.mark.slow
     def test_competition_calculation_overhead(self):
         """Profile competition metric calculations."""
         stand = Stand.initialize_planted(trees_per_acre=1000, site_index=70)
@@ -258,6 +267,7 @@ class TestOptimizationOpportunities:
         assert elapsed < 50.0, \
             f"Competition calculation too slow: {elapsed:.2f} ms"
     
+    @pytest.mark.slow
     def test_mortality_processing_speed(self):
         """Test mortality application speed."""
         stand = Stand.initialize_planted(trees_per_acre=1500, site_index=70)
