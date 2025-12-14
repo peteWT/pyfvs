@@ -112,6 +112,7 @@ class Tree:
         xmax = transition_params['xmax']  # maximum DBH for transition (inches)
         
         # Calculate weight for blending growth models based on initial DBH
+        # Use smoothstep function for smoother transition (reduces discontinuities)
         if initial_dbh < xmin:
             weight = 0.0
             model_used = "small_tree"
@@ -119,7 +120,9 @@ class Tree:
             weight = 1.0
             model_used = "large_tree"
         else:
-            weight = (initial_dbh - xmin) / (xmax - xmin)
+            # Smoothstep function: 3t² - 2t³ where t = (dbh - xmin) / (xmax - xmin)
+            t = (initial_dbh - xmin) / (xmax - xmin)
+            weight = t * t * (3.0 - 2.0 * t)
             model_used = "blended"
             
         # Log model transition if crossing threshold

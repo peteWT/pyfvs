@@ -369,15 +369,22 @@ class Stand:
     @classmethod
     def initialize_planted(cls, trees_per_acre: int, site_index: float = 70, species: str = 'LP'):
         """Create a new planted stand.
-        
+
         Args:
             trees_per_acre: Number of trees per acre to plant
             site_index: Site index (base age 25) in feet
             species: Species code for the plantation
-            
+
         Returns:
             Stand: New stand instance
+
+        Raises:
+            ValueError: If trees_per_acre is less than or equal to 0
         """
+        # Check for invalid TPA before validation
+        if trees_per_acre <= 0:
+            raise ValueError(f"trees_per_acre must be positive, got {trees_per_acre}")
+
         # Validate parameters
         validated_params = ParameterValidator.validate_stand_parameters(
             trees_per_acre=trees_per_acre,
@@ -429,12 +436,18 @@ class Stand:
             
             # Calculate competition metrics
             competition_metrics = self._calculate_competition_metrics()
-            
+            stand_ba = self.calculate_basal_area()
+
             # Grow each tree
             for tree, metrics in zip(self.trees, competition_metrics):
                 tree.grow(
                     site_index=self.site_index,
-                    competition_factor=metrics['competition_factor']
+                    competition_factor=metrics['competition_factor'],
+                    rank=metrics['rank'],
+                    relsdi=metrics['relsdi'],
+                    ba=stand_ba,
+                    pbal=metrics['pbal'],
+                    time_step=5
                 )
             
             # Apply mortality
