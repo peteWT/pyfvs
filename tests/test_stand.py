@@ -354,4 +354,122 @@ def test_top_height_empty_stand():
     """Test top height returns 0 for empty stand."""
     stand = Stand(trees=[], site_index=70)
 
-    assert stand.calculate_top_height() == 0.0 
+    assert stand.calculate_top_height() == 0.0
+
+
+def test_merchantable_volume_calculation():
+    """Test merchantable volume calculation follows FVS standards.
+
+    FVS merchantable volume specifications:
+    - Trees >= 5" DBH are merchantable
+    - Merchantable from 1-ft stump to 4" top DOB
+    """
+    # Create a mature stand with sawlog-size trees
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    # Grow to get merchantable size trees (25+ years)
+    stand.grow(years=25)
+
+    metrics = stand.get_metrics()
+
+    # Merchantable volume should be in metrics
+    assert 'merchantable_volume' in metrics
+    assert 'board_feet' in metrics
+
+    # Merchantable volume should be > 0 for mature stand
+    assert metrics['merchantable_volume'] > 0
+
+    # Merchantable volume should be less than total volume
+    assert metrics['merchantable_volume'] < metrics['volume']
+
+    # Board feet should be > 0 if trees are large enough (9"+ DBH for softwoods)
+    # At 25 years, some trees should be sawlog size
+    if metrics['qmd'] >= 9.0:
+        assert metrics['board_feet'] > 0
+
+
+def test_merchantable_volume_young_stand():
+    """Test merchantable volume for young stand with small trees.
+
+    Trees < 5" DBH should have 0 merchantable volume.
+    """
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    # At age 0, trees are seedlings (< 5" DBH)
+    metrics = stand.get_metrics()
+
+    # Young seedlings should have no merchantable volume
+    assert metrics['merchantable_volume'] == 0.0
+    assert metrics['board_feet'] == 0.0
+
+
+def test_board_feet_sawlog_threshold():
+    """Test that board feet are only calculated for sawlog-size trees.
+
+    Softwoods need >= 9" DBH for board foot volume.
+    """
+    from fvs_python.tree import Tree
+
+    # Create trees of various sizes
+    small_tree = Tree(dbh=6.0, height=40.0, species='LP')  # Below sawlog threshold
+    medium_tree = Tree(dbh=9.0, height=60.0, species='LP')  # At threshold
+    large_tree = Tree(dbh=14.0, height=80.0, species='LP')  # Above threshold
+
+    # Small tree should have merchantable cubic but no board feet
+    small_vol = small_tree.get_volume('merchantable_cubic')
+    small_bf = small_tree.get_volume('board_foot')
+    assert small_vol > 0  # 6" > 5" minimum
+    assert small_bf == 0.0  # 6" < 9" sawlog minimum
+
+    # Medium tree at threshold should have board feet
+    medium_vol = medium_tree.get_volume('merchantable_cubic')
+    medium_bf = medium_tree.get_volume('board_foot')
+    assert medium_vol > 0
+    assert medium_bf > 0
+
+    # Large tree should have significant board feet
+    large_vol = large_tree.get_volume('merchantable_cubic')
+    large_bf = large_tree.get_volume('board_foot')
+    assert large_vol > 0
+    assert large_bf > medium_bf
+
+
+def test_merchantable_volume_empty_stand():
+    """Test merchantable volume returns 0 for empty stand."""
+    stand = Stand(trees=[], site_index=70)
+    metrics = stand.get_metrics()
+
+    assert metrics['merchantable_volume'] == 0.0
+    assert metrics['board_feet'] == 0.0
+
+
+def test_volume_accumulation_over_time():
+    """Test that merchantable volume increases as stand ages."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    volumes = []
+    # Grow to age 40 to ensure sawlog-size trees (QMD >= 9")
+    for year in [0, 10, 20, 30, 40]:
+        if year > 0:
+            stand.grow(years=10)
+        metrics = stand.get_metrics()
+        volumes.append({
+            'age': metrics['age'],
+            'volume': metrics['volume'],
+            'merchantable': metrics['merchantable_volume'],
+            'board_feet': metrics['board_feet'],
+            'qmd': metrics['qmd']
+        })
+
+    # Total volume should increase with age
+    for i in range(1, len(volumes)):
+        assert volumes[i]['volume'] >= volumes[i-1]['volume']
+
+    # Merchantable volume should eventually exceed 0 (trees reach 5" around age 15-20)
+    assert volumes[-1]['merchantable'] > 0
+
+    # At age 40, QMD should be ~10" and board feet should be positive
+    # Board feet only counted for trees >= 9" DBH (sawlog threshold for softwoods)
+    if volumes[-1]['qmd'] >= 9.0:
+        assert volumes[-1]['board_feet'] > 0, \
+            f"Expected board feet > 0 for QMD {volumes[-1]['qmd']:.1f}\"" 

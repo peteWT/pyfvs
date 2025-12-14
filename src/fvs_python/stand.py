@@ -641,7 +641,9 @@ class Stand:
             - top_height: Average height of 40 largest trees by DBH (feet)
             - mean_height: Mean tree height (feet)
             - basal_area: Stand basal area (sq ft/acre)
-            - volume: Total volume (cubic feet)
+            - volume: Total cubic volume (cubic feet/acre)
+            - merchantable_volume: Merchantable cubic volume (cubic feet/acre)
+            - board_feet: Board foot volume (board feet/acre, Doyle scale)
             - ccf: Crown Competition Factor (official calculation)
             - sdi: Stand Density Index (Reineke's equation)
             - max_sdi: Maximum SDI for stand species composition
@@ -659,6 +661,8 @@ class Stand:
                 'mean_height': 0.0,
                 'basal_area': 0.0,
                 'volume': 0.0,
+                'merchantable_volume': 0.0,
+                'board_feet': 0.0,
                 'ccf': 0.0,
                 'sdi': 0.0,
                 'max_sdi': self.get_max_sdi(),
@@ -668,6 +672,12 @@ class Stand:
             }
 
         n_trees = len(self.trees)
+
+        # Calculate volume metrics
+        total_volume = sum(tree.get_volume('total_cubic') for tree in self.trees)
+        merchantable_volume = sum(tree.get_volume('merchantable_cubic') for tree in self.trees)
+        board_feet = sum(tree.get_volume('board_foot') for tree in self.trees)
+
         metrics = {
             'age': self.age,
             'tpa': n_trees,
@@ -676,7 +686,9 @@ class Stand:
             'top_height': self.calculate_top_height(),
             'mean_height': sum(tree.height for tree in self.trees) / n_trees,
             'basal_area': self.calculate_basal_area(),
-            'volume': sum(tree.get_volume() for tree in self.trees),
+            'volume': total_volume,
+            'merchantable_volume': merchantable_volume,
+            'board_feet': board_feet,
             'ccf': self.calculate_ccf_official(),
             'sdi': self.calculate_stand_sdi(),
             'max_sdi': self.get_max_sdi(),

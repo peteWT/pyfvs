@@ -398,36 +398,185 @@ class VolumeLibrary:
             warnings.warn(f"Volume calculation failed: {e}. Using fallback method.")
             return self._fallback_volume_calculation(dbh, height, species_code)
     
-    def _fallback_volume_calculation(self, dbh: float, height: float, 
+    def _fallback_volume_calculation(self, dbh: float, height: float,
                                    species_code: str) -> VolumeResult:
         """Fallback volume calculation when NVEL is not available.
-        
-        Uses the same method as the current Tree.get_volume() method.
+
+        Implements FVS-compatible merchantable volume calculations:
+        - Merchantable cubic: Trees ≥5" DBH, from 1-ft stump to 4" top DOB
+        - Board foot (sawlog): Softwoods ≥9" DBH to 7.6" top; Hardwoods ≥11" DBH to 9.6" top
+
+        References:
+        - FVS Southern Variant Overview (2024)
+        - Essential FVS User's Guide
         """
         from .bark_ratio import create_bark_ratio_model
-        
+
+        # Define hardwood species codes (everything not in this list is softwood)
+        hardwood_species = {
+            'WO', 'SO', 'WK', 'LK', 'OV', 'CW', 'SK', 'HI', 'SU', 'YP',
+            'RM', 'SM', 'SV', 'WA', 'GA', 'RA', 'BA', 'BC', 'SY', 'BG',
+            'WE', 'AE', 'RL', 'BE', 'FM', 'OH'
+        }
+        is_hardwood = species_code in hardwood_species
+
+        # FVS merchantability specifications
+        STUMP_HEIGHT = 1.0  # feet
+        MIN_MERCH_DBH = 5.0  # inches - minimum DBH for merchantable trees
+        MIN_MERCH_TOP = 4.0  # inches DOB - merchantable top diameter
+
+        # Sawlog specifications (varies by hardwood/softwood)
+        if is_hardwood:
+            MIN_SAW_DBH = 11.0  # inches
+            MIN_SAW_TOP = 9.6   # inches DIB
+        else:
+            MIN_SAW_DBH = 9.0   # inches
+            MIN_SAW_TOP = 7.6   # inches DIB
+
         try:
-            # Convert DBH outside bark to inside bark for volume calculations
+            # Get bark ratio model for species
             bark_model = create_bark_ratio_model(species_code)
             dbh_inside_bark = bark_model.apply_bark_ratio_to_dbh(dbh)
-            
-            # Calculate volume using inside bark diameter (FVS standard)
+
+            # Estimate bark ratio (typically 0.88-0.92 for southern pines)
+            bark_ratio = dbh_inside_bark / dbh if dbh > 0 else 0.9
+
+            # Calculate total cubic volume (full stem)
             form_factor = 0.48
             basal_area_ib = 3.14159 * (dbh_inside_bark / 24)**2
-            cubic_volume = basal_area_ib * height * form_factor
-            
-            # Create volume array with cubic volume in first position
-            vol_array = [cubic_volume] + [0.0] * 14
-            
+            total_cubic = basal_area_ib * height * form_factor
+
+            # Initialize volume components
+            merchantable_cubic = 0.0
+            board_foot = 0.0
+            sawlog_cubic = 0.0
+            sawlog_board_foot = 0.0
+            cord_volume = 0.0
+
+            # Calculate merchantable cubic volume (trees ≥5" DBH)
+            if dbh >= MIN_MERCH_DBH:
+                # Estimate merchantable height using taper
+                # Height to 4" top DOB using simplified taper
+                merch_height = self._estimate_merchantable_height(
+                    dbh, height, MIN_MERCH_TOP, STUMP_HEIGHT
+                )
+
+                # Smalian's formula for merchantable section
+                # Use average of stump and top diameters
+                stump_dib = dbh_inside_bark * 0.95  # Slight taper at stump
+                top_dib = MIN_MERCH_TOP * bark_ratio
+
+                avg_dib = (stump_dib + top_dib) / 2
+                basal_area_avg = 3.14159 * (avg_dib / 24)**2
+                merchantable_cubic = basal_area_avg * merch_height * 0.5
+
+                # Ensure merchantable doesn't exceed total
+                merchantable_cubic = min(merchantable_cubic, total_cubic * 0.85)
+
+                # Convert to cords (1 cord = 128 cu ft gross, ~79 cu ft solid wood)
+                cord_volume = merchantable_cubic / 79.0
+
+            # Calculate board foot volume (sawlog trees only)
+            if dbh >= MIN_SAW_DBH:
+                # Estimate sawlog height (height to sawlog top diameter)
+                sawlog_height = self._estimate_merchantable_height(
+                    dbh, height, MIN_SAW_TOP, STUMP_HEIGHT
+                )
+
+                # Calculate sawlog cubic volume
+                stump_dib = dbh_inside_bark * 0.95
+                saw_top_dib = MIN_SAW_TOP * bark_ratio
+                avg_saw_dib = (stump_dib + saw_top_dib) / 2
+                basal_area_saw = 3.14159 * (avg_saw_dib / 24)**2
+                sawlog_cubic = basal_area_saw * sawlog_height * 0.5
+
+                # Board foot calculation using Doyle rule (common in South)
+                # Doyle: BF = (D - 4)^2 * L / 16, where D = scaling diameter, L = length in feet
+                # For standing trees, use average diameter
+                scaling_diameter = (stump_dib + saw_top_dib) / 2
+                if scaling_diameter > 4:
+                    # Sum up 16-foot logs
+                    num_logs = int(sawlog_height / 16)
+                    remaining_length = sawlog_height - (num_logs * 16)
+
+                    board_foot = 0.0
+                    for i in range(num_logs):
+                        # Taper adjustment for each log
+                        log_dib = stump_dib - (i * 2.0)  # ~2" taper per 16-ft log
+                        if log_dib > 4:
+                            board_foot += ((log_dib - 4)**2 * 16) / 16
+
+                    # Partial log
+                    if remaining_length > 8 and (stump_dib - num_logs * 2.0) > 4:
+                        log_dib = stump_dib - (num_logs * 2.0)
+                        board_foot += ((log_dib - 4)**2 * remaining_length) / 16
+
+                    # Apply defect factor (typically 5-15% for sound trees)
+                    board_foot *= 0.92
+
+                sawlog_board_foot = board_foot
+
+            # Build volume array matching NVEL output positions
+            # [0] total_cubic, [1] gross_cubic, [2] net_cubic, [3] merch_cubic,
+            # [4] board_foot, [5] cord, [6] green_wt, [7] dry_wt,
+            # [8] sawlog_cubic, [9] sawlog_bf, [10-14] other metrics
+            vol_array = [
+                total_cubic,           # 0: total cubic volume
+                total_cubic,           # 1: gross cubic volume
+                total_cubic * 0.95,    # 2: net cubic volume (5% defect)
+                merchantable_cubic,    # 3: merchantable cubic volume
+                board_foot,            # 4: board foot volume (Doyle)
+                cord_volume,           # 5: cord volume
+                0.0,                   # 6: green weight (not calculated)
+                0.0,                   # 7: dry weight (not calculated)
+                sawlog_cubic,          # 8: sawlog cubic volume
+                sawlog_board_foot,     # 9: sawlog board foot
+                0.0,                   # 10: sawlog cubic (Int'l)
+                0.0,                   # 11: sawlog bf (Int'l)
+                0.0,                   # 12: biomass main stem
+                0.0,                   # 13: biomass live branches
+                0.0,                   # 14: biomass foliage
+            ]
+
             return VolumeResult(vol_array, 0)
-            
+
         except Exception:
             # Ultimate fallback - simple cylinder calculation
             basal_area = 3.14159 * (dbh / 24)**2
             cubic_volume = basal_area * height * 0.4  # Conservative form factor
             vol_array = [cubic_volume] + [0.0] * 14
-            
+
             return VolumeResult(vol_array, 0)
+
+    def _estimate_merchantable_height(self, dbh: float, total_height: float,
+                                     top_dob: float, stump_height: float) -> float:
+        """Estimate merchantable height using simplified taper model.
+
+        Args:
+            dbh: Diameter at breast height (inches)
+            total_height: Total tree height (feet)
+            top_dob: Minimum top diameter outside bark (inches)
+            stump_height: Stump height (feet)
+
+        Returns:
+            Merchantable height in feet (from stump to merchantable top)
+        """
+        if dbh <= top_dob:
+            return 0.0
+
+        # Simplified linear taper model
+        # Assumes diameter decreases linearly from DBH to 0 at tip
+        # Height to given diameter = total_height * (1 - top_dob/dbh)
+        height_to_top = total_height * (1 - (top_dob / dbh))
+
+        # Merchantable height is from stump to merch top
+        merch_height = height_to_top - stump_height
+
+        # Ensure positive and reasonable
+        merch_height = max(0.0, merch_height)
+        merch_height = min(merch_height, total_height - stump_height - 4.0)
+
+        return merch_height
     
     def is_available(self) -> bool:
         """Check if volume library is available."""
