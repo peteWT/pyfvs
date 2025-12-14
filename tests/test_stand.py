@@ -959,4 +959,263 @@ def test_tree_list_volume_consistency():
     # Should match stand metrics (with small tolerance for rounding)
     assert abs(total_tcuft - metrics['volume']) < 1.0
     assert abs(total_mcuft - metrics['merchantable_volume']) < 1.0
-    assert abs(total_bdft - metrics['board_feet']) < 1.0 
+    assert abs(total_bdft - metrics['board_feet']) < 1.0
+
+
+# ============================================================================
+# Yield Table Output Tests
+# ============================================================================
+
+def test_generate_yield_table_basic():
+    """Test basic yield table generation."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    yield_table = stand.generate_yield_table(years=30, period_length=5)
+
+    # Should have records for initial + each period (30/5 = 6 periods + 1 initial = 7)
+    assert len(yield_table) == 7
+
+    # All records should be YieldRecord objects
+    from fvs_python.stand import YieldRecord
+    for record in yield_table:
+        assert isinstance(record, YieldRecord)
+
+
+def test_yield_table_fvs_summary_columns():
+    """Test that yield table has all FVS_Summary columns."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    yield_table = stand.generate_yield_table(years=20)
+
+    # Check all FVS_Summary columns exist in records
+    required_columns = [
+        'StandID', 'Year', 'Age', 'TPA', 'BA', 'SDI', 'CCF', 'TopHt', 'QMD',
+        'TCuFt', 'MCuFt', 'BdFt', 'RTpa', 'RTCuFt', 'RMCuFt', 'RBdFt',
+        'AThinBA', 'AThinSDI', 'AThinCCF', 'AThinTopHt', 'AThinQMD',
+        'PrdLen', 'Acc', 'Mort', 'MAI', 'ForTyp', 'SizeCls', 'StkCls'
+    ]
+
+    record_dict = yield_table[0].to_dict()
+    for col in required_columns:
+        assert col in record_dict, f"Missing column: {col}"
+
+
+def test_yield_table_age_progression():
+    """Test that yield table shows proper age progression."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    initial_age = stand.age
+
+    yield_table = stand.generate_yield_table(years=25, period_length=5)
+
+    # Check ages increase properly
+    ages = [r.Age for r in yield_table]
+    for i, age in enumerate(ages):
+        expected_age = initial_age + i * 5
+        assert age == expected_age, f"Expected age {expected_age}, got {age}"
+
+
+def test_yield_table_volume_growth():
+    """Test that volumes increase over time in yield table."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    yield_table = stand.generate_yield_table(years=30)
+
+    # Volume should generally increase over time
+    volumes = [r.TCuFt for r in yield_table]
+    initial_volume = volumes[0]
+    final_volume = volumes[-1]
+
+    assert final_volume > initial_volume, "Volume should increase over time"
+
+    # Volume at each step should be non-negative
+    for vol in volumes:
+        assert vol >= 0, "Volume should never be negative"
+
+
+def test_yield_table_tpa_mortality():
+    """Test that TPA decreases due to mortality."""
+    stand = Stand.initialize_planted(trees_per_acre=HIGH_TPA, site_index=70)
+
+    yield_table = stand.generate_yield_table(years=30)
+
+    # TPA should decrease due to mortality in high-density stand
+    initial_tpa = yield_table[0].TPA
+    final_tpa = yield_table[-1].TPA
+
+    assert final_tpa < initial_tpa, "TPA should decrease due to mortality"
+
+
+def test_yield_table_accretion_calculation():
+    """Test that accretion is calculated correctly."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    yield_table = stand.generate_yield_table(years=20, period_length=5)
+
+    # First record should have 0 accretion (initial state)
+    assert yield_table[0].Acc == 0
+
+    # Subsequent records should have positive accretion
+    for record in yield_table[1:]:
+        assert record.Acc >= 0, "Accretion should be non-negative"
+
+
+def test_yield_table_mai_calculation():
+    """Test Mean Annual Increment calculation."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    yield_table = stand.generate_yield_table(years=30)
+
+    # MAI should equal TCuFt / Age for each record
+    for record in yield_table:
+        if record.Age > 0:
+            expected_mai = record.TCuFt / record.Age
+            assert abs(record.MAI - expected_mai) < 0.1, "MAI calculation incorrect"
+
+
+def test_yield_table_size_class():
+    """Test that size class changes as trees grow."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    yield_table = stand.generate_yield_table(years=40)
+
+    # Young stand should start as seedling/sapling (class 1)
+    initial_size_class = yield_table[0].SizeCls
+    assert initial_size_class == 1, "Young stand should be seedling/sapling class"
+
+    # Older stand should advance to pole timber or sawtimber
+    final_size_class = yield_table[-1].SizeCls
+    assert final_size_class >= 2, "Mature stand should advance size class"
+
+
+def test_yield_table_dataframe():
+    """Test yield table DataFrame output."""
+    import pandas as pd
+
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    df = stand.get_yield_table_dataframe(years=20)
+
+    # Should be a DataFrame
+    assert isinstance(df, pd.DataFrame)
+
+    # Should have 5 rows (initial + 4 periods)
+    assert len(df) == 5
+
+    # Check key columns
+    assert 'StandID' in df.columns
+    assert 'Age' in df.columns
+    assert 'TCuFt' in df.columns
+    assert 'MAI' in df.columns
+
+
+def test_yield_table_stand_id():
+    """Test that stand ID is properly set."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    yield_table = stand.generate_yield_table(years=10, stand_id="TESTSTAND123")
+
+    for record in yield_table:
+        assert record.StandID == "TESTSTAND123"
+
+
+def test_yield_table_start_year():
+    """Test that start year is properly set."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    yield_table = stand.generate_yield_table(years=20, start_year=2030, period_length=5)
+
+    # Years should start at 2030 and increment by period_length
+    expected_years = [2030, 2035, 2040, 2045, 2050]
+    actual_years = [r.Year for r in yield_table]
+
+    assert actual_years == expected_years
+
+
+def test_export_yield_table_csv(tmp_path):
+    """Test exporting yield table to CSV."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    filepath = tmp_path / "yield"
+    result_path = stand.export_yield_table(str(filepath), format='csv', years=20)
+
+    # File should exist with csv extension
+    assert Path(result_path).exists()
+    assert result_path.endswith('.csv')
+
+    # Read and verify content
+    import pandas as pd
+    df = pd.read_csv(result_path)
+    assert 'Age' in df.columns
+    assert 'TCuFt' in df.columns
+    assert len(df) == 5  # initial + 4 periods
+
+
+def test_export_yield_table_json(tmp_path):
+    """Test exporting yield table to JSON."""
+    import json
+
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    filepath = tmp_path / "yield"
+    result_path = stand.export_yield_table(
+        str(filepath), format='json', years=15, stand_id="JSONTEST"
+    )
+
+    # File should exist
+    assert Path(result_path).exists()
+    assert result_path.endswith('.json')
+
+    # Read and verify content
+    with open(result_path) as f:
+        data = json.load(f)
+
+    assert 'metadata' in data
+    assert data['metadata']['format'] == 'FVS_Summary'
+    assert data['metadata']['stand_id'] == 'JSONTEST'
+    assert 'yield_table' in data
+    assert len(data['yield_table']) == 4  # initial + 3 periods
+
+
+def test_yield_table_empty_stand():
+    """Test yield table with empty stand."""
+    stand = Stand(trees=[], site_index=70)
+
+    yield_table = stand.generate_yield_table(years=10)
+
+    # Should still generate records (even if empty)
+    assert len(yield_table) == 3  # initial + 2 periods
+
+    # All values should be zero
+    for record in yield_table:
+        assert record.TPA == 0
+        assert record.TCuFt == 0
+
+
+def test_yield_table_preserves_original_stand():
+    """Test that generating yield table doesn't modify original stand."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+    original_age = stand.age
+    original_tpa = len(stand.trees)
+
+    # Generate yield table (which runs simulation internally)
+    yield_table = stand.generate_yield_table(years=30)
+
+    # Original stand should be unchanged
+    assert stand.age == original_age, "Original stand age was modified"
+    assert len(stand.trees) == original_tpa, "Original stand trees were modified"
+
+
+def test_yield_table_period_length_variation():
+    """Test yield table with different period lengths."""
+    stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
+
+    # 5-year periods (default FVS)
+    yt_5yr = stand.generate_yield_table(years=30, period_length=5)
+    assert len(yt_5yr) == 7  # initial + 6 periods
+
+    # 10-year periods
+    yt_10yr = stand.generate_yield_table(years=30, period_length=10)
+    assert len(yt_10yr) == 4  # initial + 3 periods
+
+    # Both should end at same age
+    assert yt_5yr[-1].Age == yt_10yr[-1].Age 

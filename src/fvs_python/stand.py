@@ -25,6 +25,106 @@ from .logging_config import get_logger, log_growth_summary
 
 
 @dataclass
+class YieldRecord:
+    """Record for FVS_Summary compatible yield table output.
+
+    Implements the FVS_Summary database table schema for compatibility
+    with FVS post-processing tools and yield table analysis.
+
+    Attributes:
+        StandID: Stand identification
+        Year: Calendar year of projection
+        Age: Stand age in years
+        TPA: Trees per acre
+        BA: Basal area per acre (sq ft)
+        SDI: Stand density index
+        CCF: Crown competition factor
+        TopHt: Average dominant height (feet)
+        QMD: Quadratic mean diameter (inches)
+        TCuFt: Total cubic foot volume (pulp + sawtimber)
+        MCuFt: Merchantable (sawtimber) cubic foot volume
+        BdFt: Board foot volume (Doyle scale)
+        RTpa: Removed trees per acre
+        RTCuFt: Removed total cubic volume
+        RMCuFt: Removed merchantable cubic volume
+        RBdFt: Removed board foot volume
+        AThinBA: After-thin basal area
+        AThinSDI: After-thin stand density index
+        AThinCCF: After-thin crown competition factor
+        AThinTopHt: After-thin dominant height
+        AThinQMD: After-thin QMD
+        PrdLen: Period length (years)
+        Acc: Accretion (cubic feet/acre/year)
+        Mort: Mortality (cubic feet/acre/year)
+        MAI: Mean annual increment (total cubic/age)
+        ForTyp: Forest cover type code
+        SizeCls: Stand size class (1-5)
+        StkCls: Stand stocking class (1-4)
+    """
+    StandID: str
+    Year: int
+    Age: int
+    TPA: int
+    BA: float
+    SDI: float
+    CCF: float
+    TopHt: float
+    QMD: float
+    TCuFt: float
+    MCuFt: float
+    BdFt: float
+    RTpa: int = 0
+    RTCuFt: float = 0.0
+    RMCuFt: float = 0.0
+    RBdFt: float = 0.0
+    AThinBA: float = 0.0
+    AThinSDI: float = 0.0
+    AThinCCF: float = 0.0
+    AThinTopHt: float = 0.0
+    AThinQMD: float = 0.0
+    PrdLen: int = 5
+    Acc: float = 0.0
+    Mort: float = 0.0
+    MAI: float = 0.0
+    ForTyp: int = 0
+    SizeCls: int = 0
+    StkCls: int = 0
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert record to dictionary."""
+        return {
+            'StandID': self.StandID,
+            'Year': self.Year,
+            'Age': self.Age,
+            'TPA': self.TPA,
+            'BA': round(self.BA, 1),
+            'SDI': round(self.SDI, 1),
+            'CCF': round(self.CCF, 1),
+            'TopHt': round(self.TopHt, 1),
+            'QMD': round(self.QMD, 2),
+            'TCuFt': round(self.TCuFt, 1),
+            'MCuFt': round(self.MCuFt, 1),
+            'BdFt': round(self.BdFt, 0),
+            'RTpa': self.RTpa,
+            'RTCuFt': round(self.RTCuFt, 1),
+            'RMCuFt': round(self.RMCuFt, 1),
+            'RBdFt': round(self.RBdFt, 0),
+            'AThinBA': round(self.AThinBA, 1),
+            'AThinSDI': round(self.AThinSDI, 1),
+            'AThinCCF': round(self.AThinCCF, 1),
+            'AThinTopHt': round(self.AThinTopHt, 1),
+            'AThinQMD': round(self.AThinQMD, 2),
+            'PrdLen': self.PrdLen,
+            'Acc': round(self.Acc, 2),
+            'Mort': round(self.Mort, 2),
+            'MAI': round(self.MAI, 2),
+            'ForTyp': self.ForTyp,
+            'SizeCls': self.SizeCls,
+            'StkCls': self.StkCls
+        }
+
+
+@dataclass
 class HarvestRecord:
     """Record of a single harvest event following FVS output format.
 
@@ -1355,4 +1455,387 @@ class Stand:
             raise ImportError("pandas required for DataFrame output")
 
         stock_table = self.get_stand_stock_table(dbh_class_width)
-        return pd.DataFrame(stock_table) 
+        return pd.DataFrame(stock_table)
+
+    # =========================================================================
+    # Yield Table Output - FVS_Summary compatible yield table generation
+    # =========================================================================
+
+    def _get_size_class(self) -> int:
+        """Determine FVS stand size class based on QMD.
+
+        FVS Size Classes:
+        1 = Seedling/Sapling (QMD < 5")
+        2 = Pole timber (5" <= QMD < 9")
+        3 = Small sawtimber (9" <= QMD < 15")
+        4 = Medium sawtimber (15" <= QMD < 21")
+        5 = Large sawtimber (QMD >= 21")
+
+        Returns:
+            Integer size class code (1-5)
+        """
+        if not self.trees:
+            return 0
+
+        qmd = self.calculate_qmd()
+        if qmd < 5.0:
+            return 1
+        elif qmd < 9.0:
+            return 2
+        elif qmd < 15.0:
+            return 3
+        elif qmd < 21.0:
+            return 4
+        else:
+            return 5
+
+    def _get_stocking_class(self) -> int:
+        """Determine FVS stand stocking class based on relative density.
+
+        FVS Stocking Classes based on percent of normal stocking:
+        1 = Overstocked (>130% of normal)
+        2 = Fully stocked (100-130%)
+        3 = Medium stocked (60-100%)
+        4 = Poorly stocked (<60%)
+
+        Uses RELSDI as the stocking measure.
+
+        Returns:
+            Integer stocking class code (1-4)
+        """
+        if not self.trees:
+            return 4
+
+        # Get relative density - RELSDI on 1-12 scale
+        # Roughly: 1=empty, 5-6=medium, 8-10=full, 12=overstocked
+        relsdi = self.calculate_relsdi()
+
+        # Convert RELSDI to approximate percent of normal
+        # FVS uses different thresholds by variant; this is a generalization
+        pct_normal = (relsdi / 10.0) * 100
+
+        if pct_normal > 130:
+            return 1
+        elif pct_normal >= 100:
+            return 2
+        elif pct_normal >= 60:
+            return 3
+        else:
+            return 4
+
+    def _get_forest_type_code(self) -> int:
+        """Get numeric forest type code for yield table.
+
+        Maps forest type string to FVS forest type codes.
+
+        Returns:
+            Integer forest type code
+        """
+        # FVS-SN forest type codes (simplified mapping)
+        forest_type_codes = {
+            'FTYLPN': 141,   # Loblolly pine
+            'FTYSHN': 143,   # Shortleaf pine
+            'FTYSPN': 142,   # Slash pine
+            'FTYLFP': 144,   # Longleaf pine
+            'FTYLOHD': 500,  # Lowland hardwood
+            'FTYUPHD': 510,  # Upland hardwood
+            'FTYMXPN': 160,  # Mixed pine
+            'FTYPNHW': 161,  # Pine-hardwood
+        }
+
+        if self.forest_type:
+            return forest_type_codes.get(self.forest_type, 0)
+        return 0
+
+    def get_yield_record(self, stand_id: str = "STAND001",
+                         year: int = 0,
+                         prev_volume: float = 0.0,
+                         mortality_volume: float = 0.0,
+                         period_length: int = 5,
+                         harvest_record: Optional[HarvestRecord] = None) -> YieldRecord:
+        """Get current stand state as FVS_Summary compatible yield record.
+
+        Args:
+            stand_id: Stand identifier
+            year: Calendar year (if 0, uses stand age)
+            prev_volume: Previous period total cubic volume (for accretion calc)
+            mortality_volume: Volume lost to mortality this period
+            period_length: Length of growth period in years
+            harvest_record: Harvest record if thinning occurred this period
+
+        Returns:
+            YieldRecord with FVS_Summary compatible fields
+        """
+        metrics = self.get_metrics()
+
+        # Calculate accretion (positive growth only) and mortality rate
+        if prev_volume > 0 and period_length > 0:
+            gross_growth = metrics['volume'] - prev_volume + mortality_volume
+            accretion = max(0, gross_growth) / period_length
+            mort_rate = mortality_volume / period_length
+        else:
+            accretion = 0.0
+            mort_rate = 0.0
+
+        # Calculate MAI
+        mai = metrics['volume'] / self.age if self.age > 0 else 0.0
+
+        # Extract harvest info if available
+        r_tpa = 0
+        r_tcuft = 0.0
+        r_mcuft = 0.0
+        r_bdft = 0.0
+        athin_ba = metrics['basal_area']
+        athin_sdi = metrics['sdi']
+        athin_ccf = metrics['ccf']
+        athin_topht = metrics['top_height']
+        athin_qmd = metrics['qmd']
+
+        if harvest_record is not None:
+            r_tpa = harvest_record.trees_removed
+            r_tcuft = harvest_record.volume_removed
+            r_mcuft = harvest_record.merchantable_volume_removed
+            r_bdft = harvest_record.board_feet_removed
+            # After-thin values are the current (post-harvest) metrics
+            athin_ba = metrics['basal_area']
+            athin_sdi = metrics['sdi']
+            athin_ccf = metrics['ccf']
+            athin_topht = metrics['top_height']
+            athin_qmd = metrics['qmd']
+
+        return YieldRecord(
+            StandID=stand_id,
+            Year=year if year > 0 else self.age,
+            Age=self.age,
+            TPA=metrics['tpa'],
+            BA=metrics['basal_area'],
+            SDI=metrics['sdi'],
+            CCF=metrics['ccf'],
+            TopHt=metrics['top_height'],
+            QMD=metrics['qmd'],
+            TCuFt=metrics['volume'],
+            MCuFt=metrics['merchantable_volume'],
+            BdFt=metrics['board_feet'],
+            RTpa=r_tpa,
+            RTCuFt=r_tcuft,
+            RMCuFt=r_mcuft,
+            RBdFt=r_bdft,
+            AThinBA=athin_ba,
+            AThinSDI=athin_sdi,
+            AThinCCF=athin_ccf,
+            AThinTopHt=athin_topht,
+            AThinQMD=athin_qmd,
+            PrdLen=period_length,
+            Acc=accretion,
+            Mort=mort_rate,
+            MAI=mai,
+            ForTyp=self._get_forest_type_code(),
+            SizeCls=self._get_size_class(),
+            StkCls=self._get_stocking_class()
+        )
+
+    def generate_yield_table(self, years: int = 50,
+                            period_length: int = 5,
+                            stand_id: str = "STAND001",
+                            start_year: int = 2025) -> List[YieldRecord]:
+        """Generate FVS_Summary compatible yield table.
+
+        Runs a growth simulation and collects yield records at each period,
+        tracking accretion, mortality, and removals.
+
+        Args:
+            years: Total simulation length in years
+            period_length: Growth period length (default 5 years to match FVS)
+            stand_id: Stand identifier for output
+            start_year: Calendar year for first record
+
+        Returns:
+            List of YieldRecord objects with FVS_Summary compatible data
+
+        Example:
+            >>> stand = Stand.initialize_planted(500, site_index=70)
+            >>> yield_table = stand.generate_yield_table(years=50)
+            >>> for record in yield_table:
+            ...     print(f"Age {record.Age}: TPA={record.TPA}, Vol={record.TCuFt:.0f}")
+        """
+        import copy
+
+        # Create working copy to preserve original stand state
+        working_stand = copy.deepcopy(self)
+        yield_records = []
+
+        # Collect initial metrics
+        prev_volume = working_stand.get_metrics()['volume']
+        initial_tpa = len(working_stand.trees)
+
+        # Record initial state (period 0)
+        initial_record = working_stand.get_yield_record(
+            stand_id=stand_id,
+            year=start_year,
+            prev_volume=0.0,
+            mortality_volume=0.0,
+            period_length=0
+        )
+        yield_records.append(initial_record)
+
+        # Track harvest history length for detecting new harvests
+        prev_harvest_count = len(working_stand.harvest_history)
+
+        # Simulate growth
+        current_year = start_year
+        for period in range(period_length, years + 1, period_length):
+            # Store pre-growth metrics
+            pre_tpa = len(working_stand.trees)
+            pre_volume = working_stand.get_metrics()['volume']
+
+            # Grow stand
+            working_stand.grow(years=period_length)
+            current_year += period_length
+
+            # Calculate mortality (trees lost this period)
+            post_tpa = len(working_stand.trees)
+            trees_died = pre_tpa - post_tpa
+
+            # Estimate mortality volume (approximate from average tree)
+            if trees_died > 0 and pre_tpa > 0:
+                avg_tree_vol = pre_volume / pre_tpa
+                mortality_volume = trees_died * avg_tree_vol * 0.8  # Smaller trees die
+            else:
+                mortality_volume = 0.0
+
+            # Check for new harvests this period
+            harvest_record = None
+            if len(working_stand.harvest_history) > prev_harvest_count:
+                harvest_record = working_stand.harvest_history[-1]
+                prev_harvest_count = len(working_stand.harvest_history)
+
+            # Create yield record
+            record = working_stand.get_yield_record(
+                stand_id=stand_id,
+                year=current_year,
+                prev_volume=prev_volume,
+                mortality_volume=mortality_volume,
+                period_length=period_length,
+                harvest_record=harvest_record
+            )
+            yield_records.append(record)
+
+            # Update previous volume for next period
+            prev_volume = working_stand.get_metrics()['volume']
+
+        return yield_records
+
+    def get_yield_table_dataframe(self, years: int = 50,
+                                  period_length: int = 5,
+                                  stand_id: str = "STAND001",
+                                  start_year: int = 2025):
+        """Generate yield table as pandas DataFrame.
+
+        Convenience method that returns yield table in DataFrame format
+        for easier analysis and export.
+
+        Args:
+            years: Total simulation length
+            period_length: Growth period length
+            stand_id: Stand identifier
+            start_year: Calendar year for first record
+
+        Returns:
+            pandas DataFrame with FVS_Summary columns
+        """
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError("pandas required for DataFrame output. "
+                            "Install with: pip install pandas")
+
+        yield_records = self.generate_yield_table(
+            years=years,
+            period_length=period_length,
+            stand_id=stand_id,
+            start_year=start_year
+        )
+
+        return pd.DataFrame([r.to_dict() for r in yield_records])
+
+    def export_yield_table(self, filepath: str,
+                          format: str = 'csv',
+                          years: int = 50,
+                          period_length: int = 5,
+                          stand_id: str = "STAND001",
+                          start_year: int = 2025) -> str:
+        """Export yield table to file.
+
+        Args:
+            filepath: Output file path (extension added if not present)
+            format: Export format ('csv', 'json', 'excel')
+            years: Simulation length
+            period_length: Growth period
+            stand_id: Stand identifier
+            start_year: Starting year
+
+        Returns:
+            Path to exported file
+
+        Example:
+            >>> stand = Stand.initialize_planted(500, site_index=70)
+            >>> stand.export_yield_table('output/yield', format='csv')
+            'output/yield.csv'
+        """
+        from pathlib import Path as FilePath
+
+        yield_records = self.generate_yield_table(
+            years=years,
+            period_length=period_length,
+            stand_id=stand_id,
+            start_year=start_year
+        )
+        yield_dicts = [r.to_dict() for r in yield_records]
+
+        # Ensure filepath has correct extension
+        path = FilePath(filepath)
+        extensions = {'csv': '.csv', 'json': '.json', 'excel': '.xlsx'}
+        if path.suffix.lower() not in extensions.values():
+            path = path.with_suffix(extensions.get(format, '.csv'))
+
+        # Create parent directory if needed
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        if format == 'csv':
+            try:
+                import pandas as pd
+                df = pd.DataFrame(yield_dicts)
+                df.to_csv(path, index=False)
+            except ImportError:
+                import csv
+                if yield_dicts:
+                    with open(path, 'w', newline='') as f:
+                        writer = csv.DictWriter(f, fieldnames=yield_dicts[0].keys())
+                        writer.writeheader()
+                        writer.writerows(yield_dicts)
+
+        elif format == 'json':
+            with open(path, 'w') as f:
+                json.dump({
+                    'metadata': {
+                        'stand_id': stand_id,
+                        'start_year': start_year,
+                        'simulation_years': years,
+                        'period_length': period_length,
+                        'format': 'FVS_Summary'
+                    },
+                    'yield_table': yield_dicts
+                }, f, indent=2)
+
+        elif format == 'excel':
+            try:
+                import pandas as pd
+                df = pd.DataFrame(yield_dicts)
+                df.to_excel(path, index=False, sheet_name='FVS_Summary')
+            except ImportError:
+                raise ImportError("pandas and openpyxl required for Excel export")
+
+        else:
+            raise ValueError(f"Unsupported format: {format}. Use 'csv', 'json', or 'excel'")
+
+        return str(path) 
