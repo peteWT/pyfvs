@@ -1,6 +1,6 @@
 """
 Bark ratio relationship functions for FVS-Python.
-Implements bark ratio equations from Clark (1991) for converting between 
+Implements bark ratio equations from Clark (1991) for converting between
 diameter outside bark (DOB) and diameter inside bark (DIB).
 """
 import json
@@ -8,6 +8,22 @@ import math
 from typing import Dict, Any, Optional
 from pathlib import Path
 from .config_loader import get_config_loader
+
+# Module-level cache for bark ratio parameters (loaded once)
+_BARK_RATIO_DATA: Optional[Dict[str, Any]] = None
+
+
+def _get_bark_ratio_data() -> Dict[str, Any]:
+    """Get bark ratio data from cache or load from file once."""
+    global _BARK_RATIO_DATA
+    if _BARK_RATIO_DATA is None:
+        bark_ratio_file = Path(__file__).parent.parent.parent / "docs" / "sn_bark_ratio_coefficients.json"
+        if bark_ratio_file.exists():
+            with open(bark_ratio_file, 'r') as f:
+                _BARK_RATIO_DATA = json.load(f)
+        else:
+            _BARK_RATIO_DATA = {}
+    return _BARK_RATIO_DATA
 
 
 class BarkRatioModel:
@@ -23,23 +39,20 @@ class BarkRatioModel:
         self._load_parameters()
     
     def _load_parameters(self):
-        """Load bark ratio parameters from configuration."""
-        # Load bark ratio coefficients from the extracted JSON file
-        bark_ratio_file = Path(__file__).parent.parent.parent / "docs" / "sn_bark_ratio_coefficients.json"
-        
-        if bark_ratio_file.exists():
-            with open(bark_ratio_file, 'r') as f:
-                bark_data = json.load(f)
-            
-            if self.species_code in bark_data['species_coefficients']:
-                self.coefficients = bark_data['species_coefficients'][self.species_code]
-                self.equation_info = bark_data['equation']
-                self.bounds = bark_data['equation']['bounds']
+        """Load bark ratio parameters from cached configuration."""
+        # Use module-level cached data instead of loading from disk each time
+        bark_data = _get_bark_ratio_data()
+
+        if bark_data:
+            species_coeffs = bark_data.get('species_coefficients', {})
+            if self.species_code in species_coeffs:
+                self.coefficients = species_coeffs[self.species_code]
             else:
                 # Fallback to default LP parameters if species not found
-                self.coefficients = bark_data['species_coefficients']['LP']
-                self.equation_info = bark_data['equation']
-                self.bounds = bark_data['equation']['bounds']
+                self.coefficients = species_coeffs.get('LP', {"b1": -0.48140, "b2": 0.91413})
+
+            self.equation_info = bark_data.get('equation', {})
+            self.bounds = self.equation_info.get('bounds', "0.80 < BRATIO < 0.99")
         else:
             # Fallback parameters if file not found
             self._load_fallback_parameters()

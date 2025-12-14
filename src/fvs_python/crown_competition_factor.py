@@ -8,6 +8,22 @@ from typing import Dict, Any, Optional, List, Tuple
 from pathlib import Path
 from .config_loader import get_config_loader
 
+# Module-level cache for CCF parameters (loaded once)
+_CCF_DATA: Optional[Dict[str, Any]] = None
+
+
+def _get_ccf_data() -> Dict[str, Any]:
+    """Get CCF data from cache or load from file once."""
+    global _CCF_DATA
+    if _CCF_DATA is None:
+        ccf_file = Path(__file__).parent.parent.parent / "cfg" / "sn_crown_competition_factor.json"
+        if ccf_file.exists():
+            with open(ccf_file, 'r') as f:
+                _CCF_DATA = json.load(f)
+        else:
+            _CCF_DATA = {}
+    return _CCF_DATA
+
 
 class CrownCompetitionFactorModel:
     """Crown Competition Factor model implementing FVS Southern variant equations."""
@@ -17,24 +33,23 @@ class CrownCompetitionFactorModel:
         self._load_parameters()
     
     def _load_parameters(self):
-        """Load CCF parameters from configuration."""
-        # Load CCF configuration from the source of truth JSON file
-        ccf_file = Path(__file__).parent.parent.parent / "cfg" / "sn_crown_competition_factor.json"
-        
-        if ccf_file.exists():
-            with open(ccf_file, 'r') as f:
-                ccf_data = json.load(f)
-            
-            self.metadata = ccf_data['metadata']
-            self.calculation_methods = ccf_data['calculation_methods']
-            self.dependencies = ccf_data['dependencies']
-            self.applications = ccf_data['applications']
-            
+        """Load CCF parameters from cached configuration."""
+        # Use module-level cached data instead of loading from disk each time
+        ccf_data = _get_ccf_data()
+
+        if ccf_data:
+            self.metadata = ccf_data.get('metadata', {})
+            self.calculation_methods = ccf_data.get('calculation_methods', {})
+            self.dependencies = ccf_data.get('dependencies', {})
+            self.applications = ccf_data.get('applications', {})
+
             # Extract key parameters
-            self.coefficient = ccf_data['calculation_methods']['individual_tree_ccf']['coefficient']['value']
+            try:
+                self.coefficient = ccf_data['calculation_methods']['individual_tree_ccf']['coefficient']['value']
+            except (KeyError, TypeError):
+                self.coefficient = 0.001803
             self.small_tree_ccf = 0.001  # Fixed value for DBH ≤ 0.1 inches
             self.dbh_threshold = 0.1     # DBH threshold for small trees
-            
         else:
             # Fallback parameters if file not found
             self._load_fallback_parameters()

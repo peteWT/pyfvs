@@ -8,6 +8,23 @@ from typing import Dict, Any, Optional, Tuple
 from pathlib import Path
 from .config_loader import get_config_loader
 
+# Module-level cache for crown width parameters (loaded once, reused)
+_CROWN_WIDTH_CACHE: Dict[str, Any] = {}
+_CROWN_WIDTH_DATA: Optional[Dict[str, Any]] = None
+
+
+def _get_crown_width_data() -> Dict[str, Any]:
+    """Get crown width data from cache or load from file once."""
+    global _CROWN_WIDTH_DATA
+    if _CROWN_WIDTH_DATA is None:
+        crown_width_file = Path(__file__).parent.parent.parent / "cfg" / "sn_crown_width_coefficients.json"
+        if crown_width_file.exists():
+            with open(crown_width_file, 'r') as f:
+                _CROWN_WIDTH_DATA = json.load(f)
+        else:
+            _CROWN_WIDTH_DATA = {}
+    return _CROWN_WIDTH_DATA
+
 
 class CrownWidthModel:
     """Crown width model implementing FVS Southern variant equations."""
@@ -22,27 +39,27 @@ class CrownWidthModel:
         self._load_parameters()
     
     def _load_parameters(self):
-        """Load crown width parameters from configuration."""
-        # Load crown width coefficients from the source of truth JSON file
-        crown_width_file = Path(__file__).parent.parent.parent / "cfg" / "sn_crown_width_coefficients.json"
-        
-        if crown_width_file.exists():
-            with open(crown_width_file, 'r') as f:
-                crown_data = json.load(f)
-            
-            self.metadata = crown_data['metadata']
-            self.equations = crown_data['metadata']['equations']
-            
+        """Load crown width parameters from cached configuration."""
+        # Use module-level cached data instead of loading from disk each time
+        crown_data = _get_crown_width_data()
+
+        if crown_data:
+            self.metadata = crown_data.get('metadata', {})
+            self.equations = self.metadata.get('equations', {})
+
             # Get species coefficients for both forest-grown and open-grown
-            self.forest_grown = crown_data['forest_grown'].get(self.species_code, {})
-            self.open_grown = crown_data['open_grown'].get(self.species_code, {})
-            
+            self.forest_grown = crown_data.get('forest_grown', {}).get(self.species_code, {})
+            self.open_grown = crown_data.get('open_grown', {}).get(self.species_code, {})
+
             # If species not found, use LP as default
             if not self.forest_grown:
-                self.forest_grown = crown_data['forest_grown'].get('LP', {})
+                self.forest_grown = crown_data.get('forest_grown', {}).get('LP', {})
             if not self.open_grown:
-                self.open_grown = crown_data['open_grown'].get('LP', {})
-                
+                self.open_grown = crown_data.get('open_grown', {}).get('LP', {})
+
+            # If still no data, use fallback
+            if not self.forest_grown:
+                self._load_fallback_parameters()
         else:
             # Fallback parameters if file not found
             self._load_fallback_parameters()

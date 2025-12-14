@@ -6,6 +6,18 @@ import math
 from typing import Dict, Any, Optional
 from .config_loader import get_config_loader
 
+# Module-level cache for height-diameter parameters by species
+_HD_PARAMS_CACHE: Dict[str, Dict[str, Any]] = {}
+
+
+def _get_hd_params(species_code: str) -> Dict[str, Any]:
+    """Get height-diameter parameters from cache or load once."""
+    if species_code not in _HD_PARAMS_CACHE:
+        loader = get_config_loader()
+        species_config = loader.load_species_config(species_code)
+        _HD_PARAMS_CACHE[species_code] = species_config['height_diameter']
+    return _HD_PARAMS_CACHE[species_code]
+
 
 class HeightDiameterModel:
     """Base class for height-diameter relationship models."""
@@ -20,10 +32,8 @@ class HeightDiameterModel:
         self._load_parameters()
     
     def _load_parameters(self):
-        """Load height-diameter parameters from configuration."""
-        loader = get_config_loader()
-        species_config = loader.load_species_config(self.species_code)
-        self.hd_params = species_config['height_diameter']
+        """Load height-diameter parameters from cached configuration."""
+        self.hd_params = _get_hd_params(self.species_code)
     
     def predict_height(self, dbh: float, model: str = None) -> float:
         """Predict height from diameter.
