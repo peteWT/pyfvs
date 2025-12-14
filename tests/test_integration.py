@@ -289,10 +289,18 @@ class TestDataPersistence:
         # Check that CSV file was created
         csv_files = list(self.output_dir.glob('sim_LP_TPA500_SI70.csv'))
         assert len(csv_files) == 1
-        
+
         # Load and verify CSV contents
         saved_df = pd.read_csv(csv_files[0])
-        pd.testing.assert_frame_equal(results, saved_df)
+
+        # CSV round-trip changes dtypes (object with None -> float64 with NaN)
+        # Convert both to have consistent null handling before comparison
+        results_copy = results.copy()
+        for col in results_copy.columns:
+            if results_copy[col].isna().any():
+                results_copy[col] = results_copy[col].astype(float)
+
+        pd.testing.assert_frame_equal(results_copy, saved_df, check_dtype=False)
     
     def test_yield_table_output(self):
         """Test yield table saving."""
