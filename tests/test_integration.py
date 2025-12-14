@@ -324,12 +324,18 @@ class TestDataPersistence:
         saved_table = pd.read_csv(yield_file)
 
         # CSV round-trip loses precision and changes dtypes (None -> NaN)
+        # Normalize null values to avoid FutureWarning about None vs NaN mismatch
+        yield_table_copy = yield_table.copy()
+        for col in yield_table_copy.columns:
+            if yield_table_copy[col].isna().any():
+                yield_table_copy[col] = yield_table_copy[col].astype(float)
+
         # Check with appropriate tolerance and without strict dtype checking
         pd.testing.assert_frame_equal(
-            yield_table,
+            yield_table_copy,
             saved_table,
             check_exact=False,
-            check_dtype=False,  # Allow dtype changes (object with None -> float64 with NaN)
+            check_dtype=False,
             rtol=0.01,  # 1% relative tolerance
             atol=0.01   # 0.01 absolute tolerance
         )
