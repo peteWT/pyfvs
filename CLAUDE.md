@@ -95,6 +95,18 @@ stand.py
 2. **SDI-Mortality Model** - Implemented full FVS equations 5.0.1-5.0.4 with 55%/85% SDImax thresholds
 3. **Chapman-Richards Time Step** - Clarified that equation naturally handles any time step (no fix needed)
 4. **Topographic Effects** - Verified slope/aspect correctly applied in CONSPP term
+5. **Crown Ratio Time Step Scaling** - Fixed `_update_crown_ratio_weibull()` to scale changes by time_step
+6. **Stand.grow() Time Step Handling** - Fixed to respect years parameter instead of forcing 5-year cycles
+7. **Mortality Time Step Scaling** - Fixed to pass cycle_length parameter to mortality calculation
+
+## Validation Status (Manuscript Comparison)
+
+Validation against timber asset account manuscript ("Toward a timber asset account for the United States"):
+- **16 of 25 tests pass** - Core mechanics work correctly
+- **Yields at 5-10% of expected** - Trees grow slower than manuscript expectations
+- **Root Causes**: FVS diameter growth coefficients produce 0.2 in/year vs expected 0.3-0.5 in/year;
+  fallback volume calculation produces ~50% of expected values (NVEL DLL not available on macOS)
+- See `test_output/manuscript_validation/VALIDATION_DISCREPANCY_REPORT.md` for full analysis
 
 ## Development Priorities
 

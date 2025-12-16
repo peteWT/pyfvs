@@ -590,47 +590,46 @@ class Stand:
     
     def grow(self, years=5):
         """Grow stand for specified number of years.
-        
-        Args:
-            years: Number of years to grow (default 5 years to match FVS)
-        """
-        # Ensure years is a multiple of 5
-        if years % 5 != 0:
-            years = 5 * math.ceil(years / 5)
-            
-        for period in range(0, years, 5):  # Step in 5-year increments
-            # Store initial metrics
-            initial_count = len(self.trees)
-            initial_metrics = self.get_metrics() if self.trees else None
-            
-            # Calculate competition metrics
-            competition_metrics = self._calculate_competition_metrics()
-            stand_ba = self.calculate_basal_area()
 
-            # Grow each tree
-            for tree, metrics in zip(self.trees, competition_metrics):
-                tree.grow(
-                    site_index=self.site_index,
-                    competition_factor=metrics['competition_factor'],
-                    rank=metrics['rank'],
-                    relsdi=metrics['relsdi'],
-                    ba=stand_ba,
-                    pbal=metrics['pbal'],
-                    time_step=5
-                )
-            
-            # Apply mortality
-            mortality_count = self._apply_mortality()
-            
-            self.age += 5
-            
-            # Log growth summary
-            if initial_metrics and self.trees:
-                final_metrics = self.get_metrics()
-                dbh_growth = final_metrics['mean_dbh'] - initial_metrics['mean_dbh']
-                height_growth = final_metrics['mean_height'] - initial_metrics['mean_height']
-                log_growth_summary(self.logger, period // 5 + 1, 
-                                 dbh_growth, height_growth, mortality_count)
+        Args:
+            years: Number of years to grow (default 5 years to match FVS).
+                   Can be any positive integer. Shorter time steps (e.g., 1 year)
+                   provide more accurate results for validation but are slower.
+        """
+        if years <= 0:
+            return
+
+        # Store initial metrics
+        initial_count = len(self.trees)
+        initial_metrics = self.get_metrics() if self.trees else None
+
+        # Calculate competition metrics
+        competition_metrics = self._calculate_competition_metrics()
+        stand_ba = self.calculate_basal_area()
+
+        # Grow each tree with the specified time step
+        for tree, metrics in zip(self.trees, competition_metrics):
+            tree.grow(
+                site_index=self.site_index,
+                competition_factor=metrics['competition_factor'],
+                rank=metrics['rank'],
+                relsdi=metrics['relsdi'],
+                ba=stand_ba,
+                pbal=metrics['pbal'],
+                time_step=years
+            )
+
+        # Apply mortality (scaled by time step)
+        mortality_count = self._apply_mortality(cycle_length=years)
+
+        self.age += years
+
+        # Log growth summary
+        if initial_metrics and self.trees:
+            final_metrics = self.get_metrics()
+            dbh_growth = final_metrics['mean_dbh'] - initial_metrics['mean_dbh']
+            height_growth = final_metrics['mean_height'] - initial_metrics['mean_height']
+            log_growth_summary(self.logger, 1, dbh_growth, height_growth, mortality_count)
     
     def _calculate_crown_width(self, tree):
         """Calculate maximum crown width for a tree.

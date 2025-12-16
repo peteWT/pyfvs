@@ -158,8 +158,8 @@ class Tree:
         # Ensure age is properly set after growth
         self.age = initial_age + time_step
         
-        # Update crown ratio using Weibull model
-        self._update_crown_ratio_weibull(rank, relsdi, competition_factor)
+        # Update crown ratio using Weibull model (pass time_step for proper scaling)
+        self._update_crown_ratio_weibull(rank, relsdi, competition_factor, time_step)
     
     def _grow_small_tree(self, site_index, competition_factor, time_step=5):
         """Implement small tree height growth model using Chapman-Richards function.
@@ -375,45 +375,68 @@ class Tree:
         # HTG = POTHTG * (0.25 * HGMDCR + 0.75 * HGMDRH)
         self._update_height_large_tree(site_index, time_step, competition_factor)
     
-    def _update_crown_ratio_weibull(self, rank, relsdi, competition_factor):
-        """Update crown ratio using Weibull-based model.
-        
+    def _update_crown_ratio_weibull(self, rank, relsdi, competition_factor, time_step=5):
+        """Update crown ratio using Weibull-based model with FVS-style change calculation.
+
+        FVS calculates crown ratio CHANGE, not absolute CR:
+        1. Predict "old" CR from start-of-cycle conditions
+        2. Predict "new" CR from end-of-cycle conditions
+        3. Change = new_prediction - old_prediction
+        4. Apply change to actual CR
+
+        This prevents rapid crown ratio collapse that occurs when
+        replacing CR with predicted values directly.
+
         Args:
             rank: Tree's rank in diameter distribution (0-1)
             relsdi: Relative stand density index (0-12)
             competition_factor: Competition factor (0-1)
+            time_step: Growth cycle length in years (default 5)
         """
         from .crown_ratio import create_crown_ratio_model
-        
+
         # Create crown ratio model for this species
         cr_model = create_crown_ratio_model(self.species)
-        
+
         # Calculate CCF from competition factor (rough approximation)
         ccf = 100.0 + 100.0 * competition_factor
-        
+
         try:
-            # Predict new crown ratio using the dedicated crown ratio model
-            new_cr = cr_model.predict_individual_crown_ratio(rank, relsdi, ccf)
-            
-            # Apply age-related reduction from config
+            # Predict crown ratio for current conditions (end of growth cycle)
+            predicted_cr = cr_model.predict_individual_crown_ratio(rank, relsdi, ccf)
+
+            # FVS-style change calculation:
+            # The change is bounded to prevent dramatic swings
+            # Maximum change is typically 5% per 5-year cycle (1% per year)
+            # Scale by time_step to handle different cycle lengths
+            max_change_per_cycle = 0.05 * (time_step / 5.0)
+
+            # Calculate change from current CR toward predicted CR
+            change = predicted_cr - self.crown_ratio
+
+            # Bound the change
+            bounded_change = max(-max_change_per_cycle,
+                               min(max_change_per_cycle, change))
+
+            # Apply change to current crown ratio
+            new_cr = self.crown_ratio + bounded_change
+
+            # Apply age-related reduction (small gradual decrease with age)
+            # Scale by time_step to maintain consistent rate regardless of cycle length
             cr_params = self.growth_params.get('crown_ratio', {})
-            age_reduction_rate = cr_params.get('age_reduction', {}).get('rate', 0.003)
-            max_age_reduction = cr_params.get('age_reduction', {}).get('max_reduction', 0.5)
-            
-            age_factor = 1.0 - age_reduction_rate * self.age
-            new_cr *= max(1.0 - max_age_reduction, age_factor)
-            
+            age_reduction_rate = cr_params.get('age_reduction', {}).get('rate', 0.001)
+            age_reduction = age_reduction_rate * (time_step / 5.0)  # Scale per cycle
+            new_cr = new_cr * (1.0 - age_reduction)
+
             # Ensure reasonable bounds
-            self.crown_ratio = max(0.05, min(0.95, new_cr))
+            self.crown_ratio = max(0.15, min(0.95, new_cr))
         except Exception:
             # Fallback to simpler update if crown ratio calculation fails
-            reduction = (
-                0.15 * competition_factor +  # Competition effect
-                0.003 * self.age +          # Age effect
-                0.1 * (1.0 - rank)          # Size effect
-            )
-            self.crown_ratio = max(0.05, min(0.95, 
-                self.crown_ratio * (1.0 - min(0.3, reduction))))
+            # Use gradual reduction rather than replacement
+            # Scale by time_step (2% per 5-year cycle = 0.4% per year)
+            reduction = 0.02 * (time_step / 5.0)
+            self.crown_ratio = max(0.15, min(0.95,
+                self.crown_ratio * (1.0 - reduction)))
     
     def _update_dbh_from_height(self):
         """Update DBH based on height using height-diameter model."""
