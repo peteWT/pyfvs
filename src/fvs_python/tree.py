@@ -373,7 +373,16 @@ class Tree:
 
         # Update height using FVS large-tree height growth model (Section 4.7.2)
         # HTG = POTHTG * (0.25 * HGMDCR + 0.75 * HGMDRH)
-        self._update_height_large_tree(site_index, time_step, competition_factor)
+        self._update_height_large_tree(
+            site_index=site_index,
+            ba=ba_bounded,
+            pbal=pbal,
+            slope=slope,
+            aspect=aspect,
+            relht=relht,
+            time_step=time_step,
+            competition_factor=competition_factor
+        )
     
     def _update_crown_ratio_weibull(self, rank, relsdi, competition_factor, time_step=5):
         """Update crown ratio using Weibull-based model with FVS-style change calculation.
@@ -471,11 +480,21 @@ class Tree:
         # Use the default model specified in configuration
         self.height = hd_model.predict_height(self.dbh)
 
-    def _update_height_large_tree(self, site_index: float, time_step: int = 5,
-                                    competition_factor: float = 0.0):
+    def _update_height_large_tree(
+        self,
+        site_index: float,
+        ba: float = 25.0,
+        pbal: float = 0.0,
+        slope: float = 0.0,
+        aspect: float = 0.0,
+        relht: float = 1.0,
+        time_step: int = 5,
+        competition_factor: float = 0.0
+    ):
         """Update height using FVS large-tree height growth model (Section 4.7.2).
 
-        Implements the FVS Southern variant equations:
+        Delegates to the large_tree_height_growth module which implements the
+        FVS Southern variant equations:
         HTG = POTHTG * (0.25 * HGMDCR + 0.75 * HGMDRH)
 
         Where:
@@ -483,106 +502,37 @@ class Tree:
         - HGMDCR = crown ratio modifier (Hoerl's Special Function)
         - HGMDRH = relative height modifier (shade tolerance dependent)
 
-        A competition modifier is also applied for consistency with stand-level
-        competition effects on height growth.
-
         Args:
             site_index: Site index (base age 25) in feet
+            ba: Stand basal area (sq ft/acre)
+            pbal: Plot basal area in larger trees (sq ft/acre)
+            slope: Ground slope as tangent (rise/run)
+            aspect: Aspect in radians
+            relht: Relative height (tree height / top height)
             time_step: Number of years to grow (default: 5)
             competition_factor: Competition factor (0-1), higher = more competition
         """
-        # Calculate potential height growth (POTHTG) using same Chapman-Richards as small-tree
-        small_tree_params = self.growth_params.get('small_tree_growth', {})
-        if self.species in small_tree_params:
-            p = small_tree_params[self.species]
-        else:
-            p = small_tree_params.get('default', {
-                'c1': 1.1421,
-                'c2': 1.0042,
-                'c3': -0.0374,
-                'c4': 0.7632,
-                'c5': 0.0358
-            })
+        from .large_tree_height_growth import calculate_large_tree_height_growth
 
-        # Current age (before growth) - age was already incremented in grow()
-        current_age = self.age - time_step
-        future_age = self.age
-        base_age = 25
+        # Calculate height growth using the module
+        htg = calculate_large_tree_height_growth(
+            species_code=self.species,
+            dbh=self.dbh,
+            crown_ratio=self.crown_ratio,
+            relative_height=relht,
+            site_index=site_index,
+            basal_area=ba,
+            pbal=pbal,
+            slope=slope,
+            aspect=aspect,
+            tree_age=self.age,
+            tree_height=self.height
+        )
 
-        def _raw_chapman_richards(age):
-            """Calculate unscaled Chapman-Richards height."""
-            if age <= 0:
-                return 1.0
-            return (
-                p['c1'] * (site_index ** p['c2']) *
-                (1.0 - math.exp(p['c3'] * age)) **
-                (p['c4'] * (site_index ** p['c5']))
-            )
+        # Scale for time step (module returns 5-year growth)
+        htg = htg * (time_step / 5.0)
 
-        # Calculate scaling factor to ensure Height(base_age) = SI
-        raw_height_at_base = _raw_chapman_richards(base_age)
-        scale_factor = site_index / raw_height_at_base if raw_height_at_base > 0 else 1.0
-
-        # Calculate potential height growth
-        if current_age <= 0:
-            current_potential_height = 1.0
-        else:
-            current_potential_height = _raw_chapman_richards(current_age) * scale_factor
-
-        future_potential_height = _raw_chapman_richards(future_age) * scale_factor
-        pothtg = future_potential_height - current_potential_height
-
-        # Calculate crown ratio modifier (HGMDCR) - Equation 4.7.2.2
-        # HGMDCR = 100 * CR^3.0 * exp(-5.0*CR), bounded < 1.0
-        cr = self.crown_ratio  # Crown ratio as proportion (0-1)
-        hgmdcr = 100.0 * (cr ** 3.0) * math.exp(-5.0 * cr)
-        hgmdcr = min(1.0, hgmdcr)  # Bounded < 1.0
-
-        # Calculate relative height modifier (HGMDRH) - Equations 4.7.2.3-4.7.2.7
-        # Get shade tolerance coefficients for species
-        shade_coeffs = self._get_shade_tolerance_coefficients()
-
-        # RELHT = tree height relative to top 40 trees
-        # Use the potential height at current age (from site index curve) as proxy for top height
-        # This is more accurate than using site index directly, which represents height at base age
-        potential_height_at_current_age = current_potential_height
-        if potential_height_at_current_age > 0:
-            relht = min(1.5, self.height / potential_height_at_current_age)
-        else:
-            relht = 1.0
-
-        # Calculate HGMDRH using Generalized Chapman-Richards function
-        rhr = shade_coeffs['RHR']
-        rhyxs = shade_coeffs['RHYXS']
-        rhm = shade_coeffs['RHM']
-        rhb = shade_coeffs['RHB']
-        rhxs = shade_coeffs['RHXS']
-        rhk = shade_coeffs['RHK']
-
-        # Avoid division by zero and numerical issues
-        if relht <= rhxs or rhyxs <= 0 or rhm == 1.0 or rhb == 1.0:
-            hgmdrh = 1.0  # Default to full modifier for dominant trees
-        else:
-            try:
-                # FCTRKX = ((RHK / RHYXS)^(RHM - 1)) - 1
-                fctrkx = ((rhk / rhyxs) ** (rhm - 1.0)) - 1.0
-                # FCTRRB = (-1.0 * RHR) / (1 - RHB)
-                fctrrb = (-1.0 * rhr) / (1.0 - rhb)
-                # FCTRXB = RELHT^(1 - RHB) - RHXS^(1 - RHB)
-                fctrxb = (relht ** (1.0 - rhb)) - (rhxs ** (1.0 - rhb))
-                # FCTRM = 1 / (1 - RHM)
-                fctrm = 1.0 / (1.0 - rhm)
-                # HGMDRH = RHK * (1 + FCTRKX * exp(FCTRRB * FCTRXB))^FCTRM
-                hgmdrh = rhk * ((1.0 + fctrkx * math.exp(fctrrb * fctrxb)) ** fctrm)
-                hgmdrh = max(0.0, min(1.0, hgmdrh))  # Bound to 0-1
-            except (ValueError, OverflowError, ZeroDivisionError):
-                hgmdrh = 1.0
-
-        # Calculate height growth: HTG = POTHTG * (0.25 * HGMDCR + 0.75 * HGMDRH)
-        htg = pothtg * (0.25 * hgmdcr + 0.75 * hgmdrh)
-
-        # Apply competition modifier (similar to small-tree model)
-        # Large trees are affected by competition through crown competition
+        # Apply competition modifier (consistent with previous implementation)
         competition_effects = self.growth_params.get('competition_effects') or {}
         large_tree_comp = competition_effects.get('large_tree_competition') or {}
         max_reduction = large_tree_comp.get('max_reduction', 0.15)
@@ -591,53 +541,6 @@ class Tree:
 
         # Update height with bounds checking
         self.height = max(4.5, self.height + htg)
-
-    def _get_shade_tolerance_coefficients(self) -> dict:
-        """Get shade tolerance coefficients for relative height modifier.
-
-        Returns coefficients from Table 4.7.2.1 based on species shade tolerance.
-        """
-        # Species to shade tolerance mapping (from Table 4.7.2.2)
-        species_tolerance = {
-            # Southern pines (all intolerant)
-            'LP': 'Intolerant', 'SP': 'Intolerant', 'SA': 'Intolerant', 'LL': 'Intolerant',
-            'VP': 'Intolerant', 'PP': 'Intolerant', 'PD': 'Intolerant', 'TM': 'Intolerant',
-            # Tolerant species
-            'PI': 'Tolerant', 'BE': 'Tolerant', 'RM': 'Tolerant', 'SV': 'Tolerant',
-            'BU': 'Tolerant', 'RD': 'Tolerant', 'AS': 'Tolerant', 'GA': 'Tolerant',
-            'LB': 'Tolerant', 'HA': 'Tolerant', 'MG': 'Tolerant', 'MS': 'Tolerant',
-            'ML': 'Tolerant', 'MB': 'Tolerant', 'BG': 'Tolerant', 'HH': 'Tolerant',
-            'SD': 'Tolerant', 'RA': 'Tolerant', 'BD': 'Tolerant', 'WE': 'Tolerant',
-            'RL': 'Tolerant', 'FM': 'Tolerant', 'LK': 'Tolerant',
-            # Very tolerant species
-            'FR': 'Very Tolerant', 'SR': 'Very Tolerant', 'HM': 'Very Tolerant',
-            'SM': 'Very Tolerant', 'AH': 'Very Tolerant', 'DW': 'Very Tolerant',
-            'PS': 'Very Tolerant', 'AB': 'Very Tolerant', 'HY': 'Very Tolerant',
-            # Intermediate species
-            'WP': 'Intermediate', 'BY': 'Intermediate', 'PC': 'Intermediate',
-            'HI': 'Intermediate', 'HB': 'Intermediate', 'CT': 'Intermediate',
-            'MV': 'Intermediate', 'SY': 'Intermediate', 'WO': 'Intermediate',
-            'SK': 'Intermediate', 'OV': 'Intermediate', 'CO': 'Intermediate',
-            'RO': 'Intermediate', 'BO': 'Intermediate', 'LO': 'Intermediate',
-            'EL': 'Intermediate', 'AE': 'Intermediate', 'OS': 'Intermediate',
-            'OH': 'Intermediate', 'OT': 'Intermediate',
-            # Very intolerant species
-            'CW': 'Very Intolerant', 'BT': 'Very Intolerant', 'SO': 'Very Intolerant',
-            'BK': 'Very Intolerant', 'WI': 'Very Intolerant',
-        }
-
-        # Shade tolerance coefficients (from Table 4.7.2.1)
-        tolerance_coeffs = {
-            'Very Tolerant': {'RHR': 20, 'RHYXS': 0.20, 'RHM': 1.1, 'RHB': -1.10, 'RHXS': 0, 'RHK': 1},
-            'Tolerant': {'RHR': 16, 'RHYXS': 0.15, 'RHM': 1.1, 'RHB': -1.20, 'RHXS': 0, 'RHK': 1},
-            'Intermediate': {'RHR': 15, 'RHYXS': 0.10, 'RHM': 1.1, 'RHB': -1.45, 'RHXS': 0, 'RHK': 1},
-            'Intolerant': {'RHR': 13, 'RHYXS': 0.05, 'RHM': 1.1, 'RHB': -1.60, 'RHXS': 0, 'RHK': 1},
-            'Very Intolerant': {'RHR': 12, 'RHYXS': 0.01, 'RHM': 1.1, 'RHB': -1.60, 'RHXS': 0, 'RHK': 1},
-        }
-
-        # Get tolerance for this species, default to Intermediate
-        tolerance = species_tolerance.get(self.species, 'Intermediate')
-        return tolerance_coeffs.get(tolerance, tolerance_coeffs['Intermediate'])
     
     def get_volume(self, volume_type: str = 'total_cubic') -> float:
         """Calculate tree volume using USFS Volume Estimator Library.
