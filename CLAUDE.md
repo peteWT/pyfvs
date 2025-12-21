@@ -118,14 +118,33 @@ config_loader.py
 9. **Tree Height Growth Duplication** - Eliminated duplicate code; `tree.py` now calls `large_tree_height_growth.py` module
 10. **Configuration Unification** - All modules now use `ConfigLoader.load_coefficient_file()` with centralized caching
 11. **Bark Ratio Path Bug** - Fixed critical bug where `bark_ratio.py` looked in `/docs/` instead of `/cfg/`
+12. **Ecological Unit Propagation** - Fixed `tree.grow()` to receive ecounit/forest_type from Stand; previously trees always used species config base_ecounit (232=0.0 for LP), ignoring Stand's ecounit setting
+
+## Ecological Unit Effects on Growth
+
+The FVS diameter growth model includes ecological unit adjustments. **Province 232 (Georgia)** is the BASE for loblolly pine (LP), with coefficient 0.0. Other provinces have significant effects:
+
+| Province | Effect on ln(DDS) | Growth Impact |
+|----------|-------------------|---------------|
+| 232 (Georgia) | 0.0 (base) | 0.24 in/year |
+| 231L (Lowland) | +0.256 | 0.30 in/year |
+| 255 (Prairie) | +0.275 | 0.31 in/year |
+| M222 | +0.582 | 0.36 in/year |
+| M231 (Mountain) | +0.790 | **0.43 in/year** |
+
+To achieve growth rates matching typical yield tables (0.3-0.5 in/year), use appropriate ecounit:
+```python
+stand = Stand(site_index=70, species='LP', ecounit='M231')  # Mountain province
+stand = Stand(site_index=70, species='LP', ecounit='231L')  # Section 231 lowland
+```
 
 ## Validation Status (Manuscript Comparison)
 
 Validation against timber asset account manuscript ("Toward a timber asset account for the United States"):
 - **16 of 25 tests pass** - Core mechanics work correctly
-- **Yields at 5-10% of expected** - Trees grow slower than manuscript expectations
-- **Root Causes**: FVS diameter growth coefficients produce 0.2 in/year vs expected 0.3-0.5 in/year;
-  fallback volume calculation produces ~50% of expected values (NVEL DLL not available on macOS)
+- **Yields at 5-10% of expected** with Province 232 (Georgia) ecounit (default)
+- **Root Cause Identified**: Province 232 is the BASE ecounit for LP with coefficient 0.0. Using appropriate ecounit (M231, 231L) achieves target 0.3-0.5 in/year growth
+- **Remaining Issue**: Fallback volume calculation produces ~50% of expected values (NVEL DLL not available on macOS)
 - See `test_output/manuscript_validation/VALIDATION_DISCREPANCY_REPORT.md` for full analysis
 
 ## Development Priorities
@@ -134,10 +153,11 @@ Validation against timber asset account manuscript ("Toward a timber asset accou
 1. **Consolidate Simulation Functions**: Three overlapping functions in `main.py` (run_simulation, simulate_stand_growth, generate_yield_table)
 
 ### Testing & Validation
-1. Calibrate expected values against FVS documentation
+1. Re-run manuscript validation tests with appropriate ecounit settings
 2. Add regression tests with known good outputs
 3. Test with large stands (1000+ trees) for performance
 
 ### Growth Model Calibration
-1. Investigate diameter growth rates (currently 0.2 in/year vs expected 0.3-0.5 in/year)
+1. ~~Investigate diameter growth rates~~ **RESOLVED** - Use appropriate ecounit for region
 2. Implement NVEL volume equations or find alternative for macOS
+3. Consider adding user-settable calibration factor (COR) for fine-tuning

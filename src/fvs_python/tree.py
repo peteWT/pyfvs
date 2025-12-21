@@ -32,7 +32,11 @@ class Tree:
         self.species = species
         self.age = validated['age']
         self.crown_ratio = validated['crown_ratio']
-        
+
+        # Initialize optional ecounit and forest_type (set during grow())
+        self._ecounit = None
+        self._forest_type = None
+
         # Set up logging
         self.logger = get_logger(__name__)
         
@@ -71,9 +75,9 @@ class Tree:
                 }}
             }
     
-    def grow(self, site_index: float, competition_factor: float, rank: float = 0.5, relsdi: float = 5.0, ba: float = 100, pbal: float = 50, slope: float = 0.05, aspect: float = 0, time_step: int = 5) -> None:
+    def grow(self, site_index: float, competition_factor: float, rank: float = 0.5, relsdi: float = 5.0, ba: float = 100, pbal: float = 50, slope: float = 0.05, aspect: float = 0, time_step: int = 5, ecounit: str = None, forest_type: str = None) -> None:
         """Grow the tree for the specified number of years.
-        
+
         Args:
             site_index: Site index (base age 25) in feet
             competition_factor: Competition factor (0-1)
@@ -84,7 +88,12 @@ class Tree:
             slope: Ground slope (proportion)
             aspect: Aspect in radians
             time_step: Number of years to grow the tree (default: 5)
+            ecounit: Ecological unit code (e.g., "232", "M231") - passed from Stand
+            forest_type: Forest type group (e.g., "FTYLPN") - passed from Stand
         """
+        # Store ecounit and forest_type for use in growth methods
+        self._ecounit = ecounit
+        self._forest_type = forest_type
         # Validate growth parameters
         validated = ParameterValidator.validate_growth_parameters(
             site_index, competition_factor, ba, pbal, rank, relsdi,
@@ -285,17 +294,29 @@ class Tree:
         # Using site index as proxy for average height
         relht = min(1.5, self.height / site_index) if site_index > 0 else 1.0
 
-        # Get forest type effect from config (defaults to 0.0 if not specified)
+        # Get forest type effect - use passed forest_type or fall back to species config
         fortype_config = self.species_params.get('fortype', {})
-        fortype_effect = fortype_config.get('coefficients', {}).get(
-            fortype_config.get('base_fortype', 'FTYLPN'), 0.0
-        )
+        if self._forest_type is not None:
+            # Use passed forest type from Stand
+            from .forest_type import get_forest_type_effect
+            fortype_effect = get_forest_type_effect(self.species, self._forest_type)
+        else:
+            # Fall back to species config base forest type
+            fortype_effect = fortype_config.get('coefficients', {}).get(
+                fortype_config.get('base_fortype', 'FTYLPN'), 0.0
+            )
 
-        # Get ecological unit effect from config (defaults to 0.0 if not specified)
-        ecounit_config = self.species_params.get('ecounit', {}).get('table_4_7_1_5', {})
-        ecounit_effect = ecounit_config.get('coefficients', {}).get(
-            ecounit_config.get('base_ecounit', '232'), 0.0
-        )
+        # Get ecological unit effect - use passed ecounit or fall back to species config
+        if self._ecounit is not None:
+            # Use passed ecounit from Stand
+            from .ecological_unit import get_ecounit_effect
+            ecounit_effect = get_ecounit_effect(self.species, self._ecounit)
+        else:
+            # Fall back to species config base ecounit (typically 0.0)
+            ecounit_config = self.species_params.get('ecounit', {}).get('table_4_7_1_5', {})
+            ecounit_effect = ecounit_config.get('coefficients', {}).get(
+                ecounit_config.get('base_ecounit', '232'), 0.0
+            )
 
         # Get plant effect from species config
         plant_config = self.species_params.get('plant', {})

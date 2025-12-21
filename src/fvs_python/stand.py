@@ -315,7 +315,9 @@ class Stand:
                 aspect=0.0,
                 rank=metrics.get('rank', 0.5),
                 relsdi=metrics.get('relsdi', relsdi),
-                time_step=years
+                time_step=years,
+                ecounit=self.ecounit,
+                forest_type=self.forest_type
             )
 
         # Apply mortality
