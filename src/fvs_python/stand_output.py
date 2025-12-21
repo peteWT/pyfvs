@@ -85,9 +85,9 @@ class YieldRecord:
     Acc: float = 0.0
     Mort: float = 0.0
     MAI: float = 0.0
-    ForTyp: str = ""
-    SizeCls: str = ""
-    StkCls: str = ""
+    ForTyp: int = 0
+    SizeCls: int = 0
+    StkCls: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert record to dictionary."""
@@ -164,10 +164,17 @@ class StandOutputGenerator:
             trees, site_index
         )
 
+        # Pre-compute BA percentile using rank (position in sorted DBH order)
+        # This gives larger trees higher percentiles (0-100 scale)
+        sorted_by_dbh = sorted(range(len(trees)), key=lambda i: trees[i].dbh)
+        tree_to_rank = {sorted_by_dbh[i]: i for i in range(len(sorted_by_dbh))}
+
         tree_records = []
         for i, (tree, metrics) in enumerate(zip(trees, competition_metrics)):
-            # Get competition values
-            ba_percentile = metrics.get('rank', 0) * 100
+            # Calculate BA percentile as rank in diameter distribution (0-100)
+            # Larger trees have higher percentiles
+            rank = tree_to_rank[i] / len(trees) if trees else 0.5
+            ba_percentile = rank * 100.0
             pbal = metrics.get('pbal', 0)
 
             # Generate tree record
@@ -182,6 +189,8 @@ class StandOutputGenerator:
 
             # Add stand-level identifiers
             record['StandID'] = stand_id
+            # Use stand age for Age field (FVS convention for tree list output)
+            record['Age'] = stand_age
 
             tree_records.append(record)
 
@@ -343,7 +352,8 @@ class StandOutputGenerator:
         self,
         tree_list: List[Dict[str, Any]],
         filepath: str,
-        format: str = 'csv'
+        format: str = 'csv',
+        stand_id: str = "STAND001"
     ) -> str:
         """Export tree list to file.
 
@@ -351,6 +361,7 @@ class StandOutputGenerator:
             tree_list: List of tree record dictionaries
             filepath: Output file path (extension added if not present)
             format: Export format ('csv', 'json', 'excel')
+            stand_id: Stand identifier for metadata
 
         Returns:
             Path to exported file
@@ -366,7 +377,7 @@ class StandOutputGenerator:
         if format == 'csv':
             self._export_csv(tree_list, path)
         elif format == 'json':
-            self._export_json(tree_list, path, 'tree_list')
+            self._export_tree_list_json(tree_list, path, stand_id)
         elif format == 'excel':
             self._export_excel(tree_list, path, 'TreeList')
         else:
@@ -378,7 +389,8 @@ class StandOutputGenerator:
         self,
         yield_records: List[YieldRecord],
         filepath: str,
-        format: str = 'csv'
+        format: str = 'csv',
+        stand_id: str = "STAND001"
     ) -> str:
         """Export yield table to file.
 
@@ -386,6 +398,7 @@ class StandOutputGenerator:
             yield_records: List of YieldRecord objects
             filepath: Output file path
             format: Export format ('csv', 'json', 'excel')
+            stand_id: Stand identifier for metadata
 
         Returns:
             Path to exported file
@@ -402,7 +415,7 @@ class StandOutputGenerator:
         if format == 'csv':
             self._export_csv(yield_dicts, path)
         elif format == 'json':
-            self._export_json(yield_dicts, path, 'yield_table')
+            self._export_yield_table_json(yield_dicts, path, stand_id)
         elif format == 'excel':
             self._export_excel(yield_dicts, path, 'YieldTable')
         else:
@@ -469,6 +482,40 @@ class StandOutputGenerator:
                     'record_count': len(data)
                 },
                 data_key: data
+            }, f, indent=2)
+
+    def _export_tree_list_json(
+        self,
+        data: List[Dict],
+        path: Path,
+        stand_id: str
+    ) -> None:
+        """Export tree list to JSON with FVS_TreeList format."""
+        with open(path, 'w') as f:
+            json.dump({
+                'metadata': {
+                    'format': 'FVS_TreeList',
+                    'stand_id': stand_id,
+                    'record_count': len(data)
+                },
+                'trees': data
+            }, f, indent=2)
+
+    def _export_yield_table_json(
+        self,
+        data: List[Dict],
+        path: Path,
+        stand_id: str
+    ) -> None:
+        """Export yield table to JSON with FVS_Summary format."""
+        with open(path, 'w') as f:
+            json.dump({
+                'metadata': {
+                    'format': 'FVS_Summary',
+                    'stand_id': stand_id,
+                    'record_count': len(data)
+                },
+                'yield_table': data
             }, f, indent=2)
 
     def _export_excel(self, data: List[Dict], path: Path, sheet_name: str) -> None:

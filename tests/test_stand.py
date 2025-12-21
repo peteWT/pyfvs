@@ -786,8 +786,9 @@ def test_tree_list_competition_metrics():
 
     tree_list = stand.get_tree_list()
 
-    # Sort by DBH to check rankings
-    sorted_list = sorted(tree_list, key=lambda x: x['DBH'], reverse=True)
+    # Sort by DBH and BAPctile to properly identify largest/smallest
+    # (DBH values may be rounded, causing ties that need secondary sort)
+    sorted_list = sorted(tree_list, key=lambda x: (x['DBH'], x['BAPctile']), reverse=True)
 
     # Largest tree should have high BA percentile and low PBAL
     largest = sorted_list[0]

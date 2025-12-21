@@ -68,7 +68,9 @@ class TestYieldRecord:
         assert record.Acc == 0.0
         assert record.Mort == 0.0
         assert record.MAI == 0.0
-        assert record.ForTyp == ""
+        assert record.ForTyp == 0  # Integer default for forest type code
+        assert record.SizeCls == 0  # Integer default for size class
+        assert record.StkCls == 0  # Integer default for stocking class
 
     def test_yield_record_to_dict(self):
         """Test converting yield record to dictionary."""
