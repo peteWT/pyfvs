@@ -291,8 +291,20 @@ class Tree:
         cr_pct = max(25.0, self.crown_ratio * 100.0)
 
         # Relative height (RELHT) = HT/AVH, capped at 1.5 in FVS
-        # Using site index as proxy for average height
-        relht = min(1.5, self.height / site_index) if site_index > 0 else 1.0
+        # AVH is the average height of the 40 largest trees (top height)
+        # For individual tree growth without stand context, assume codominant (relht = 1.0)
+        # This is appropriate for:
+        # - Plantation trees that are uniformly managed
+        # - Dominant/codominant trees in natural stands
+        # When called from Stand.grow(), the Stand should pass actual top height
+        # via the _top_height attribute if competition-based height reduction is needed
+        if hasattr(self, '_top_height') and self._top_height is not None and self._top_height > 0:
+            # Use actual stand top height (passed from Stand)
+            relht = min(1.5, self.height / self._top_height)
+        else:
+            # Default: assume codominant tree (no height suppression)
+            # This is appropriate for plantations and dominant trees
+            relht = 1.0
 
         # Get forest type effect - use passed forest_type or fall back to species config
         fortype_config = self.species_params.get('fortype', {})

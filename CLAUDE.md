@@ -119,6 +119,9 @@ config_loader.py
 10. **Configuration Unification** - All modules now use `ConfigLoader.load_coefficient_file()` with centralized caching
 11. **Bark Ratio Path Bug** - Fixed critical bug where `bark_ratio.py` looked in `/docs/` instead of `/cfg/`
 12. **Ecological Unit Propagation** - Fixed `tree.grow()` to receive ecounit/forest_type from Stand; previously trees always used species config base_ecounit (232=0.0 for LP), ignoring Stand's ecounit setting
+13. **Volume Equations** - Replaced simple form-factor calculation with combined-variable equations (V = a + b × D²H) from Amateis & Burkhart (1987), matching published research with R² > 0.97
+14. **Height Growth Cap** - Removed artificial 4.0 ft/5yr cap on POTHTG that was limiting young tree height growth; now uses site-index-based maximum (SI × 0.20)
+15. **Relative Height Default** - Fixed relative height (RELHT) to default to 1.0 for codominant trees instead of incorrectly comparing tree height to site index, which was suppressing height growth
 
 ## Ecological Unit Effects on Growth
 
@@ -142,10 +145,14 @@ stand = Stand(site_index=70, species='LP', ecounit='231L')  # Section 231 lowlan
 
 Validation against timber asset account manuscript ("Toward a timber asset account for the United States"):
 - **16 of 25 tests pass** - Core mechanics work correctly
-- **Yields at 5-10% of expected** with Province 232 (Georgia) ecounit (default)
-- **Root Cause Identified**: Province 232 is the BASE ecounit for LP with coefficient 0.0. Using appropriate ecounit (M231, 231L) achieves target 0.3-0.5 in/year growth
-- **Remaining Issue**: Fallback volume calculation produces ~50% of expected values (NVEL DLL not available on macOS)
-- See `test_output/manuscript_validation/VALIDATION_DISCREPANCY_REPORT.md` for full analysis
+- **Current yield ratios: 15-21% of manuscript expectations** (improved from initial 5-10%)
+- **Improvements made**:
+  - Combined-variable volume equations (Amateis & Burkhart 1987) - validated against published research
+  - Fixed height growth cap (was limiting POTHTG to 4 ft/5yr)
+  - Fixed relative height calculation (was suppressing codominant tree growth)
+  - Ecounit propagation from Stand to Trees (M231 adds +0.790 to growth)
+- **Remaining gap**: Tree dimensions at age 25 (DBH=9.4", Ht=40 ft) are below manuscript expectations (DBH~15", Ht~55 ft)
+- See `test_output/manuscript_validation/` for validation reports
 
 ## Development Priorities
 

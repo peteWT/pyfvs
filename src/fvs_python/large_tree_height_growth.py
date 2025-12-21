@@ -247,8 +247,12 @@ class LargeTreeHeightGrowthModel:
                 site_factor = max(0.7, 1.0 - (site_index - 80.0) * 0.005)
                 potential_height_growth *= site_factor
             
-            # Bound potential height growth to reasonable range (0.1 to 4.0 feet per 5-year period)
-            potential_height_growth = max(0.1, min(4.0, potential_height_growth))
+            # Bound potential height growth to reasonable range
+            # Young trees on good sites can grow 10-15 ft per 5-year period
+            # Mature trees typically grow 2-5 ft per 5-year period
+            # Maximum based on SI (higher SI = higher max growth)
+            max_growth = max(5.0, site_index * 0.20)  # e.g., SI=55 -> max 11 ft/5yr
+            potential_height_growth = max(0.1, min(max_growth, potential_height_growth))
             
         except (ValueError, OverflowError, ZeroDivisionError):
             # Fallback calculation if Chapman-Richards fails
