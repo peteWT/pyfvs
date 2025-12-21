@@ -3,44 +3,46 @@ Crown ratio relationship functions for FVS-Python.
 Implements Weibull-based crown model and other crown ratio equations from the SN variant.
 """
 import math
-import json
 import random
 from typing import Dict, Any, Optional, Tuple
-from pathlib import Path
-from scipy.stats import weibull_min
-from .config_loader import get_config_loader
+from .config_loader import load_coefficient_file
+
+
+def _get_crown_ratio_data() -> Dict[str, Any]:
+    """Get crown ratio data using ConfigLoader (with caching)."""
+    try:
+        return load_coefficient_file('sn_crown_ratio_coefficients.json')
+    except FileNotFoundError:
+        return {}
 
 
 class CrownRatioModel:
     """Crown ratio model implementing FVS Southern variant equations."""
-    
+
     def __init__(self, species_code: str = "LP"):
         """Initialize with species-specific parameters.
-        
+
         Args:
             species_code: Species code (e.g., "LP", "SP", "WO", etc.)
         """
         self.species_code = species_code
         self._load_parameters()
-    
+
     def _load_parameters(self):
         """Load crown ratio parameters from configuration."""
-        from .config_loader import get_config_loader
-        
         try:
-            loader = get_config_loader()
-            crown_ratio_file = loader.cfg_dir / "sn_crown_ratio_coefficients.json"
-            
-            # Use config loader to load the file
-            crown_data = loader._load_config_file(crown_ratio_file)
-            
-            if self.species_code in crown_data['species_coefficients']:
+            crown_data = _get_crown_ratio_data()
+
+            if crown_data and self.species_code in crown_data.get('species_coefficients', {}):
                 self.coefficients = crown_data['species_coefficients'][self.species_code]
-                self.equations = crown_data['equations']
-            else:
+                self.equations = crown_data.get('equations', {})
+            elif crown_data and 'LP' in crown_data.get('species_coefficients', {}):
                 # Fallback to default LP parameters if species not found
                 self.coefficients = crown_data['species_coefficients']['LP']
-                self.equations = crown_data['equations']
+                self.equations = crown_data.get('equations', {})
+            else:
+                # Fallback parameters if file not found or loading fails
+                self._load_fallback_parameters()
         except Exception:
             # Fallback parameters if file not found or loading fails
             self._load_fallback_parameters()

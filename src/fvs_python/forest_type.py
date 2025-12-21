@@ -16,12 +16,12 @@ Forest Type Groups (SN variant):
 
 Reference: FVS Southern variant documentation, Tables 4.7.1.3 and 4.7.1.4
 """
-import json
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from collections import Counter
 from dataclasses import dataclass
 from enum import Enum
+from .config_loader import load_coefficient_file
 
 
 class ForestTypeGroup(str, Enum):
@@ -118,12 +118,8 @@ SPECIES_TO_FOREST_TYPE: Dict[str, str] = {
 class ForestTypeClassifier:
     """Classifier for determining FVS forest type groups from stand composition."""
 
-    def __init__(self, cfg_dir: Optional[Path] = None):
+    def __init__(self):
         """Initialize the forest type classifier."""
-        if cfg_dir is None:
-            cfg_dir = Path(__file__).parent.parent.parent / 'cfg'
-        self.cfg_dir = cfg_dir
-
         # Build reverse mapping from FIA code to forest type group
         self._fia_to_group: Dict[int, str] = {}
         self._group_names: Dict[str, str] = {}
@@ -136,16 +132,13 @@ class ForestTypeClassifier:
         self._fortype_coefficients: Optional[Dict[str, Any]] = None
 
     def _load_fortype_coefficients(self) -> Dict[str, Any]:
-        """Load forest type coefficients from configuration file."""
+        """Load forest type coefficients using ConfigLoader (with caching)."""
         if self._fortype_coefficients is not None:
             return self._fortype_coefficients
 
-        coef_file = self.cfg_dir / 'fortype_coefficients_table_4_7_1_3.json'
-
-        if coef_file.exists():
-            with open(coef_file, 'r', encoding='utf-8') as f:
-                self._fortype_coefficients = json.load(f)
-        else:
+        try:
+            self._fortype_coefficients = load_coefficient_file('fortype_coefficients_table_4_7_1_3.json')
+        except FileNotFoundError:
             self._fortype_coefficients = {"species_coefficients": {}}
 
         return self._fortype_coefficients

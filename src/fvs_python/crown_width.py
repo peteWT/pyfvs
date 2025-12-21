@@ -2,28 +2,16 @@
 Crown width relationship functions for FVS-Python.
 Implements forest-grown and open-grown crown width equations from the FVS Southern variant.
 """
-import json
-import math
-from typing import Dict, Any, Optional, Tuple
-from pathlib import Path
-from .config_loader import get_config_loader
-
-# Module-level cache for crown width parameters (loaded once, reused)
-_CROWN_WIDTH_CACHE: Dict[str, Any] = {}
-_CROWN_WIDTH_DATA: Optional[Dict[str, Any]] = None
+from typing import Dict, Any, Tuple
+from .config_loader import load_coefficient_file
 
 
 def _get_crown_width_data() -> Dict[str, Any]:
-    """Get crown width data from cache or load from file once."""
-    global _CROWN_WIDTH_DATA
-    if _CROWN_WIDTH_DATA is None:
-        crown_width_file = Path(__file__).parent.parent.parent / "cfg" / "sn_crown_width_coefficients.json"
-        if crown_width_file.exists():
-            with open(crown_width_file, 'r') as f:
-                _CROWN_WIDTH_DATA = json.load(f)
-        else:
-            _CROWN_WIDTH_DATA = {}
-    return _CROWN_WIDTH_DATA
+    """Get crown width data using ConfigLoader (with caching)."""
+    try:
+        return load_coefficient_file('sn_crown_width_coefficients.json')
+    except FileNotFoundError:
+        return {}
 
 
 class CrownWidthModel:

@@ -1,10 +1,20 @@
 """
 Configuration loader for FVS-Python.
-Provides unified access to the new YAML and TOML configuration system.
+Provides unified access to YAML, TOML, and JSON configuration files.
+
+Supports:
+- YAML (.yaml, .yml) - species configurations, functional forms
+- TOML (.toml) - structured configuration with types
+- JSON (.json) - coefficient files (bark ratio, crown width, CCF, etc.)
+
+Features:
+- Coefficient file caching for performance
+- Unified API for all configuration types
 """
+import json
 import yaml
 from pathlib import Path
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, Optional
 import sys
 from .exceptions import ConfigurationError
 
@@ -24,18 +34,33 @@ except ImportError:
 
 
 class ConfigLoader:
-    """Loads and manages FVS configuration from the cfg/ directory."""
-    
+    """Loads and manages FVS configuration from the cfg/ directory.
+
+    Provides unified access to:
+    - Species configuration (YAML)
+    - Functional forms (YAML)
+    - Coefficient files (JSON) with caching
+
+    Attributes:
+        cfg_dir: Path to the configuration directory
+        species_config: Loaded species configuration
+        functional_forms: Loaded functional forms
+        site_index_params: Loaded site index parameters
+    """
+
     def __init__(self, cfg_dir: Path = None):
         """Initialize the configuration loader.
-        
+
         Args:
             cfg_dir: Path to the configuration directory. Defaults to ../cfg relative to this file.
         """
         if cfg_dir is None:
             cfg_dir = Path(__file__).parent.parent.parent / 'cfg'
         self.cfg_dir = cfg_dir
-        
+
+        # Cache for coefficient files (loaded once, reused)
+        self._coefficient_cache: Dict[str, Dict[str, Any]] = {}
+
         # Load main configuration files
         self._load_main_config()
     
@@ -74,11 +99,19 @@ class ConfigLoader:
                     )
                 with open(file_path, 'rb') as f:
                     return tomllib.load(f)
+            elif suffix == '.json':
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if data is None:
+                        raise InvalidDataError("JSON file", "file is empty or contains null")
+                    return data
             else:
                 raise ConfigurationError(f"Unsupported configuration file format: {suffix}. "
-                                       f"Supported formats: .yaml, .yml, .toml")
+                                       f"Supported formats: .yaml, .yml, .toml, .json")
         except yaml.YAMLError as e:
             raise InvalidDataError("YAML configuration", f"parsing error: {str(e)}") from e
+        except json.JSONDecodeError as e:
+            raise InvalidDataError("JSON configuration", f"parsing error: {str(e)}") from e
         except Exception as e:
             if isinstance(e, (FVSFileNotFoundError, ConfigurationError, InvalidDataError)):
                 raise
@@ -206,14 +239,47 @@ class ConfigLoader:
     
     def get_tree_params(self, species_code: str = 'LP') -> Dict[str, Any]:
         """Get parameters needed for Tree class.
-        
+
         Args:
             species_code: Species code (default: 'LP' for loblolly pine)
-            
+
         Returns:
             Dictionary with parameters for Tree class
         """
         return self.load_species_config(species_code)
+
+    def load_coefficient_file(self, filename: str) -> Dict[str, Any]:
+        """Load a JSON coefficient file with caching.
+
+        Coefficient files are loaded once and cached for performance.
+        This is the preferred method for loading JSON files like:
+        - sn_bark_ratio_coefficients.json
+        - sn_crown_width_coefficients.json
+        - sn_ccf_coefficients.json
+        - sn_diameter_growth_coefficients.json
+        - etc.
+
+        Args:
+            filename: Name of the coefficient file (e.g., 'sn_bark_ratio_coefficients.json')
+
+        Returns:
+            Dictionary containing coefficient data
+
+        Raises:
+            FileNotFoundError: If the file doesn't exist
+            ConfigurationError: If the file cannot be parsed
+        """
+        if filename not in self._coefficient_cache:
+            file_path = self.cfg_dir / filename
+            self._coefficient_cache[filename] = self._load_config_file(file_path)
+        return self._coefficient_cache[filename]
+
+    def clear_coefficient_cache(self) -> None:
+        """Clear the coefficient file cache.
+
+        Useful for testing or when configuration files may have changed.
+        """
+        self._coefficient_cache.clear()
     
     def save_config(self, config_data: Dict[str, Any], file_path: Union[str, Path]) -> None:
         """Save configuration data to file.
@@ -284,6 +350,18 @@ def load_stand_config(species_code: str = 'LP') -> Dict[str, Any]:
 def load_tree_config(species_code: str = 'LP') -> Dict[str, Any]:
     """Convenience function to load tree configuration."""
     return get_config_loader().get_tree_params(species_code)
+
+
+def load_coefficient_file(filename: str) -> Dict[str, Any]:
+    """Convenience function to load a JSON coefficient file with caching.
+
+    Args:
+        filename: Name of the coefficient file (e.g., 'sn_bark_ratio_coefficients.json')
+
+    Returns:
+        Dictionary containing coefficient data
+    """
+    return get_config_loader().load_coefficient_file(filename)
 
 def convert_yaml_to_toml(cfg_dir: Path = None, output_dir: Path = None) -> None:
     """Convert YAML configuration files to TOML format.

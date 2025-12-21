@@ -3,27 +3,16 @@ Bark ratio relationship functions for FVS-Python.
 Implements bark ratio equations from Clark (1991) for converting between
 diameter outside bark (DOB) and diameter inside bark (DIB).
 """
-import json
-import math
-from typing import Dict, Any, Optional
-from pathlib import Path
-from .config_loader import get_config_loader
-
-# Module-level cache for bark ratio parameters (loaded once)
-_BARK_RATIO_DATA: Optional[Dict[str, Any]] = None
+from typing import Dict, Any
+from .config_loader import get_config_loader, load_coefficient_file
 
 
 def _get_bark_ratio_data() -> Dict[str, Any]:
-    """Get bark ratio data from cache or load from file once."""
-    global _BARK_RATIO_DATA
-    if _BARK_RATIO_DATA is None:
-        bark_ratio_file = Path(__file__).parent.parent.parent / "docs" / "sn_bark_ratio_coefficients.json"
-        if bark_ratio_file.exists():
-            with open(bark_ratio_file, 'r') as f:
-                _BARK_RATIO_DATA = json.load(f)
-        else:
-            _BARK_RATIO_DATA = {}
-    return _BARK_RATIO_DATA
+    """Get bark ratio data using ConfigLoader (with caching)."""
+    try:
+        return load_coefficient_file('sn_bark_ratio_coefficients.json')
+    except FileNotFoundError:
+        return {}
 
 
 class BarkRatioModel:
@@ -248,19 +237,12 @@ def calculate_bark_ratio(species_code: str, dob: float) -> float:
 
 def get_all_species_coefficients() -> Dict[str, Dict[str, float]]:
     """Get bark ratio coefficients for all species.
-    
+
     Returns:
         Dictionary mapping species codes to their coefficients
     """
-    bark_ratio_file = Path(__file__).parent.parent.parent / "docs" / "sn_bark_ratio_coefficients.json"
-    
-    if bark_ratio_file.exists():
-        with open(bark_ratio_file, 'r') as f:
-            bark_data = json.load(f)
-        return bark_data['species_coefficients']
-    else:
-        # Return empty dict if file not found
-        return {}
+    bark_data = _get_bark_ratio_data()
+    return bark_data.get('species_coefficients', {})
 
 
 def compare_bark_ratios(species_codes: list, dob_range: list) -> Dict[str, Any]:

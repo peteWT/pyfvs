@@ -2,27 +2,16 @@
 Crown Competition Factor (CCF) calculation functions for FVS-Python.
 Implements CCF equations from the FVS Southern variant for individual tree and stand-level calculations.
 """
-import json
-import math
-from typing import Dict, Any, Optional, List, Tuple
-from pathlib import Path
-from .config_loader import get_config_loader
-
-# Module-level cache for CCF parameters (loaded once)
-_CCF_DATA: Optional[Dict[str, Any]] = None
+from typing import Dict, Any, Optional, List
+from .config_loader import load_coefficient_file
 
 
 def _get_ccf_data() -> Dict[str, Any]:
-    """Get CCF data from cache or load from file once."""
-    global _CCF_DATA
-    if _CCF_DATA is None:
-        ccf_file = Path(__file__).parent.parent.parent / "cfg" / "sn_crown_competition_factor.json"
-        if ccf_file.exists():
-            with open(ccf_file, 'r') as f:
-                _CCF_DATA = json.load(f)
-        else:
-            _CCF_DATA = {}
-    return _CCF_DATA
+    """Get CCF data using ConfigLoader (with caching)."""
+    try:
+        return load_coefficient_file('sn_crown_competition_factor.json')
+    except FileNotFoundError:
+        return {}
 
 
 class CrownCompetitionFactorModel:
