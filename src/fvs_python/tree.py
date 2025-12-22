@@ -421,8 +421,24 @@ class Tree:
         # Scale growth based on time_step (model is calibrated for 5-year growth)
         dds = math.exp(ln_dds) * (time_step / 5.0)
 
-        # Update DBH: D_new = sqrt(D_old^2 + DDS)
-        self.dbh = math.sqrt(self.dbh**2 + dds)
+        # FVS applies DDS to inside-bark diameter, then converts back to outside-bark
+        # From dgdriv.f: D=DBH(I)*BRATIO(...); DG=(SQRT(DSQ+DDS)-D)
+        # We must convert DBH to inside-bark, apply DDS, then convert back
+        from .bark_ratio import create_bark_ratio_model
+        bark_model = create_bark_ratio_model(self.species)
+
+        # Get bark ratio (DIB/DOB) for current tree
+        bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
+
+        # Convert to inside-bark diameter
+        dib_old = self.dbh * bark_ratio
+        dib_old_sq = dib_old * dib_old
+
+        # Apply DDS to inside-bark diameter
+        dib_new = math.sqrt(dib_old_sq + dds)
+
+        # Convert back to outside-bark (DBH)
+        self.dbh = dib_new / bark_ratio
 
         # Update height using FVS large-tree height growth model (Section 4.7.2)
         # HTG = POTHTG * (0.25 * HGMDCR + 0.75 * HGMDRH)
