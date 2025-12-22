@@ -1,0 +1,8 @@
+# Sphinx build output
+_build/
+
+# Auto-generated API documentation
+api/generated/
+
+# OS files
+.DS_Store

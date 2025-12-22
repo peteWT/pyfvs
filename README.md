@@ -727,6 +727,27 @@ All growth parameters are defined in `cfg/species/lp_loblolly_pine.yaml` and rel
 - **Validation**: Pydantic
 - **Testing**: pytest, pytest-cov
 
+## Documentation
+
+- **[Getting Started Guide](docs/getting_started.md)** - Installation and first simulation
+- **[Contributing Guide](CONTRIBUTING.md)** - Development setup and guidelines
+- **[CLAUDE.md](CLAUDE.md)** - Architecture details and known issues
+- **[API Reference](docs/api/index.rst)** - Module documentation (build with Sphinx)
+- **[Validation Spec](docs/FVS_PYTHON_VALIDATION_SPEC.md)** - Testing and validation requirements
+
+### Building API Documentation
+
+```bash
+# Install docs dependencies
+uv pip install -e ".[docs]"
+
+# Build HTML documentation
+cd docs && make html
+
+# Open in browser
+open _build/html/index.html
+```
+
 ---
 
 *This documentation reflects the current state of the FVS-Python project and serves as a comprehensive guide for understanding the codebase structure, data flow patterns, and usage.*
