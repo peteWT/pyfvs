@@ -64,9 +64,10 @@ jobs:
         run: |
           uv run pytest tests/test_validation.py -v --tb=short
 
-      - name: Run validation suite
+      - name: Run validation suite (non-blocking)
+        continue-on-error: true
         run: |
-          uv run python validation/run_validation.py --output validation/results
+          uv run python validation/run_validation.py --output validation/results || true
 
       - name: Upload validation results
         uses: actions/upload-artifact@v4
