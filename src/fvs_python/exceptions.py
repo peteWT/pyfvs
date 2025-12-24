@@ -86,32 +86,7 @@ class InvalidDataError(DataError):
         super().__init__(f"Invalid {data_description}: {reason}")
 
 
-# Error handling utilities
-def handle_growth_model_error(model_name: str, operation: str):
-    """Decorator for handling growth model errors.
-    
-    Args:
-        model_name: Name of the growth model
-        operation: Description of the operation
-    """
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except (ValueError, OverflowError, ZeroDivisionError) as e:
-                raise GrowthModelError(
-                    model_name, 
-                    f"{operation} failed with {type(e).__name__}: {str(e)}"
-                ) from e
-            except Exception as e:
-                raise GrowthModelError(
-                    model_name,
-                    f"Unexpected error in {operation}: {str(e)}"
-                ) from e
-        return wrapper
-    return decorator
-
-
+# Validation utilities
 def validate_positive(value: float, param_name: str) -> float:
     """Validate that a value is positive.
     

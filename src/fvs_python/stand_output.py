@@ -9,10 +9,10 @@ Output formats include:
 - Yield records (FVS_Summary format)
 - Stand stock tables
 - Export to CSV, JSON, Excel
+
+Note: Export functionality delegates to DataExporter for file I/O.
 """
 import math
-import csv
-import json
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import List, Dict, Any, Optional, TYPE_CHECKING
@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from .tree import Tree
     from .stand_metrics import StandMetricsCalculator
     from .competition import CompetitionCalculator
+    from .data_export import DataExporter
 
 
 @dataclass
@@ -110,7 +111,8 @@ class StandOutputGenerator:
         self,
         metrics_calculator: Optional['StandMetricsCalculator'] = None,
         competition_calculator: Optional['CompetitionCalculator'] = None,
-        default_species: str = 'LP'
+        default_species: str = 'LP',
+        output_dir: Optional[Path] = None
     ):
         """Initialize the output generator.
 
@@ -118,8 +120,11 @@ class StandOutputGenerator:
             metrics_calculator: StandMetricsCalculator instance
             competition_calculator: CompetitionCalculator instance
             default_species: Default species code
+            output_dir: Directory for exports (default: current directory)
         """
         self.default_species = default_species
+        self._output_dir = output_dir or Path('.')
+        self._exporter: Optional['DataExporter'] = None
 
         if metrics_calculator is None:
             from .stand_metrics import StandMetricsCalculator
@@ -132,6 +137,14 @@ class StandOutputGenerator:
             self._competition = CompetitionCalculator(self._metrics, default_species)
         else:
             self._competition = competition_calculator
+
+    @property
+    def exporter(self) -> 'DataExporter':
+        """Lazy-load DataExporter for file I/O."""
+        if self._exporter is None:
+            from .data_export import DataExporter
+            self._exporter = DataExporter(self._output_dir)
+        return self._exporter
 
     def generate_tree_list(
         self,
@@ -357,6 +370,9 @@ class StandOutputGenerator:
     ) -> str:
         """Export tree list to file.
 
+        Delegates to DataExporter for CSV/Excel I/O.
+        JSON uses FVS-specific format for compatibility with FVS tools.
+
         Args:
             tree_list: List of tree record dictionaries
             filepath: Output file path (extension added if not present)
@@ -366,24 +382,33 @@ class StandOutputGenerator:
         Returns:
             Path to exported file
         """
-        path = Path(filepath)
-        extensions = {'csv': '.csv', 'json': '.json', 'excel': '.xlsx'}
-        if path.suffix.lower() not in extensions.values():
-            path = path.with_suffix(extensions.get(format, '.csv'))
+        import json
+        import pandas as pd
 
-        # Create parent directory if needed
-        path.parent.mkdir(parents=True, exist_ok=True)
+        filename = Path(filepath).stem
 
         if format == 'csv':
-            self._export_csv(tree_list, path)
+            df = pd.DataFrame(tree_list)
+            return str(self.exporter.export_to_csv(df, filename, include_metadata=False))
         elif format == 'json':
-            self._export_tree_list_json(tree_list, path, stand_id)
+            # Use FVS-specific JSON format for compatibility
+            path = self._output_dir / f"{filename}.json"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, 'w') as f:
+                json.dump({
+                    'metadata': {
+                        'format': 'FVS_TreeList',
+                        'stand_id': stand_id,
+                        'record_count': len(tree_list)
+                    },
+                    'trees': tree_list
+                }, f, indent=2)
+            return str(path)
         elif format == 'excel':
-            self._export_excel(tree_list, path, 'TreeList')
+            df = pd.DataFrame(tree_list)
+            return str(self.exporter.export_to_excel(df, filename))
         else:
             raise ValueError(f"Unsupported format: {format}")
-
-        return str(path)
 
     def export_yield_table(
         self,
@@ -394,6 +419,9 @@ class StandOutputGenerator:
     ) -> str:
         """Export yield table to file.
 
+        Delegates to DataExporter for CSV/Excel I/O.
+        JSON uses FVS-specific format for compatibility with FVS tools.
+
         Args:
             yield_records: List of YieldRecord objects
             filepath: Output file path
@@ -403,25 +431,34 @@ class StandOutputGenerator:
         Returns:
             Path to exported file
         """
+        import json
+        import pandas as pd
+
         yield_dicts = [r.to_dict() for r in yield_records]
-
-        path = Path(filepath)
-        extensions = {'csv': '.csv', 'json': '.json', 'excel': '.xlsx'}
-        if path.suffix.lower() not in extensions.values():
-            path = path.with_suffix(extensions.get(format, '.csv'))
-
-        path.parent.mkdir(parents=True, exist_ok=True)
+        filename = Path(filepath).stem
 
         if format == 'csv':
-            self._export_csv(yield_dicts, path)
+            df = pd.DataFrame(yield_dicts)
+            return str(self.exporter.export_to_csv(df, filename, include_metadata=False))
         elif format == 'json':
-            self._export_yield_table_json(yield_dicts, path, stand_id)
+            # Use FVS-specific JSON format for compatibility
+            path = self._output_dir / f"{filename}.json"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, 'w') as f:
+                json.dump({
+                    'metadata': {
+                        'format': 'FVS_Summary',
+                        'stand_id': stand_id,
+                        'record_count': len(yield_dicts)
+                    },
+                    'yield_table': yield_dicts
+                }, f, indent=2)
+            return str(path)
         elif format == 'excel':
-            self._export_excel(yield_dicts, path, 'YieldTable')
+            df = pd.DataFrame(yield_dicts)
+            return str(self.exporter.export_to_excel(df, filename))
         else:
             raise ValueError(f"Unsupported format: {format}")
-
-        return str(path)
 
     def export_stock_table(
         self,
@@ -431,6 +468,9 @@ class StandOutputGenerator:
     ) -> str:
         """Export stock table to file.
 
+        Delegates to DataExporter for CSV/Excel I/O.
+        JSON uses FVS-specific format for consistency.
+
         Args:
             stock_table: List of stock table dictionaries
             filepath: Output file path
@@ -439,93 +479,32 @@ class StandOutputGenerator:
         Returns:
             Path to exported file
         """
-        path = Path(filepath)
-        extensions = {'csv': '.csv', 'json': '.json', 'excel': '.xlsx'}
-        if path.suffix.lower() not in extensions.values():
-            path = path.with_suffix(extensions.get(format, '.csv'))
+        import json
+        import pandas as pd
 
-        path.parent.mkdir(parents=True, exist_ok=True)
+        filename = Path(filepath).stem
 
         if format == 'csv':
-            self._export_csv(stock_table, path)
+            df = pd.DataFrame(stock_table)
+            return str(self.exporter.export_to_csv(df, filename, include_metadata=False))
         elif format == 'json':
-            self._export_json(stock_table, path, 'stock_table')
+            # Use FVS-specific JSON format for consistency
+            path = self._output_dir / f"{filename}.json"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, 'w') as f:
+                json.dump({
+                    'metadata': {
+                        'format': 'FVS_Python',
+                        'record_count': len(stock_table)
+                    },
+                    'stock_table': stock_table
+                }, f, indent=2)
+            return str(path)
         elif format == 'excel':
-            self._export_excel(stock_table, path, 'StockTable')
+            df = pd.DataFrame(stock_table)
+            return str(self.exporter.export_to_excel(df, filename))
         else:
             raise ValueError(f"Unsupported format: {format}")
-
-        return str(path)
-
-    def _export_csv(self, data: List[Dict], path: Path) -> None:
-        """Export data to CSV file."""
-        if not data:
-            path.touch()
-            return
-
-        try:
-            import pandas as pd
-            df = pd.DataFrame(data)
-            df.to_csv(path, index=False)
-        except ImportError:
-            with open(path, 'w', newline='') as f:
-                writer = csv.DictWriter(f, fieldnames=data[0].keys())
-                writer.writeheader()
-                writer.writerows(data)
-
-    def _export_json(self, data: List[Dict], path: Path, data_key: str) -> None:
-        """Export data to JSON file."""
-        with open(path, 'w') as f:
-            json.dump({
-                'metadata': {
-                    'format': 'FVS_Python',
-                    'record_count': len(data)
-                },
-                data_key: data
-            }, f, indent=2)
-
-    def _export_tree_list_json(
-        self,
-        data: List[Dict],
-        path: Path,
-        stand_id: str
-    ) -> None:
-        """Export tree list to JSON with FVS_TreeList format."""
-        with open(path, 'w') as f:
-            json.dump({
-                'metadata': {
-                    'format': 'FVS_TreeList',
-                    'stand_id': stand_id,
-                    'record_count': len(data)
-                },
-                'trees': data
-            }, f, indent=2)
-
-    def _export_yield_table_json(
-        self,
-        data: List[Dict],
-        path: Path,
-        stand_id: str
-    ) -> None:
-        """Export yield table to JSON with FVS_Summary format."""
-        with open(path, 'w') as f:
-            json.dump({
-                'metadata': {
-                    'format': 'FVS_Summary',
-                    'stand_id': stand_id,
-                    'record_count': len(data)
-                },
-                'yield_table': data
-            }, f, indent=2)
-
-    def _export_excel(self, data: List[Dict], path: Path, sheet_name: str) -> None:
-        """Export data to Excel file."""
-        try:
-            import pandas as pd
-            df = pd.DataFrame(data)
-            df.to_excel(path, index=False, sheet_name=sheet_name)
-        except ImportError:
-            raise ImportError("pandas and openpyxl required for Excel export")
 
 
 # Module-level convenience functions
