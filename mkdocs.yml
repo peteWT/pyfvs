@@ -1,0 +1,87 @@
+site_name: PyFVS Documentation
+site_description: Python implementation of the Forest Vegetation Simulator for southern pine growth modeling
+site_author: PyFVS Contributors
+site_url: https://mihiarc.github.io/pyfvs/
+repo_url: https://github.com/mihiarc/pyfvs
+repo_name: mihiarc/pyfvs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: green
+      accent: light green
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: numpy
+            docstring_section_style: spacy
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            members_order: source
+            merge_init_into_class: true
+            show_signature_annotations: true
+            separate_signature: true
+            signature_crossrefs: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guide:
+    - Overview: guides/index.md
+    - Growth Models: guides/growth-models.md
+    - Harvest Operations: guides/harvesting.md
+    - Ecological Units: guides/ecological-units.md
+  - API Reference:
+    - Overview: api/index.md
+    - Core:
+      - Stand: api/stand.md
+      - Tree: api/tree.md
+      - SimulationEngine: api/simulation-engine.md
+  - Examples: examples.md

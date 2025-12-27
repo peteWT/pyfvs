@@ -53,8 +53,9 @@ dev = [
     "flake8>=4.0.0",
     "mypy>=0.900",
     "pre-commit>=2.15.0",
-    "sphinx>=4.0.0",
-    "sphinx-rtd-theme>=1.0.0",
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.24.0",
 ]
 test = [
     "pytest>=6.0.0",
@@ -62,9 +63,10 @@ test = [
     "pytest-xdist>=2.0.0",
 ]
 docs = [
-    "sphinx>=4.0.0",
-    "sphinx-rtd-theme>=1.0.0",
-    "myst-parser>=0.15.0",
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.24.0",
+    "pymdown-extensions>=10.7",
 ]
 
 [project.urls]
