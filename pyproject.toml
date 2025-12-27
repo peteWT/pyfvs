@@ -97,7 +97,7 @@ docs = [
 ]
 
 [project.urls]
-Homepage = "https://fiatools.org"
+Homepage = "https://fiatools.org/tools/pyfvs/"
 Repository = "https://github.com/mihiarc/pyfvs"
 Documentation = "https://mihiarc.github.io/pyfvs/"
 "Source Code" = "https://github.com/mihiarc/pyfvs"
