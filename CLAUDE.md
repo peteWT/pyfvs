@@ -28,11 +28,11 @@ uv run black src/fvs_python tests
 uv run flake8 src/fvs_python tests
 uv run mypy src/fvs_python
 
-# Run simulation via CLI
-uv run pyfvs simulate --species LP --tpa 500 --site-index 70 --years 50
+# Run simulation via API
+uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(500, 70, 'LP'); s.grow(50); print(s.get_metrics())"
 
-# Run main module directly
-uv run python -m fvs_python.main
+# Run example simulation
+uv run python -m pyfvs.main
 ```
 
 ## Architecture Overview

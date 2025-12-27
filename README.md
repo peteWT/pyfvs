@@ -54,19 +54,6 @@ metrics = stand.get_metrics()
 print(f"Final volume: {metrics['volume']:.0f} ft³/acre")
 ```
 
-## Command Line
-
-```bash
-# Basic simulation
-pyfvs-simulate run
-
-# Custom parameters
-pyfvs-simulate run --years 40 --species LP --site-index 80 --trees-per-acre 600
-
-# Generate yield tables
-pyfvs-simulate yield-table --species LP --site-index 60,70,80
-```
-
 ## Growth Models
 
 pyFVS implements individual tree growth models from FVS documentation:

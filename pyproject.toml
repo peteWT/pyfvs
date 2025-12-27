@@ -73,10 +73,6 @@ Repository = "https://github.com/mihiarc/pyfvs"
 Documentation = "https://github.com/mihiarc/pyfvs/docs"
 "Bug Tracker" = "https://github.com/mihiarc/pyfvs/issues"
 
-[project.scripts]
-pyfvs = "pyfvs.cli:main"
-pyfvs-simulate = "pyfvs.cli:main"
-
 [tool.setuptools]
 package-dir = {"" = "src"}
 
