@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyfvs-fia"
+name = "fvs-python"
 version = "0.2.3"
 description = "Python implementation of the Forest Vegetation Simulator - Part of the FIA Python Ecosystem"
 readme = "README.md"
