@@ -62,13 +62,15 @@ console = Console()
 def load_fia_plot_data(
     db_path: str,
     state_fips: int,
-    plot_index: int = 0
-) -> tuple[pl.DataFrame, pl.DataFrame, int]:
+    min_trees: int = 5,
+    target_species: int = 131
+) -> tuple[pl.DataFrame, pl.DataFrame, str]:
     """
-    Load tree and condition data for a specific plot from FIA database.
+    Load tree and condition data for a pine-dominated plot from FIA database.
 
     This function demonstrates the PyFIA data access pattern for extracting
-    plot-level data suitable for FVS simulation.
+    plot-level data suitable for FVS simulation. It automatically selects
+    a plot with good representation of the target species.
 
     Parameters
     ----------
@@ -76,12 +78,14 @@ def load_fia_plot_data(
         Path to FIA DuckDB database (e.g., "~/.pyfia/data/nc/nc.duckdb")
     state_fips : int
         State FIPS code (e.g., 37 for NC, 13 for GA, 45 for SC)
-    plot_index : int
-        Index of plot to select from available plots (0 = first plot)
+    min_trees : int
+        Minimum number of target species trees required
+    target_species : int
+        FIA species code to target (131=loblolly, 110=shortleaf, 121=longleaf)
 
     Returns
     -------
-    tuple[pl.DataFrame, pl.DataFrame, int]
+    tuple[pl.DataFrame, pl.DataFrame, str]
         - tree_df: Tree-level data for the selected plot
         - cond_df: Condition-level data for the selected plot
         - plot_cn: Control number of the selected plot
@@ -96,11 +100,13 @@ def load_fia_plot_data(
     >>> tree_df, cond_df, plot_cn = load_fia_plot_data(
     ...     "~/.pyfia/data/nc/nc.duckdb",
     ...     state_fips=37,
-    ...     plot_index=0
+    ...     target_species=131  # Loblolly pine
     ... )
     """
     # Import PyFIA (only if using real database)
     try:
+        import sys
+        sys.path.insert(0, str(Path.home() / "fiatools/pyfia/src"))
         from pyfia import FIA
     except ImportError:
         raise ImportError(
@@ -113,68 +119,78 @@ def load_fia_plot_data(
 
     console.print(f"[cyan]Loading FIA database: {db_path}[/cyan]")
 
-    # Initialize FIA database connection
-    db = FIA(db_path)
+    # Initialize FIA database connection and load data
+    with FIA(db_path) as db:
+        # Clip to state and most recent inventory
+        db.clip_by_state(state_fips)
+        db.clip_most_recent(eval_type="VOL")
 
-    # Clip to state and most recent inventory
-    db.clip_by_state(state_fips)
-    db.clip_most_recent(eval_type="VOL")
+        # Load PLOT table first (required for EVALID filtering)
+        db.load_table("PLOT")
 
-    # Load required tables
-    # PLOT table is needed first for EVALID filtering in subsequent queries
-    db.load_table("PLOT")
+        # Get all trees with required columns
+        trees = db.get_trees(columns=[
+            "CN", "PLT_CN", "SUBP", "TREE", "CONDID",
+            "SPCD", "DIA", "HT", "CR",
+            "TPA_UNADJ", "STATUSCD", "TOTAGE"
+        ])
 
-    # Get plot locations to select a specific plot
-    plots = db.get_plots(columns=["CN", "LAT", "LON", "INVYR", "COUNTYCD"])
-    console.print(f"[green]Found {len(plots)} plots in database[/green]")
+        # Get all conditions
+        conds = db.get_conditions(columns=[
+            "CN", "PLT_CN", "CONDID",
+            "SICOND", "SIBASE", "SISP",
+            "FORTYPCD", "STDAGE", "STDSZCD",
+            "SITECLCD", "OWNGRPCD",
+            "CONDPROP_UNADJ", "COND_STATUS_CD"
+        ])
 
-    # Select a plot by index
-    if plot_index >= len(plots):
-        console.print(f"[yellow]Warning: plot_index {plot_index} exceeds available plots, using 0[/yellow]")
-        plot_index = 0
+    console.print(f"[green]Loaded {len(trees):,} trees from {trees['PLT_CN'].n_unique():,} plots[/green]")
 
-    selected_plot_cn = plots["CN"][plot_index]
+    # Find plots dominated by target species
+    species_name = {131: "loblolly pine", 110: "shortleaf pine", 121: "longleaf pine", 111: "slash pine"}
+    console.print(f"[cyan]Finding plots with {min_trees}+ {species_name.get(target_species, 'target')} trees...[/cyan]")
+
+    good_plots = (
+        trees
+        .filter(pl.col("SPCD") == target_species)
+        .filter(pl.col("STATUSCD") == 1)  # Live trees only
+        .filter(pl.col("DIA") >= 5.0)  # Merchantable size
+        .group_by("PLT_CN")
+        .agg([
+            pl.len().alias("n_target"),
+            pl.col("DIA").mean().alias("mean_dia"),
+            pl.col("TPA_UNADJ").sum().alias("total_tpa")
+        ])
+        .filter(pl.col("n_target") >= min_trees)
+        .sort("n_target", descending=True)
+    )
+
+    if len(good_plots) == 0:
+        raise ValueError(f"No plots found with {min_trees}+ {species_name.get(target_species, 'target')} trees")
+
+    console.print(f"[green]Found {len(good_plots):,} suitable plots[/green]")
+
+    # Select the plot with most target species trees
+    selected_plot_cn = good_plots["PLT_CN"][0]
     console.print(f"[cyan]Selected plot CN: {selected_plot_cn}[/cyan]")
-
-    # Get tree data for the selected plot
-    # Required columns for Stand.from_fia_data():
-    #   - SPCD: FIA species code (integer)
-    #   - DIA: Diameter at breast height (inches)
-    #   - HT: Total height (feet)
-    #   - TPA_UNADJ: Unadjusted trees per acre
-    # Optional columns:
-    #   - CR: Crown ratio (percentage, 0-100)
-    #   - CONDID: Condition ID (for multi-condition plots)
-    #   - STATUSCD: Tree status (1=live, 2=dead)
-    #   - BHAGE/TOTAGE: Tree age
-    trees = db.get_trees(columns=[
-        "CN", "PLT_CN", "SUBP", "TREE", "CONDID",
-        "SPCD", "DIA", "HT", "CR",
-        "TPA_UNADJ", "STATUSCD",
-        "DRYBIO_AG", "VOLCFNET"
-    ])
 
     # Filter to selected plot
     tree_df = trees.filter(pl.col("PLT_CN") == selected_plot_cn)
-    console.print(f"[green]Found {len(tree_df)} trees in selected plot[/green]")
-
-    # Get condition data for site index and forest type
-    # Key columns:
-    #   - SICOND: Site index for the condition (feet at base age)
-    #   - FORTYPCD: FIA forest type code
-    #   - STDAGE: Stand age
-    #   - ECOSUBCD: Ecological subsection code
-    conds = db.get_conditions(columns=[
-        "CN", "PLT_CN", "CONDID",
-        "SICOND", "SIBASE", "SISP",
-        "FORTYPCD", "STDAGE", "STDSZCD",
-        "SITECLCD", "OWNGRPCD", "ECOSUBCD",
-        "CONDPROP_UNADJ", "COND_STATUS_CD"
-    ])
-
-    # Filter to selected plot
     cond_df = conds.filter(pl.col("PLT_CN") == selected_plot_cn)
-    console.print(f"[green]Found {len(cond_df)} conditions in selected plot[/green]")
+
+    console.print(f"[green]Plot has {len(tree_df)} trees in {len(cond_df)} condition(s)[/green]")
+
+    # Show species composition
+    species_summary = (
+        tree_df
+        .filter(pl.col("STATUSCD") == 1)
+        .group_by("SPCD")
+        .agg([pl.len().alias("count")])
+        .sort("count", descending=True)
+    )
+    console.print("[cyan]Species composition:[/cyan]")
+    for row in species_summary.head(5).iter_rows(named=True):
+        console.print(f"  SPCD {int(row['SPCD'])}: {row['count']} trees")
 
     return tree_df, cond_df, selected_plot_cn
 

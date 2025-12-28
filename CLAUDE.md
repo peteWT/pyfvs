@@ -136,6 +136,7 @@ config_loader.py
     - Removed `_add_excel_charts()` stub and `include_charts` parameter - empty placeholder
     - Removed unused validation functions (`validate_positive`, `validate_proportion`, `validate_range`)
     - Refactored `StandOutputGenerator` to delegate CSV/Excel exports to `DataExporter` (eliminated duplication)
+21. **Config File Packaging** - Fixed critical packaging bug where cfg/ directory was outside the package, causing FileNotFoundError when installed via pip. Moved cfg/ into `src/pyfvs/cfg/` and updated `config_loader.py` to use `Path(__file__).parent / 'cfg'`. Updated pyproject.toml to include JSON files in package data.
 
 ## Ecological Unit Effects on Growth
 

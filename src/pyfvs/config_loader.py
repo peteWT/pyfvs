@@ -55,7 +55,8 @@ class ConfigLoader:
             cfg_dir: Path to the configuration directory. Defaults to ../cfg relative to this file.
         """
         if cfg_dir is None:
-            cfg_dir = Path(__file__).parent.parent.parent / 'cfg'
+            # cfg/ directory is now inside the package
+            cfg_dir = Path(__file__).parent / 'cfg'
         self.cfg_dir = cfg_dir
 
         # Cache for coefficient files (loaded once, reused)
