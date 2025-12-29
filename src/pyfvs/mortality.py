@@ -13,7 +13,6 @@ Implements FVS mortality equations:
 import math
 import random
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:

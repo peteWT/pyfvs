@@ -45,6 +45,7 @@ from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import polars as pl
+    from .tree import Tree
 
 logger = logging.getLogger(__name__)
 

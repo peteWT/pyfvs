@@ -3,11 +3,8 @@ Large tree height growth functions for FVS-Python.
 Implements the large tree height growth model from the FVS Southern variant
 following the approach of Wensel and others (1987).
 """
-import json
 import math
-from typing import Dict, Any, Optional, Tuple
-from pathlib import Path
-from .config_loader import get_config_loader
+from typing import Dict, Any, Optional
 
 
 class LargeTreeHeightGrowthModel:

@@ -3,11 +3,9 @@
 Main entry point for FVS-Python simulations.
 Uses the unified simulation engine for all operations.
 """
-import logging
 from pathlib import Path
-from datetime import datetime
 
-from .simulation_engine import SimulationEngine, run_simulation, generate_yield_table
+from .simulation_engine import SimulationEngine
 
 
 def main():
@@ -32,7 +30,7 @@ def main():
         time_step=5
     )
     
-    print(f"   Simulation complete. Final metrics:")
+    print("   Simulation complete. Final metrics:")
     final = results.iloc[-1]
     print(f"   - Age: {final['age']} years")
     print(f"   - Trees/acre: {final['tpa']:.0f}")

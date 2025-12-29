@@ -16,7 +16,6 @@ Forest Type Groups (SN variant):
 
 Reference: FVS Southern variant documentation, Tables 4.7.1.3 and 4.7.1.4
 """
-from pathlib import Path
 from typing import Dict, List, Optional, Any
 from collections import Counter
 from dataclasses import dataclass

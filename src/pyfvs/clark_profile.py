@@ -8,8 +8,7 @@ Reference:
     Clark, A., Souter, R.A., & Schlaegel, B.E. (1991). Stem Profile Equations
     for Southern Tree Species. Research Paper SE-282. USDA Forest Service.
 """
-import math
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple
 from dataclasses import dataclass
 
 

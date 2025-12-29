@@ -12,8 +12,8 @@ Harvest operations include:
 - Selection harvest (targeted basal area reduction)
 """
 import math
-from dataclasses import dataclass, field
-from typing import List, Dict, Any, Optional, Tuple, TYPE_CHECKING
+from dataclasses import dataclass
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .tree import Tree

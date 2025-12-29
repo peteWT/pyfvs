@@ -9,7 +9,6 @@ The system uses two coefficient tables:
 - Table 4.7.1.6: For lowland ecounits (231L, 232, 234, 255, 411)
 """
 import json
-from pathlib import Path
 from typing import Dict, Any, Optional, Set
 from .config_loader import get_config_loader
 from .exceptions import ConfigurationError

@@ -4,7 +4,7 @@ Implements bark ratio equations from Clark (1991) for converting between
 diameter outside bark (DOB) and diameter inside bark (DIB).
 """
 from typing import Dict, Any
-from .config_loader import get_config_loader, load_coefficient_file
+from .config_loader import load_coefficient_file
 
 
 def _get_bark_ratio_data() -> Dict[str, Any]:

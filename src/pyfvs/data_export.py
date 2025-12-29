@@ -49,7 +49,7 @@ class DataExporter:
         with open(filepath, 'w', newline='') as f:
             if include_metadata:
                 # Write metadata header
-                f.write(f"# FVS-Python Export\n")
+                f.write("# FVS-Python Export\n")
                 f.write(f"# Generated: {datetime.now().isoformat()}\n")
                 f.write(f"# Records: {len(df)}\n")
                 f.write(f"# Columns: {', '.join(df.columns)}\n")

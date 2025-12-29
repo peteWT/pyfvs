@@ -13,10 +13,11 @@ Implements FVS Southern variant stand-level calculations including:
 - Ecological unit classification for regional growth effects
 - Harvest tracking (thinning, clearcut) with volume accounting
 """
-import math
 import random
-from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import polars as pl
 
 from .tree import Tree
 from .config_loader import load_stand_config
@@ -521,9 +522,8 @@ class Stand:
         Args:
             years: Number of years to grow (should be <= 5 for best accuracy)
         """
-        # Store initial metrics
+        # Store initial tree count for logging
         initial_count = len(self.trees)
-        initial_metrics = self.get_metrics() if self.trees else None
 
         # Update stand age
         self.age += years
@@ -566,7 +566,6 @@ class Stand:
         mortality_count = self._apply_mortality(cycle_length=years)
 
         # Log growth summary
-        final_metrics = self.get_metrics()
         self.logger.debug(
             f"Grew {years} years: TPA {initial_count}->{len(self.trees)}, "
             f"mortality={mortality_count}"
@@ -905,7 +904,6 @@ class Stand:
 
         # Collect initial metrics
         prev_volume = working_stand.get_metrics()['volume']
-        initial_tpa = len(working_stand.trees)
 
         # Record initial state
         initial_record = working_stand.get_yield_record(

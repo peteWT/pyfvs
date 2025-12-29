@@ -2,7 +2,7 @@
 Parameter validation for FVS-Python growth models.
 Ensures all inputs are within valid ranges based on FVS documentation.
 """
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional
 
 
 class ParameterValidator:

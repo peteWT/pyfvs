@@ -14,7 +14,7 @@ Features:
 import json
 import yaml
 from pathlib import Path
-from typing import Dict, Any, Union, Optional
+from typing import Dict, Any, Union
 import sys
 from .exceptions import ConfigurationError
 

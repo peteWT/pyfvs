@@ -2,7 +2,7 @@
 Crown width relationship functions for FVS-Python.
 Implements forest-grown and open-grown crown width equations from the FVS Southern variant.
 """
-from typing import Dict, Any, Tuple
+from typing import Dict, Any
 from .config_loader import load_coefficient_file
 
 
@@ -118,11 +118,7 @@ class CrownWidthModel:
             return 0.0
         
         coeffs = self.forest_grown
-        equation_num = coeffs.get('equation_number', '13101')
-        
-        # Get equation type from first 3 digits
-        eq_type = equation_num[:3]
-        
+
         # Extract coefficients
         a1 = coeffs.get('a1', 0.0)
         a2 = coeffs.get('a2', 0.0)
@@ -202,16 +198,12 @@ class CrownWidthModel:
         
         coeffs = self.open_grown
         equation_num = coeffs.get('equation_number', '13105')
-        
-        # Get equation type from first 3 digits
-        eq_type = equation_num[:3]
-        
+        eq_type = equation_num[:3]  # Get equation type from first 3 digits
+
         # Extract coefficients
         a1 = coeffs.get('a1', 0.0)
         a2 = coeffs.get('a2', 0.0)
         a3 = coeffs.get('a3')
-        a4 = coeffs.get('a4')
-        a5 = coeffs.get('a5')
         
         # Determine equation type and calculate OCW
         # Check if it's equation 4.4.5 (Smith et al. 1992) - has specific equation numbers ending in 61

@@ -3,10 +3,6 @@ Tree class representing an individual tree.
 Implements both small-tree and large-tree growth models.
 """
 import math
-import yaml
-import numpy as np
-from scipy.stats import weibull_min
-from pathlib import Path
 from typing import Dict, Any, Optional
 from .validation import ParameterValidator
 from .logging_config import get_logger, log_model_transition
@@ -125,15 +121,12 @@ class Tree:
         # Use smoothstep function for smoother transition (reduces discontinuities)
         if initial_dbh < xmin:
             weight = 0.0
-            model_used = "small_tree"
         elif initial_dbh > xmax:
             weight = 1.0
-            model_used = "large_tree"
         else:
             # Smoothstep function: 3t² - 2t³ where t = (dbh - xmin) / (xmax - xmin)
             t = (initial_dbh - xmin) / (xmax - xmin)
             weight = t * t * (3.0 - 2.0 * t)
-            model_used = "blended"
             
         # Log model transition if crossing threshold
         if initial_dbh < xmin and self.dbh >= xmin:

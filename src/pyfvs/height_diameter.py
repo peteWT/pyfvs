@@ -3,7 +3,7 @@ Height-diameter relationship functions for FVS-Python.
 Implements Curtis-Arney and Wykoff models for predicting tree height from diameter.
 """
 import math
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from .config_loader import get_config_loader
 
 # Module-level cache for height-diameter parameters by species

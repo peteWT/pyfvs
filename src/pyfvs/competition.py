@@ -12,7 +12,7 @@ Competition metrics include:
 """
 import math
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, TYPE_CHECKING
+from typing import List, Dict, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .tree import Tree
