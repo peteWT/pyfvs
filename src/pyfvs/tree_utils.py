@@ -10,6 +10,12 @@ from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
     from .tree import Tree
 
+__all__ = [
+    'BASAL_AREA_FACTOR',
+    'calculate_tree_basal_area',
+    'calculate_stand_basal_area',
+]
+
 
 # Basal area constant: pi / 576 (converts DBH in inches to BA in square feet)
 # Formula: BA = pi * (DBH/24)^2 = pi * DBH^2 / 576

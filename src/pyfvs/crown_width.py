@@ -3,7 +3,19 @@ Crown width relationship functions for FVS-Python.
 Implements forest-grown and open-grown crown width equations from the FVS Southern variant.
 """
 from typing import Dict, Any
+
 from .config_loader import load_coefficient_file
+
+__all__ = [
+    'CrownWidthModel',
+    'create_crown_width_model',
+    'calculate_forest_crown_width',
+    'calculate_open_crown_width',
+    'calculate_ccf_contribution',
+    'calculate_hopkins_index',
+    'compare_crown_width_models',
+    'validate_crown_width_implementation',
+]
 
 
 def _get_crown_width_data() -> Dict[str, Any]:

@@ -18,10 +18,17 @@ import math
 from typing import List, Dict, Optional, TYPE_CHECKING
 
 from .config_loader import load_coefficient_file
-from .tree_utils import calculate_tree_basal_area, calculate_stand_basal_area as calculate_util_stand_basal_area
+from .tree_utils import calculate_tree_basal_area, calculate_stand_basal_area
 
 if TYPE_CHECKING:
     from .tree import Tree
+
+__all__ = [
+    'StandMetricsCalculator',
+    'get_metrics_calculator',
+    'calculate_stand_ccf',
+    'calculate_stand_sdi',
+]
 
 
 class StandMetricsCalculator:
@@ -271,7 +278,7 @@ class StandMetricsCalculator:
         if not trees:
             return 0.0
 
-        return calculate_util_stand_basal_area(trees)
+        return calculate_stand_basal_area(trees)
 
     def calculate_sdi(self, trees: List['Tree']) -> float:
         """Calculate Stand Density Index using Reineke's equation.
@@ -416,17 +423,3 @@ def calculate_stand_sdi(trees: List['Tree']) -> float:
         Stand Density Index
     """
     return get_metrics_calculator().calculate_sdi(trees)
-
-
-def calculate_stand_basal_area(trees: List['Tree']) -> float:
-    """Calculate basal area for a list of trees.
-
-    Convenience function that uses the default calculator.
-
-    Args:
-        trees: List of Tree objects
-
-    Returns:
-        Basal area in sq ft/acre
-    """
-    return get_metrics_calculator().calculate_basal_area(trees)

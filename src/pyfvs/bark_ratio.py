@@ -4,7 +4,18 @@ Implements bark ratio equations from Clark (1991) for converting between
 diameter outside bark (DOB) and diameter inside bark (DIB).
 """
 from typing import Dict, Any
+
 from .config_loader import load_coefficient_file
+
+__all__ = [
+    'BarkRatioModel',
+    'create_bark_ratio_model',
+    'calculate_dib_from_dob',
+    'calculate_bark_ratio',
+    'get_all_species_coefficients',
+    'compare_bark_ratios',
+    'validate_bark_ratio_implementation',
+]
 
 
 def _get_bark_ratio_data() -> Dict[str, Any]:

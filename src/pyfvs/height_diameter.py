@@ -4,7 +4,16 @@ Implements Curtis-Arney and Wykoff models for predicting tree height from diamet
 """
 import math
 from typing import Dict, Any
+
 from .config_loader import get_config_loader
+
+__all__ = [
+    'HeightDiameterModel',
+    'create_height_diameter_model',
+    'curtis_arney_height',
+    'wykoff_height',
+    'compare_models',
+]
 
 # Module-level cache for height-diameter parameters by species
 _HD_PARAMS_CACHE: Dict[str, Dict[str, Any]] = {}

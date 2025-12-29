@@ -4,8 +4,12 @@ Implements both small-tree and large-tree growth models.
 """
 import math
 from typing import Dict, Any, Optional
+
 from .validation import ParameterValidator
 from .logging_config import get_logger, log_model_transition
+
+__all__ = ['Tree']
+
 
 class Tree:
     def __init__(self, dbh, height, species="LP", age=0, crown_ratio=0.85):

@@ -14,6 +14,8 @@ from .logging_config import (
 from .growth_plots import plot_stand_trajectories, plot_mortality_patterns
 from .data_export import DataExporter
 
+__all__ = ['SimulationEngine']
+
 
 class SimulationEngine:
     """Unified engine for running forest growth simulations."""
@@ -316,59 +318,3 @@ class SimulationEngine:
         self.exporter.export_scenario_comparison(comparison_df, format='csv', filename='scenario_comparison')
 
         return comparison_df
-
-
-# Convenience functions for backward compatibility
-def run_simulation(species: str = 'LP', 
-                  trees_per_acre: int = 500,
-                  site_index: float = 70,
-                  years: int = 50,
-                  time_step: int = 5,
-                  output_dir: Optional[str] = None) -> pd.DataFrame:
-    """Run a stand simulation using the unified engine.
-    
-    Args:
-        species: Species code
-        trees_per_acre: Initial planting density
-        site_index: Site index
-        years: Simulation length
-        time_step: Growth period length
-        output_dir: Output directory
-        
-    Returns:
-        DataFrame with results
-    """
-    engine = SimulationEngine(output_dir)
-    return engine.simulate_stand(
-        species=species,
-        trees_per_acre=trees_per_acre,
-        site_index=site_index,
-        years=years,
-        time_step=time_step
-    )
-
-
-def generate_yield_table(species: Union[str, List[str]] = 'LP',
-                       site_indices: List[float] = [60, 70, 80],
-                       planting_densities: List[int] = [300, 500, 700],
-                       years: int = 50,
-                       output_dir: Optional[str] = None) -> pd.DataFrame:
-    """Generate yield tables using the unified engine.
-    
-    Args:
-        species: Species code(s)
-        site_indices: Site indices to test
-        planting_densities: Initial TPAs to test
-        years: Simulation length
-        output_dir: Output directory
-        
-    Returns:
-        DataFrame with yield table
-    """
-    engine = SimulationEngine(output_dir)
-    return engine.simulate_yield_table(
-        species=species,
-        site_indices=site_indices,
-        planting_densities=planting_densities,
-        years=years
-    )
