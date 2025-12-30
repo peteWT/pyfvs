@@ -106,5 +106,5 @@ PyFVS is part of the [FIAtools Python ecosystem](https://fiatools.org) - a unifi
 ---
 
 <div align="center">
-<strong><a href="https://fiatools.org">fiatools.org</a></strong> - Python Ecosystem for Forest Inventory Analysis
+<strong><a href="https://fiatools.org">fiatools.org</a></strong> - Python Ecosystem for Forest Inventory Applications
 </div>

@@ -353,6 +353,7 @@ class TestYieldTableExamples:
         display_df.columns = ['age', 'tpa', 'qmd', 'volume']
         print(display_df.to_string(index=False))
 
+    @pytest.mark.slow
     def test_yield_table_multi_scenario(self):
         """
         Test: Single Species Yield Table (examples.md lines 88-115)
@@ -494,6 +495,7 @@ class TestSpeciesComparisonExample:
         self.output_dir = setup_test_output() / 'documentation_examples'
         self.output_dir.mkdir(exist_ok=True)
 
+    @pytest.mark.slow
     def test_species_comparison(self):
         """
         Test: Species Comparison (examples.md lines 136-155)
@@ -772,19 +774,19 @@ def generate_documentation_outputs():
 
     # Run each example and capture output
     examples = [
-        ("Simple Stand Growth", test_simple_stand_growth_standalone),
-        ("Basic Stand with Basal Area", test_basic_stand_with_basal_area_standalone),
-        ("Ecounit Simulation", test_ecounit_simulation_standalone),
-        ("Thinning from Below", test_thinning_from_below_standalone),
-        ("Single Thin Scenario", test_single_thin_scenario_standalone),
-        ("Multiple Thins", test_multiple_thins_standalone),
-        ("Commercial Thin Schedule", test_commercial_thin_schedule_standalone),
-        ("Sawtimber Rotation", test_sawtimber_rotation_standalone),
-        ("Yield Table from grow()", test_yield_table_from_grow_standalone),
-        ("Multi-Scenario Yield Table", test_yield_table_multi_scenario_standalone),
-        ("Species Comparison", test_species_comparison_standalone),
-        ("Tree Quick Start", test_tree_quick_start_standalone),
-        ("Stand Quick Start", test_stand_quick_start_standalone),
+        ("Simple Stand Growth", _run_simple_stand_growth),
+        ("Basic Stand with Basal Area", _run_basic_stand_with_basal_area),
+        ("Ecounit Simulation", _run_ecounit_simulation),
+        ("Thinning from Below", _run_thinning_from_below),
+        ("Single Thin Scenario", _run_single_thin_scenario),
+        ("Multiple Thins", _run_multiple_thins),
+        ("Commercial Thin Schedule", _run_commercial_thin_schedule),
+        ("Sawtimber Rotation", _run_sawtimber_rotation),
+        ("Yield Table from grow()", _run_yield_table_from_grow),
+        ("Multi-Scenario Yield Table", _run_yield_table_multi_scenario),
+        ("Species Comparison", _run_species_comparison),
+        ("Tree Quick Start", _run_tree_quick_start),
+        ("Stand Quick Start", _run_stand_quick_start),
     ]
 
     for name, func in examples:
@@ -811,8 +813,8 @@ def generate_documentation_outputs():
     return report_path
 
 
-# Standalone functions for generating documentation outputs
-def test_simple_stand_growth_standalone():
+# Helper functions for generating documentation outputs (not tests - no test_ prefix)
+def _run_simple_stand_growth():
     from pyfvs import Stand
     stand = Stand.initialize_planted(trees_per_acre=500, site_index=70, species='LP')
     stand.grow(years=30)
@@ -822,7 +824,7 @@ def test_simple_stand_growth_standalone():
     print(f"Volume: {metrics['volume']:.0f} ft³/acre")
     print(f"Mean DBH: {metrics['qmd']:.1f} inches")
 
-def test_basic_stand_with_basal_area_standalone():
+def _run_basic_stand_with_basal_area():
     from pyfvs import Stand
     stand = Stand.initialize_planted(trees_per_acre=500, site_index=70, species='LP')
     stand.grow(years=30)
@@ -832,13 +834,13 @@ def test_basic_stand_with_basal_area_standalone():
     print(f"Basal area: {metrics['basal_area']:.1f} ft²/acre")
     print(f"Volume: {metrics['volume']:.0f} ft³/acre")
 
-def test_ecounit_simulation_standalone():
+def _run_ecounit_simulation():
     from pyfvs import Stand
     stand = Stand.initialize_planted(trees_per_acre=500, site_index=70, species='LP', ecounit='M231')
     stand.grow(years=25)
     print(f"Volume: {stand.get_metrics()['volume']:.0f} ft³/acre")
 
-def test_thinning_from_below_standalone():
+def _run_thinning_from_below():
     from pyfvs import Stand
     stand = Stand.initialize_planted(trees_per_acre=800, site_index=70, species='LP')
     stand.grow(years=15)
@@ -846,7 +848,7 @@ def test_thinning_from_below_standalone():
     stand.grow(years=15)
     print(f"Final TPA: {stand.get_metrics()['tpa']:.0f}")
 
-def test_single_thin_scenario_standalone():
+def _run_single_thin_scenario():
     from pyfvs import Stand
     stand = Stand.initialize_planted(trees_per_acre=700, site_index=70, species='LP', ecounit='M231')
     stand.grow(years=15)
@@ -856,7 +858,7 @@ def test_single_thin_scenario_standalone():
     stand.grow(years=15)
     print(f"Final volume: {stand.get_metrics()['volume']:.0f} ft³/acre")
 
-def test_multiple_thins_standalone():
+def _run_multiple_thins():
     from pyfvs import Stand
     stand = Stand.initialize_planted(trees_per_acre=800, site_index=75, species='LP', ecounit='M231')
     stand.grow(years=12)
@@ -867,7 +869,7 @@ def test_multiple_thins_standalone():
     metrics = stand.get_metrics()
     print(f"Final: {metrics['volume']:.0f} ft³/acre, {metrics['qmd']:.1f}\" DBH")
 
-def test_commercial_thin_schedule_standalone():
+def _run_commercial_thin_schedule():
     from pyfvs import Stand
     stand = Stand.initialize_planted(trees_per_acre=700, site_index=70, species='LP', ecounit='M231')
     stand.grow(years=12)
@@ -879,7 +881,7 @@ def test_commercial_thin_schedule_standalone():
     stand.grow(years=10)
     print(f"Final: {stand.get_metrics()['volume']:.0f} ft³/acre, {stand.get_metrics()['qmd']:.1f}\" QMD")
 
-def test_sawtimber_rotation_standalone():
+def _run_sawtimber_rotation():
     from pyfvs import Stand
     stand = Stand.initialize_planted(trees_per_acre=600, site_index=75, species='LP')
     stand.grow(years=15)
@@ -891,7 +893,7 @@ def test_sawtimber_rotation_standalone():
     print(f"Final DBH: {metrics['qmd']:.1f} inches")
     print(f"Final volume: {metrics['volume']:.0f} ft³/acre")
 
-def test_yield_table_from_grow_standalone():
+def _run_yield_table_from_grow():
     from pyfvs import Stand
     stand = Stand.initialize_planted(trees_per_acre=500, site_index=70, species='LP')
     yield_table = stand.get_yield_table_dataframe(years=50, period_length=5)
@@ -900,7 +902,7 @@ def test_yield_table_from_grow_standalone():
     display_df.columns = ['age', 'tpa', 'qmd', 'volume']
     print(display_df.to_string(index=False))
 
-def test_yield_table_multi_scenario_standalone():
+def _run_yield_table_multi_scenario():
     from pyfvs import Stand
     import pandas as pd
     results = []
@@ -914,7 +916,7 @@ def test_yield_table_multi_scenario_standalone():
     df = pd.DataFrame(results)
     print(df.to_string(index=False))
 
-def test_species_comparison_standalone():
+def _run_species_comparison():
     from pyfvs import Stand
     species_list = ['LP', 'SP', 'SA', 'LL']
     print("Volume at age 30 (SI=70, 500 TPA):")
@@ -925,7 +927,7 @@ def test_species_comparison_standalone():
         m = stand.get_metrics()
         print(f"{sp}: {m['volume']:,.0f} ft³/acre")
 
-def test_tree_quick_start_standalone():
+def _run_tree_quick_start():
     from pyfvs import Tree
     tree = Tree(dbh=6.0, height=45.0, species='LP', age=10)
     volume = tree.get_volume()
@@ -934,7 +936,7 @@ def test_tree_quick_start_standalone():
     print(f"New DBH: {tree.dbh:.2f} inches")
     print(f"New height: {tree.height:.1f} feet")
 
-def test_stand_quick_start_standalone():
+def _run_stand_quick_start():
     from pyfvs import Stand
     stand = Stand.initialize_planted(trees_per_acre=500, site_index=70, species='LP', ecounit='M231')
     stand.grow(years=25)

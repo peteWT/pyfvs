@@ -182,7 +182,13 @@ pyFVS is part of the [FIAtools Python ecosystem](https://fiatools.org) - a unifi
 
 ---
 
+## Affiliation
+
+Developed in collaboration with USDA Forest Service Research & Development. pyFVS is a Python implementation of the Forest Vegetation Simulator and is part of the FIA Python Ecosystem.
+
+---
+
 <div align="center">
-  <a href="https://fiatools.org"><strong>fiatools.org</strong></a> · Python Ecosystem for Forest Inventory Analysis<br>
+  <a href="https://fiatools.org"><strong>fiatools.org</strong></a> · Python Ecosystem for Forest Inventory Applications<br>
   <sub>Built by <a href="https://github.com/mihiarc">Chris Mihiar</a> · USDA Forest Service Southern Research Station</sub>
 </div>
