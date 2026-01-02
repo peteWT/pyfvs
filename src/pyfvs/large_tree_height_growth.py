@@ -6,53 +6,141 @@ following the approach of Wensel and others (1987).
 import math
 from typing import Dict, Any, Optional
 
+from .model_base import ParameterizedModel
+from .config_loader import load_coefficient_file
 
-class LargeTreeHeightGrowthModel:
-    """Large tree height growth model implementing FVS Southern variant equations."""
-    
+__all__ = [
+    'LargeTreeHeightGrowthModel',
+    'create_large_tree_height_growth_model',
+    'calculate_large_tree_height_growth',
+    'calculate_crown_ratio_modifier',
+    'calculate_relative_height_modifier',
+    'validate_large_tree_height_growth_implementation',
+]
+
+
+class LargeTreeHeightGrowthModel(ParameterizedModel):
+    """Large tree height growth model implementing FVS Southern variant equations.
+
+    Uses the ParameterizedModel base class pattern for loading species-specific
+    coefficients from sn_large_tree_height_growth_coefficients.json with fallback support.
+    """
+
+    # Class attributes for ParameterizedModel base class
+    COEFFICIENT_FILE = 'sn_large_tree_height_growth_coefficients.json'
+    COEFFICIENT_KEY = 'coefficients'
+    FALLBACK_PARAMETERS = {
+        'LP': {
+            'b1': 0.222214,
+            'b2': 1.16304,
+            'b3': -0.000863,
+            'b4': 0.028483,
+            'b5': 0.006935,
+            'b6': 0.005018,
+            'b7': -0.004184,
+            'b8': -0.759347,
+            'b9': 0.18536,
+            'b10': 0.0,
+            'b11': -0.072842
+        },
+        'SP': {
+            'b1': -0.008942,
+            'b2': 1.23817,
+            'b3': -0.00117,
+            'b4': 0.053076,
+            'b5': 0.040334,
+            'b6': 0.004723,
+            'b7': -0.003271,
+            'b8': -0.704687,
+            'b9': 0.127667,
+            'b10': 0.0,
+            'b11': 0.028391
+        },
+        'SA': {
+            'b1': -1.641698,
+            'b2': 1.461093,
+            'b3': -0.00253,
+            'b4': 0.265872,
+            'b5': 0.069104,
+            'b6': 0.006851,
+            'b7': -0.004873,
+            'b8': -0.018479,
+            'b9': -0.193157,
+            'b10': 0.0,
+            'b11': -0.251016
+        },
+        'LL': {
+            'b1': -1.331052,
+            'b2': 1.098112,
+            'b3': -0.001834,
+            'b4': 0.184512,
+            'b5': 0.388018,
+            'b6': 0.008774,
+            'b7': -0.002898,
+            'b8': 0.225213,
+            'b9': 0.086883,
+            'b10': 0.0,
+            'b11': 0.107445
+        },
+    }
+    DEFAULT_SPECIES = "LP"
+
     def __init__(self, species_code: str = "LP"):
         """Initialize with species-specific parameters.
-        
+
         Args:
             species_code: Species code (e.g., "LP", "SP", "SA", etc.)
         """
-        self.species_code = species_code
-        self._load_parameters()
+        super().__init__(species_code)
     
     def _load_parameters(self):
-        """Load large tree height growth parameters from configuration."""
-        from .config_loader import get_config_loader
-        
-        try:
-            loader = get_config_loader()
-            
-            # Load height growth methodology from the main JSON file
-            height_growth_file = loader.cfg_dir / "sn_large_tree_height_growth.json"
-            self.methodology = loader._load_config_file(height_growth_file)
-        except Exception:
-            self._load_fallback_methodology()
-        
-        try:
-            # Load diameter growth coefficients (used for potential height growth calculation)
-            coefficients_file = loader.cfg_dir / "sn_large_tree_height_growth_coefficients.json"
-            coeff_data = loader._load_config_file(coefficients_file)
-            
-            if self.species_code in coeff_data['coefficients']:
-                self.diameter_coefficients = coeff_data['coefficients'][self.species_code]
-            else:
-                # Fallback to LP parameters if species not found
-                self.diameter_coefficients = coeff_data['coefficients']['LP']
-                
-            self.equation_info = coeff_data['equation']
-            self.variable_definitions = coeff_data['variable_definitions']
-        except Exception:
-            self._load_fallback_coefficients()
-        
+        """Load large tree height growth parameters from configuration.
+
+        Extends base class to also load methodology, equation info,
+        variable definitions, shade tolerance, and site index ranges.
+        """
+        # Call parent to load species coefficients into self.coefficients
+        super()._load_parameters()
+
+        # Also store as diameter_coefficients for backward compatibility
+        self.diameter_coefficients = self.coefficients.copy()
+
+        # Load additional data from raw_data (equation info, variable definitions)
+        if self.raw_data:
+            self.equation_info = self.raw_data.get('equation', '')
+            self.variable_definitions = self.raw_data.get('variable_definitions', {})
+        else:
+            self._load_fallback_equation_info()
+
+        # Load methodology from separate file
+        self._load_methodology()
+
         # Load shade tolerance parameters
         self._load_shade_tolerance_parameters()
-        
+
         # Load site index ranges and validation
         self._load_site_index_ranges()
+
+    def _load_methodology(self):
+        """Load methodology from sn_large_tree_height_growth.json."""
+        try:
+            self.methodology = load_coefficient_file('sn_large_tree_height_growth.json')
+        except FileNotFoundError:
+            self._load_fallback_methodology()
+
+    def _load_fallback_parameters(self):
+        """Load fallback parameters if coefficient file not available."""
+        # Call parent for coefficient fallback
+        super()._load_fallback_parameters()
+        # Also store as diameter_coefficients for backward compatibility
+        self.diameter_coefficients = self.coefficients.copy()
+        # Load fallback equation info
+        self._load_fallback_equation_info()
+
+    def _load_fallback_equation_info(self):
+        """Load fallback equation info when file not available."""
+        self.equation_info = "ln(DDS) = b1 + (b2 * ln(DBH)) + (b3 * DBH^2) + (b4 * ln(CR)) + (b5 * RELHT) + (b6 * SI) + (b7 * BA) + (b8 * PBAL) + (b9 * SLOPE) + (b10 * cos(ASP) * SLOPE) + (b11 * sin(ASP) * SLOPE)"
+        self.variable_definitions = {}
     
     def _load_fallback_methodology(self):
         """Load fallback methodology if main file not available."""
@@ -70,25 +158,6 @@ class LargeTreeHeightGrowthModel:
                 }
             }
         }
-    
-    def _load_fallback_coefficients(self):
-        """Load fallback coefficients if file not available."""
-        # Default LP parameters
-        self.diameter_coefficients = {
-            "b1": 0.222214,
-            "b2": 1.16304,
-            "b3": -0.000863,
-            "b4": 0.028483,
-            "b5": 0.006935,
-            "b6": 0.005018,
-            "b7": -0.004184,
-            "b8": -0.759347,
-            "b9": 0.18536,
-            "b10": 0.0,
-            "b11": -0.072842
-        }
-        
-        self.equation_info = "ln(DDS) = b1 + (b2 * ln(DBH)) + (b3 * DBH^2) + (b4 * ln(CR)) + (b5 * RELHT) + (b6 * SI) + (b7 * BA) + (b8 * PBAL) + (b9 * SLOPE) + (b10 * cos(ASP) * SLOPE) + (b11 * sin(ASP) * SLOPE)"
     
     def _load_shade_tolerance_parameters(self):
         """Load shade tolerance parameters from the methodology file."""
@@ -138,13 +207,9 @@ class LargeTreeHeightGrowthModel:
     
     def _load_site_index_ranges(self):
         """Load site index ranges and validation from configuration."""
-        from .config_loader import get_config_loader
-        
         try:
-            loader = get_config_loader()
-            site_index_file = loader.cfg_dir / "sn_relative_site_index.json"
-            site_data = loader._load_config_file(site_index_file)
-            
+            site_data = load_coefficient_file('sn_relative_site_index.json')
+
             # Get species-specific site index range
             species_ranges = site_data.get('species_site_index_ranges', {})
             if self.species_code in species_ranges:
@@ -152,7 +217,7 @@ class LargeTreeHeightGrowthModel:
             else:
                 # Default range for LP
                 self.site_index_range = {"si_min": 40, "si_max": 125}
-        except Exception:
+        except FileNotFoundError:
             self.site_index_range = {"si_min": 40, "si_max": 125}
     
     def _validate_site_index(self, site_index: float) -> float:
@@ -309,18 +374,14 @@ class LargeTreeHeightGrowthModel:
     
     def _get_small_tree_coefficients(self) -> Dict[str, float]:
         """Get small tree height growth coefficients for the species.
-        
+
         Returns:
             Dictionary with Chapman-Richards coefficients
         """
-        from .config_loader import get_config_loader
-        
         try:
             # Try to load from small tree height growth configuration
-            loader = get_config_loader()
-            small_tree_file = loader.cfg_dir / "sn_small_tree_height_growth.json"
-            small_tree_data = loader._load_config_file(small_tree_file)
-            
+            small_tree_data = load_coefficient_file('sn_small_tree_height_growth.json')
+
             if 'nc128_height_growth_coefficients' in small_tree_data:
                 coeffs = small_tree_data['nc128_height_growth_coefficients']
                 if self.species_code in coeffs:
@@ -328,9 +389,9 @@ class LargeTreeHeightGrowthModel:
                 else:
                     # Fallback to LP if species not found
                     return coeffs.get('LP', self._get_fallback_small_tree_coefficients())
-        except Exception:
+        except FileNotFoundError:
             pass
-        
+
         # Fallback coefficients if file not available
         return self._get_fallback_small_tree_coefficients()
     

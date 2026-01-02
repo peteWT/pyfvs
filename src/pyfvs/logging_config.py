@@ -159,32 +159,12 @@ class SimulationLogContext:
 
 
 # Convenience functions for common log messages
-def log_simulation_start(logger: logging.Logger, species: str, years: int, 
+def log_simulation_start(logger: logging.Logger, species: str, years: int,
                         trees_per_acre: int, site_index: float) -> None:
     """Log simulation start."""
     logger.info(
         f"Starting simulation: species={species}, years={years}, "
         f"TPA={trees_per_acre}, SI={site_index}"
-    )
-
-
-def log_simulation_progress(logger: logging.Logger, current_year: int, 
-                          total_years: int, trees_alive: int) -> None:
-    """Log simulation progress."""
-    progress = (current_year / total_years) * 100
-    logger.debug(
-        f"Simulation progress: {current_year}/{total_years} years "
-        f"({progress:.1f}%), {trees_alive} trees alive"
-    )
-
-
-def log_growth_summary(logger: logging.Logger, period: int,
-                      dbh_growth: float, height_growth: float,
-                      mortality: int) -> None:
-    """Log growth period summary."""
-    logger.info(
-        f"Period {period} growth: DBH +{dbh_growth:.2f}\", "
-        f"Height +{height_growth:.1f}', Mortality: {mortality} trees"
     )
 
 
@@ -194,20 +174,4 @@ def log_model_transition(logger: logging.Logger, tree_id: str,
     logger.debug(
         f"Tree {tree_id} transitioned from {from_model} to {to_model} "
         f"model at DBH={dbh:.1f}\""
-    )
-
-
-def log_configuration_loaded(logger: logging.Logger, config_type: str,
-                           config_file: str) -> None:
-    """Log configuration loading."""
-    logger.info(f"Loaded {config_type} configuration from {config_file}")
-
-
-def log_error_with_context(logger: logging.Logger, error: Exception,
-                         context: Dict[str, Any]) -> None:
-    """Log error with additional context."""
-    logger.error(
-        f"Error occurred: {type(error).__name__}: {str(error)}",
-        exc_info=True,
-        extra=context
     )

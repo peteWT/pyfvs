@@ -5,6 +5,7 @@ diameter outside bark (DOB) and diameter inside bark (DIB).
 """
 from typing import Dict, Any
 
+from .model_base import ParameterizedModel
 from .config_loader import load_coefficient_file
 
 __all__ = [
@@ -18,59 +19,61 @@ __all__ = [
 ]
 
 
-def _get_bark_ratio_data() -> Dict[str, Any]:
-    """Get bark ratio data using ConfigLoader (with caching)."""
-    try:
-        return load_coefficient_file('sn_bark_ratio_coefficients.json')
-    except FileNotFoundError:
-        return {}
+class BarkRatioModel(ParameterizedModel):
+    """Bark ratio model implementing FVS Southern variant equations.
 
+    Uses the base class pattern for loading species-specific coefficients
+    from sn_bark_ratio_coefficients.json with fallback support.
+    """
 
-class BarkRatioModel:
-    """Bark ratio model implementing FVS Southern variant equations."""
-    
+    # Class attributes for ParameterizedModel base class
+    COEFFICIENT_FILE = 'sn_bark_ratio_coefficients.json'
+    COEFFICIENT_KEY = 'species_coefficients'
+    FALLBACK_PARAMETERS = {
+        'LP': {'b1': -0.48140, 'b2': 0.91413},
+        'SP': {'b1': -0.31239, 'b2': 0.91413},
+        'SA': {'b1': -0.39305, 'b2': 0.91413},
+        'LL': {'b1': -0.48140, 'b2': 0.91413},
+    }
+    DEFAULT_SPECIES = "LP"
+
     def __init__(self, species_code: str = "LP"):
         """Initialize with species-specific parameters.
-        
+
         Args:
             species_code: Species code (e.g., "LP", "SP", "SA", etc.)
         """
-        self.species_code = species_code
-        self._load_parameters()
-    
+        super().__init__(species_code)
+
     def _load_parameters(self):
-        """Load bark ratio parameters from cached configuration."""
-        # Use module-level cached data instead of loading from disk each time
-        bark_data = _get_bark_ratio_data()
+        """Load bark ratio parameters from cached configuration.
 
-        if bark_data:
-            species_coeffs = bark_data.get('species_coefficients', {})
-            if self.species_code in species_coeffs:
-                self.coefficients = species_coeffs[self.species_code]
-            else:
-                # Fallback to default LP parameters if species not found
-                self.coefficients = species_coeffs.get('LP', {"b1": -0.48140, "b2": 0.91413})
+        Extends base class to also load equation_info and bounds.
+        """
+        # Call parent to load coefficients
+        super()._load_parameters()
 
-            self.equation_info = bark_data.get('equation', {})
+        # Load additional bark ratio specific data
+        if self.raw_data:
+            self.equation_info = self.raw_data.get('equation', {})
             self.bounds = self.equation_info.get('bounds', "0.80 < BRATIO < 0.99")
         else:
-            # Fallback parameters if file not found
-            self._load_fallback_parameters()
-    
+            self._load_fallback_equation_info()
+
     def _load_fallback_parameters(self):
         """Load fallback parameters if bark ratio file not available."""
-        # Default LP parameters from the JSON file
-        self.coefficients = {
-            "b1": -0.48140,
-            "b2": 0.91413
-        }
-        
+        # Call parent for coefficient fallback
+        super()._load_fallback_parameters()
+        # Also load fallback equation info
+        self._load_fallback_equation_info()
+
+    def _load_fallback_equation_info(self):
+        """Load fallback equation info when file not available."""
         self.equation_info = {
             "formula": "DIB = b1 + b2 * (DOB)",
             "bark_ratio": "BRATIO = DIB / DOB",
             "bounds": "0.80 < BRATIO < 0.99"
         }
-        
         self.bounds = "0.80 < BRATIO < 0.99"
     
     def calculate_dib_from_dob(self, dob: float) -> float:
@@ -252,8 +255,11 @@ def get_all_species_coefficients() -> Dict[str, Dict[str, float]]:
     Returns:
         Dictionary mapping species codes to their coefficients
     """
-    bark_data = _get_bark_ratio_data()
-    return bark_data.get('species_coefficients', {})
+    try:
+        bark_data = load_coefficient_file('sn_bark_ratio_coefficients.json')
+        return bark_data.get('species_coefficients', {})
+    except FileNotFoundError:
+        return BarkRatioModel.FALLBACK_PARAMETERS.copy()
 
 
 def compare_bark_ratios(species_codes: list, dob_range: list) -> Dict[str, Any]:

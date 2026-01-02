@@ -155,36 +155,17 @@ class ParameterValidator:
     @classmethod
     def check_height_dbh_relationship(cls, dbh: float, height: float) -> bool:
         """Check if height-DBH relationship is reasonable.
-        
+
         Args:
             dbh: Diameter at breast height (inches)
             height: Total height (feet)
-            
+
         Returns:
             True if relationship is reasonable
         """
         if dbh <= 0 or height <= 4.5:
             return False
-        
+
         # Check height/DBH ratio is reasonable (typically 5-15 for mature trees)
         ratio = height / dbh
         return 2.0 <= ratio <= 20.0
-
-
-def validate_and_bound(value: float, min_val: float, max_val: float, 
-                      param_name: str = "parameter") -> float:
-    """Simple validation function for direct use.
-    
-    Args:
-        value: Value to validate
-        min_val: Minimum allowed value
-        max_val: Maximum allowed value
-        param_name: Name of parameter for warning message
-        
-    Returns:
-        Bounded value
-    """
-    bounded = max(min_val, min(max_val, value))
-    if bounded != value:
-        print(f"Warning: {param_name} {value} bounded to {bounded}")
-    return bounded

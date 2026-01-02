@@ -4,6 +4,7 @@ Implements CCF equations from the FVS Southern variant for individual tree and s
 """
 from typing import Dict, Any, Optional, List
 
+from .model_base import ParameterizedModel
 from .config_loader import load_coefficient_file
 
 __all__ = [
@@ -18,56 +19,92 @@ __all__ = [
 ]
 
 
-def _get_ccf_data() -> Dict[str, Any]:
-    """Get CCF data using ConfigLoader (with caching)."""
-    try:
-        return load_coefficient_file('sn_crown_competition_factor.json')
-    except FileNotFoundError:
-        return {}
+class CrownCompetitionFactorModel(ParameterizedModel):
+    """Crown Competition Factor model implementing FVS Southern variant equations.
 
+    Uses the base class pattern for loading coefficients from
+    sn_crown_competition_factor.json with fallback support.
 
-class CrownCompetitionFactorModel:
-    """Crown Competition Factor model implementing FVS Southern variant equations."""
-    
-    def __init__(self):
-        """Initialize the CCF model with parameters from configuration."""
-        self._load_parameters()
-    
+    Note: CCF coefficients are not species-specific - the same coefficient
+    (0.001803) is used for all species. The species_code parameter is
+    accepted for API consistency but does not affect the loaded coefficients.
+    """
+
+    # Class attributes for ParameterizedModel base class
+    COEFFICIENT_FILE = 'sn_crown_competition_factor.json'
+    COEFFICIENT_KEY = 'calculation_methods'  # CCF uses different structure
+    FALLBACK_PARAMETERS = {
+        'LP': {
+            'coefficient': 0.001803,
+            'small_tree_ccf': 0.001,
+            'dbh_threshold': 0.1
+        }
+    }
+    DEFAULT_SPECIES = "LP"
+
+    def __init__(self, species_code: str = "LP"):
+        """Initialize the CCF model with parameters from configuration.
+
+        Args:
+            species_code: Species code (accepted for API consistency but CCF
+                         coefficients are not species-specific)
+        """
+        super().__init__(species_code)
+
     def _load_parameters(self):
-        """Load CCF parameters from cached configuration."""
-        # Use module-level cached data instead of loading from disk each time
-        ccf_data = _get_ccf_data()
+        """Load CCF parameters from cached configuration.
 
-        if ccf_data:
-            self.metadata = ccf_data.get('metadata', {})
-            self.calculation_methods = ccf_data.get('calculation_methods', {})
-            self.dependencies = ccf_data.get('dependencies', {})
-            self.applications = ccf_data.get('applications', {})
+        Overrides base class to handle CCF's unique JSON structure where
+        coefficients are nested under calculation_methods rather than
+        being species-specific.
+        """
+        self.raw_data = self._get_coefficient_data()
 
-            # Extract key parameters
+        if self.raw_data:
+            self.metadata = self.raw_data.get('metadata', {})
+            self.calculation_methods = self.raw_data.get('calculation_methods', {})
+            self.dependencies = self.raw_data.get('dependencies', {})
+            self.applications = self.raw_data.get('applications', {})
+
+            # Extract key parameters from nested structure
             try:
-                self.coefficient = ccf_data['calculation_methods']['individual_tree_ccf']['coefficient']['value']
+                self.coefficient = self.raw_data['calculation_methods']['individual_tree_ccf']['coefficient']['value']
             except (KeyError, TypeError):
                 self.coefficient = 0.001803
-            self.small_tree_ccf = 0.001  # Fixed value for DBH ≤ 0.1 inches
+            self.small_tree_ccf = 0.001  # Fixed value for DBH <= 0.1 inches
             self.dbh_threshold = 0.1     # DBH threshold for small trees
+
+            # Store in coefficients dict for consistency with base class
+            self.coefficients = {
+                'coefficient': self.coefficient,
+                'small_tree_ccf': self.small_tree_ccf,
+                'dbh_threshold': self.dbh_threshold
+            }
         else:
             # Fallback parameters if file not found
             self._load_fallback_parameters()
-    
+
     def _load_fallback_parameters(self):
         """Load fallback parameters if CCF file not available."""
-        self.coefficient = 0.001803
-        self.small_tree_ccf = 0.001
-        self.dbh_threshold = 0.1
-        
+        # Use base class fallback mechanism
+        super()._load_fallback_parameters()
+
+        # Extract individual attributes from coefficients dict
+        self.coefficient = self.coefficients.get('coefficient', 0.001803)
+        self.small_tree_ccf = self.coefficients.get('small_tree_ccf', 0.001)
+        self.dbh_threshold = self.coefficients.get('dbh_threshold', 0.1)
+
+        # Initialize additional attributes
         self.metadata = {
             "title": "Crown Competition Factor (CCF) for FVS Southern Variant",
             "description": "Crown competition factor calculation methods",
             "equations": {
-                "4.5.1": "CCFt = 0.001803 * OCWt^2 (for DBH > 0.1), CCFt = 0.001 (for DBH ≤ 0.1)"
+                "4.5.1": "CCFt = 0.001803 * OCWt^2 (for DBH > 0.1), CCFt = 0.001 (for DBH <= 0.1)"
             }
         }
+        self.calculation_methods = {}
+        self.dependencies = {}
+        self.applications = {}
     
     def calculate_individual_ccf(self, dbh: float, open_crown_width: Optional[float] = None, 
                                species_code: str = "LP") -> float:
@@ -274,13 +311,17 @@ class CrownCompetitionFactorModel:
         }
 
 
-def create_ccf_model() -> CrownCompetitionFactorModel:
+def create_ccf_model(species_code: str = "LP") -> CrownCompetitionFactorModel:
     """Factory function to create a CCF model.
-    
+
+    Args:
+        species_code: Species code (accepted for API consistency but CCF
+                     coefficients are not species-specific)
+
     Returns:
         CrownCompetitionFactorModel instance
     """
-    return CrownCompetitionFactorModel()
+    return CrownCompetitionFactorModel(species_code)
 
 
 def calculate_individual_ccf(dbh: float, open_crown_width: Optional[float] = None, 
