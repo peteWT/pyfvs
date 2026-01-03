@@ -88,6 +88,7 @@ test = [
     "pytest>=6.0.0",
     "pytest-cov>=3.0.0",
     "pytest-xdist>=2.0.0",
+    "polars>=0.20.0",
 ]
 docs = [
     "mkdocs>=1.6.0",
