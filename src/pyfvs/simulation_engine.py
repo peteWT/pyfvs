@@ -318,3 +318,58 @@ class SimulationEngine:
         self.exporter.export_scenario_comparison(comparison_df, format='csv', filename='scenario_comparison')
 
         return comparison_df
+
+    def get_dbh_trajectory(
+        self,
+        species: str = 'LP',
+        site_index: float = 65,
+        trees_per_acre: int = 500,
+        max_age: int = 50,
+        time_step: int = 1,
+    ) -> pd.DataFrame:
+        """
+        Get DBH growth trajectory for a species without full yield table overhead.
+
+        This method is optimized for DBH-age lookups used in the Bruck et al.
+        discount timber price method. It runs a streamlined simulation and
+        returns just the age-DBH mapping.
+
+        Args:
+            species: Species code (e.g., 'LP', 'SP', 'SA', 'LL')
+            site_index: Site index (base age 25) in feet
+            trees_per_acre: Initial planting density
+            max_age: Maximum age to simulate
+            time_step: Years between growth periods (1 for fine resolution)
+
+        Returns:
+            DataFrame with columns: age, mean_dbh, qmd
+        """
+        # Initialize stand
+        stand = Stand.initialize_planted(
+            trees_per_acre=trees_per_acre,
+            site_index=site_index,
+            species=species
+        )
+
+        # Collect DBH metrics at each age
+        records = []
+
+        # Initial metrics
+        metrics = stand.get_metrics()
+        records.append({
+            'age': metrics['age'],
+            'mean_dbh': metrics['mean_dbh'],
+            'qmd': metrics.get('qmd', metrics['mean_dbh']),
+        })
+
+        # Grow and collect DBH
+        for age in range(time_step, max_age + 1, time_step):
+            stand.grow(years=time_step)
+            metrics = stand.get_metrics()
+            records.append({
+                'age': metrics['age'],
+                'mean_dbh': metrics['mean_dbh'],
+                'qmd': metrics.get('qmd', metrics['mean_dbh']),
+            })
+
+        return pd.DataFrame(records)
