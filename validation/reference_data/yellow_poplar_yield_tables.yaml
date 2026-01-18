@@ -1,0 +1,132 @@
+species: YP
+common_name: Yellow-poplar
+scientific_name: Liriodendron tulipifera
+sources:
+- citation: Beck, D.E. and Della-Bianca, L. 1970. Yield of unthinned yellow-poplar.
+    USDA Forest Service Research Paper SE-58.
+  url: https://www.srs.fs.usda.gov/pubs/rp/rp_se058.pdf
+- citation: Beck, D.E. 1962. Yellow-poplar site index curves.
+    USDA Forest Service Research Note 180.
+  url: https://research.fs.usda.gov/treesearch/5148
+- citation: Burns, R.M. and Honkala, B.H. 1990. Silvics of North America, Vol. 2.
+    USDA Forest Service Agriculture Handbook 654.
+  url: https://www.srs.fs.usda.gov/pubs/misc/ag_654/volume_2/liriodendron/tulipifera.htm
+site_index_base_age: 50
+site_index_range:
+  min: 70
+  max: 130
+  typical:
+  - 80
+  - 100
+  - 115
+yield_tables:
+  SI82_unthinned:
+    site_index: 82
+    site_index_base_age: 50
+    description: Low site, unthinned natural stand (SI=25m/82ft)
+    source: Silvics of North America, Table 2 (Beck & Della-Bianca data)
+    notes: Height/DBH from dominant trees in unthinned stands
+    data:
+    - age: 20
+      height_ft: 44
+      dbh_in: 6.7
+      vol_cuft_ac: 600
+    - age: 30
+      height_ft: 62
+      dbh_in: 9.9
+      vol_cuft_ac: 1200
+    - age: 40
+      height_ft: 74
+      dbh_in: 12.0
+      vol_cuft_ac: 1800
+    - age: 50
+      height_ft: 82
+      dbh_in: 13.4
+      vol_cuft_ac: 2400
+    - age: 60
+      height_ft: 88
+      dbh_in: 14.4
+      vol_cuft_ac: 2900
+    - age: 70
+      height_ft: 93
+      dbh_in: 15.2
+      vol_cuft_ac: 3300
+  SI98_unthinned:
+    site_index: 98
+    site_index_base_age: 50
+    description: Medium site, unthinned natural stand (SI=30m/98ft)
+    source: Silvics of North America, Table 2 (Beck & Della-Bianca data)
+    notes: Height/DBH from dominant trees in unthinned stands
+    data:
+    - age: 20
+      height_ft: 52
+      dbh_in: 8.2
+      vol_cuft_ac: 900
+    - age: 30
+      height_ft: 74
+      dbh_in: 12.0
+      vol_cuft_ac: 1800
+    - age: 40
+      height_ft: 89
+      dbh_in: 14.5
+      vol_cuft_ac: 3200
+    - age: 50
+      height_ft: 98
+      dbh_in: 16.2
+      vol_cuft_ac: 4200
+    - age: 60
+      height_ft: 106
+      dbh_in: 17.4
+      vol_cuft_ac: 5000
+    - age: 70
+      height_ft: 111
+      dbh_in: 18.3
+      vol_cuft_ac: 5700
+  SI115_unthinned:
+    site_index: 115
+    site_index_base_age: 50
+    description: High site, unthinned natural stand (SI=35m/115ft)
+    source: Silvics of North America, Table 2 (Beck & Della-Bianca data)
+    notes: Height/DBH from dominant trees in unthinned stands. This represents good Appalachian sites.
+    data:
+    - age: 20
+      height_ft: 61
+      dbh_in: 9.8
+      vol_cuft_ac: 1200
+    - age: 30
+      height_ft: 87
+      dbh_in: 14.2
+      vol_cuft_ac: 2500
+    - age: 40
+      height_ft: 103
+      dbh_in: 17.0
+      vol_cuft_ac: 4200
+    - age: 50
+      height_ft: 115
+      dbh_in: 19.0
+      vol_cuft_ac: 5200
+    - age: 60
+      height_ft: 123
+      dbh_in: 20.4
+      vol_cuft_ac: 6100
+    - age: 70
+      height_ft: 130
+      dbh_in: 21.6
+      vol_cuft_ac: 6800
+growth_benchmarks:
+  diameter_growth_10yr:
+    description: 10-year diameter increment for immature trees
+    unit: inches
+    values:
+      overmature: 1.9
+      immature_high_vigor: 3.5
+  mean_annual_increment:
+    description: Mean annual cubic volume increment at culmination
+    unit: cuft/acre/year
+    at_culmination_age_70:
+      low_site: 75
+      high_site: 165
+  height_growth:
+    description: Early height growth on favorable sites
+    unit: feet/year
+    lower_mississippi_valley: 2.0

@@ -18,6 +18,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 # Add project root to path for validation package imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import yaml
+
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
@@ -116,6 +118,11 @@ class ValidationSuite:
             # Level 4: Bakuzis verification
             task = progress.add_task("Verifying Bakuzis relationships...", total=None)
             self.verify_bakuzis()
+            progress.update(task, completed=True)
+
+            # Level 5: Hardwood yield table validation
+            task = progress.add_task("Validating hardwood yield tables...", total=None)
+            self.validate_hardwood_yield_tables()
             progress.update(task, completed=True)
 
         # Generate summary and report
@@ -434,6 +441,156 @@ class ValidationSuite:
                 if self.verbose:
                     console.print(f"[yellow]Warning: Could not generate Bakuzis plot: {e}[/yellow]")
 
+    def validate_hardwood_yield_tables(self) -> None:
+        """Level 5: Validate hardwood species against published yield tables."""
+        from pyfvs.stand import Stand
+        import numpy as np
+
+        # Yield table files to validate
+        yield_table_files = {
+            "YP": "yellow_poplar_yield_tables.yaml",
+            "WO": "upland_oak_yield_tables.yaml",
+            "SU": "sweetgum_yield_tables.yaml",
+        }
+
+        # Tolerance thresholds (percent error)
+        tolerance = {
+            "height": 20.0,  # 20% for height
+            "dbh": 25.0,     # 25% for DBH (hardwoods have more variability)
+            "volume": 30.0,  # 30% for volume (more variance expected)
+        }
+
+        for species, filename in yield_table_files.items():
+            yield_file = self.reference_dir / filename
+            if not yield_file.exists():
+                if self.verbose:
+                    console.print(f"  [yellow]Yield table not found: {filename}[/yellow]")
+                continue
+
+            with open(yield_file) as f:
+                yield_data = yaml.safe_load(f)
+
+            # Test each yield table scenario
+            for scenario_name, scenario in yield_data.get("yield_tables", {}).items():
+                site_index = scenario.get("site_index", 70)
+                reference_data = scenario.get("data", [])
+
+                if not reference_data:
+                    continue
+
+                # Get the max age from reference data
+                max_age = max(d["age"] for d in reference_data)
+
+                # Run PyFVS simulation
+                # Use reasonable initial density for natural stand
+                try:
+                    # For hardwoods, use lower density natural regeneration
+                    initial_tpa = 600 if species in ["WO", "RO", "SO", "SK"] else 500
+                    stand = Stand.initialize_planted(
+                        trees_per_acre=initial_tpa,
+                        site_index=site_index,
+                        species=species,
+                        ecounit="M231"  # Use mountain province for best calibration
+                    )
+                except Exception as e:
+                    self.results.append(ValidationResult(
+                        test_name=f"yield_table_{species}_{scenario_name}",
+                        component="yield_table_validation",
+                        passed=False,
+                        message=f"Failed to initialize {species} stand: {e}",
+                        details={"species": species, "scenario": scenario_name},
+                    ))
+                    continue
+
+                # Grow stand and collect metrics at reference ages
+                simulation_results = []
+                current_age = 0
+
+                for ref_point in reference_data:
+                    target_age = ref_point["age"]
+                    years_to_grow = target_age - current_age
+
+                    if years_to_grow > 0:
+                        stand.grow(years=years_to_grow)
+                        current_age = target_age
+
+                    metrics = stand.get_metrics()
+                    simulation_results.append({
+                        "age": current_age,
+                        "height": metrics.get("top_height", 0),
+                        "dbh": metrics.get("qmd", 0),
+                        "volume": metrics.get("volume", 0),
+                    })
+
+                # Compare simulation vs reference
+                height_errors = []
+                dbh_errors = []
+                volume_errors = []
+                comparison_details = []
+
+                for sim, ref in zip(simulation_results, reference_data):
+                    # Height comparison
+                    ref_height = ref.get("height_ft", 0)
+                    if ref_height > 0:
+                        height_err = abs(sim["height"] - ref_height) / ref_height * 100
+                        height_errors.append(height_err)
+
+                    # DBH comparison
+                    ref_dbh = ref.get("dbh_in", ref.get("qmd_in", 0))
+                    if ref_dbh > 0:
+                        dbh_err = abs(sim["dbh"] - ref_dbh) / ref_dbh * 100
+                        dbh_errors.append(dbh_err)
+
+                    # Volume comparison
+                    ref_vol = ref.get("vol_cuft_ac", 0)
+                    if ref_vol > 0 and sim["volume"] > 0:
+                        vol_err = abs(sim["volume"] - ref_vol) / ref_vol * 100
+                        volume_errors.append(vol_err)
+
+                    comparison_details.append({
+                        "age": sim["age"],
+                        "sim_height": round(sim["height"], 1),
+                        "ref_height": ref_height,
+                        "sim_dbh": round(sim["dbh"], 1),
+                        "ref_dbh": ref_dbh,
+                        "sim_volume": round(sim["volume"], 0),
+                        "ref_volume": ref_vol,
+                    })
+
+                # Calculate mean errors
+                mean_height_err = np.mean(height_errors) if height_errors else 0
+                mean_dbh_err = np.mean(dbh_errors) if dbh_errors else 0
+                mean_vol_err = np.mean(volume_errors) if volume_errors else 0
+
+                # Determine pass/fail
+                passed = (
+                    mean_height_err <= tolerance["height"] and
+                    mean_dbh_err <= tolerance["dbh"]
+                )
+
+                status = "PASS" if passed else "FAIL"
+
+                self.results.append(ValidationResult(
+                    test_name=f"yield_table_{species}_{scenario_name}",
+                    component="yield_table_validation",
+                    passed=passed,
+                    message=f"{species} {scenario_name}: {status} (Height: {mean_height_err:.1f}%, DBH: {mean_dbh_err:.1f}%)",
+                    metrics={
+                        "mean_height_error_pct": round(mean_height_err, 1),
+                        "mean_dbh_error_pct": round(mean_dbh_err, 1),
+                        "mean_volume_error_pct": round(mean_vol_err, 1),
+                    },
+                    details={
+                        "species": species,
+                        "site_index": site_index,
+                        "scenario": scenario_name,
+                        "comparisons": comparison_details,
+                    },
+                ))
+
+                if self.verbose:
+                    console.print(f"  {species} {scenario_name}: Height err={mean_height_err:.1f}%, DBH err={mean_dbh_err:.1f}%")
+
     def generate_summary(self) -> Dict[str, Any]:
         """Generate validation summary."""
         end_time = datetime.now(timezone.utc)
@@ -549,7 +706,7 @@ Examples:
 
     parser.add_argument(
         "--level",
-        choices=["all", "component", "tree", "stand", "bakuzis"],
+        choices=["all", "component", "tree", "stand", "bakuzis", "yield_table"],
         default="all",
         help="Validation level to run (default: all)"
     )
@@ -588,6 +745,8 @@ Examples:
             suite.validate_stand_simulations()
         elif args.level == "bakuzis":
             suite.verify_bakuzis()
+        elif args.level == "yield_table":
+            suite.validate_hardwood_yield_tables()
 
         summary = suite.generate_summary()
         suite.save_results(summary)

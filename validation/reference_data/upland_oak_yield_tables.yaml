@@ -1,0 +1,200 @@
+species: WO
+common_name: Upland Oak (White Oak/Red Oak Group)
+scientific_name: Quercus spp. (alba, rubra, coccinea, velutina)
+applicable_species:
+- WO  # White oak
+- RO  # Northern red oak
+- SO  # Scarlet oak
+- SK  # Southern red oak
+sources:
+- citation: Schnur, G.L. 1937. Yield, Stand, and Volume Tables for Even-Aged Upland Oak Forests.
+    USDA Technical Bulletin No. 560.
+  url: https://www.semanticscholar.org/paper/Yield,-Stand,-And-Volume-Tables-For-Even-Aged-Oak-Schnur/ccc48956025a9ac52f9c6a2113e958b285dfca3f
+- citation: Carmean, W.H. 1971. Site Index Curves for Upland Oaks in the Central States.
+    Forest Science 18(2):109-120.
+  url: https://academic.oup.com/forestscience/article-pdf/18/2/109/23059993/forestscience0109.pdf
+- citation: Burns, R.M. and Honkala, B.H. 1990. Silvics of North America, Vol. 2.
+    USDA Forest Service Agriculture Handbook 654.
+  url: https://www.srs.fs.usda.gov/pubs/misc/ag_654/volume_2/quercus/alba.htm
+site_index_base_age: 50
+site_index_range:
+  min: 45
+  max: 85
+  typical:
+  - 55
+  - 65
+  - 75
+notes: |
+  Upland oak grows more slowly than southern pines or yellow-poplar.
+  Site index 60 areas produce dominants averaging ~9 inches DBH at age 50.
+  Site index 70 areas produce dominants averaging ~10 inches DBH at age 50.
+  These tables represent well-stocked, naturally regenerated stands.
+yield_tables:
+  SI55_natural:
+    site_index: 55
+    site_index_base_age: 50
+    description: Low site, natural stand (Schnur 1937 interpolated)
+    source: Schnur 1937, interpolated for SI 55
+    notes: Low-quality upland site typical of ridge tops and south slopes
+    data:
+    - age: 20
+      tpa: 800
+      ba_sqft_ac: 45
+      qmd_in: 3.2
+      height_ft: 22
+      vol_cuft_ac: 350
+    - age: 30
+      tpa: 550
+      ba_sqft_ac: 60
+      qmd_in: 4.5
+      height_ft: 32
+      vol_cuft_ac: 700
+    - age: 40
+      tpa: 400
+      ba_sqft_ac: 70
+      qmd_in: 5.7
+      height_ft: 41
+      vol_cuft_ac: 1050
+    - age: 50
+      tpa: 310
+      ba_sqft_ac: 78
+      qmd_in: 6.8
+      height_ft: 55
+      vol_cuft_ac: 1400
+    - age: 60
+      tpa: 250
+      ba_sqft_ac: 85
+      qmd_in: 7.9
+      height_ft: 62
+      vol_cuft_ac: 1750
+    - age: 70
+      tpa: 210
+      ba_sqft_ac: 90
+      qmd_in: 8.9
+      height_ft: 68
+      vol_cuft_ac: 2050
+    - age: 80
+      tpa: 180
+      ba_sqft_ac: 95
+      qmd_in: 9.8
+      height_ft: 73
+      vol_cuft_ac: 2300
+  SI65_natural:
+    site_index: 65
+    site_index_base_age: 50
+    description: Medium site, natural stand (Schnur 1937 interpolated)
+    source: Schnur 1937, interpolated for SI 65
+    notes: Average upland oak site on north-facing slopes and coves
+    data:
+    - age: 20
+      tpa: 750
+      ba_sqft_ac: 55
+      qmd_in: 3.7
+      height_ft: 26
+      vol_cuft_ac: 500
+    - age: 30
+      tpa: 500
+      ba_sqft_ac: 72
+      qmd_in: 5.1
+      height_ft: 38
+      vol_cuft_ac: 1000
+    - age: 40
+      tpa: 360
+      ba_sqft_ac: 85
+      qmd_in: 6.6
+      height_ft: 49
+      vol_cuft_ac: 1500
+    - age: 50
+      tpa: 280
+      ba_sqft_ac: 95
+      qmd_in: 7.9
+      height_ft: 65
+      vol_cuft_ac: 2050
+    - age: 60
+      tpa: 225
+      ba_sqft_ac: 102
+      qmd_in: 9.1
+      height_ft: 73
+      vol_cuft_ac: 2550
+    - age: 70
+      tpa: 185
+      ba_sqft_ac: 108
+      qmd_in: 10.3
+      height_ft: 80
+      vol_cuft_ac: 3000
+    - age: 80
+      tpa: 155
+      ba_sqft_ac: 112
+      qmd_in: 11.5
+      height_ft: 85
+      vol_cuft_ac: 3400
+  SI75_natural:
+    site_index: 75
+    site_index_base_age: 50
+    description: High site, natural stand (Schnur 1937 interpolated)
+    source: Schnur 1937, interpolated for SI 75
+    notes: High-quality site on well-drained bottomlands and north coves
+    data:
+    - age: 20
+      tpa: 700
+      ba_sqft_ac: 65
+      qmd_in: 4.1
+      height_ft: 30
+      vol_cuft_ac: 700
+    - age: 30
+      tpa: 450
+      ba_sqft_ac: 85
+      qmd_in: 5.9
+      height_ft: 45
+      vol_cuft_ac: 1400
+    - age: 40
+      tpa: 320
+      ba_sqft_ac: 100
+      qmd_in: 7.6
+      height_ft: 57
+      vol_cuft_ac: 2100
+    - age: 50
+      tpa: 245
+      ba_sqft_ac: 110
+      qmd_in: 9.1
+      height_ft: 75
+      vol_cuft_ac: 2800
+    - age: 60
+      tpa: 195
+      ba_sqft_ac: 118
+      qmd_in: 10.5
+      height_ft: 84
+      vol_cuft_ac: 3450
+    - age: 70
+      tpa: 160
+      ba_sqft_ac: 124
+      qmd_in: 11.9
+      height_ft: 91
+      vol_cuft_ac: 4000
+    - age: 80
+      tpa: 135
+      ba_sqft_ac: 128
+      qmd_in: 13.2
+      height_ft: 96
+      vol_cuft_ac: 4450
+growth_benchmarks:
+  diameter_growth_5yr:
+    description: 5-year diameter increment typical for upland oaks
+    unit: inches
+    values:
+      low_site_si55: 0.4
+      medium_site_si65: 0.5
+      high_site_si75: 0.6
+      typical_range: [0.4, 0.7]
+  height_mai:
+    description: Mean annual height increment
+    unit: feet/year
+    by_site_index:
+      SI55: 1.1
+      SI65: 1.3
+      SI75: 1.5
+  rotation_length:
+    description: Typical sawtimber rotation
+    unit: years
+    range: [60, 100]
+    typical: 80

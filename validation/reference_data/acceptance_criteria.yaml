@@ -1,35 +1,114 @@
 description: Acceptance criteria for FVS-Python validation
 source: FVS_PYTHON_VALIDATION_SPEC.md
-stand_level:
-  basal_area:
-    max_percent_error: 5
-    unit: percent
-    description: Maximum acceptable error in basal area prediction
-  tpa:
-    max_percent_error: 5
-    unit: percent
-    description: Maximum acceptable error in trees per acre
-  volume:
-    max_percent_error: 10
-    unit: percent
-    description: Maximum acceptable error in volume prediction
-  qmd:
-    max_percent_error: 5
-    unit: percent
-    description: Maximum acceptable error in quadratic mean diameter
-  top_height:
-    max_percent_error: 5
-    unit: percent
-    description: Maximum acceptable error in dominant height
-tree_level:
-  diameter_growth:
-    max_percent_error: 5
-    unit: percent
-    description: Maximum acceptable error in diameter growth
-  height_growth:
-    max_percent_error: 5
-    unit: percent
-    description: Maximum acceptable error in height growth
+updated: 2025-01-18
+
+# Southern Yellow Pines (Tier 1) - well-calibrated
+southern_yellow_pines:
+  species: [LP, SP, SA, LL]
+  stand_level:
+    basal_area:
+      max_percent_error: 5
+      unit: percent
+      description: Maximum acceptable error in basal area prediction
+    tpa:
+      max_percent_error: 5
+      unit: percent
+      description: Maximum acceptable error in trees per acre
+    volume:
+      max_percent_error: 10
+      unit: percent
+      description: Maximum acceptable error in volume prediction
+    qmd:
+      max_percent_error: 5
+      unit: percent
+      description: Maximum acceptable error in quadratic mean diameter
+    top_height:
+      max_percent_error: 5
+      unit: percent
+      description: Maximum acceptable error in dominant height
+  tree_level:
+    diameter_growth:
+      max_percent_error: 5
+      unit: percent
+    height_growth:
+      max_percent_error: 5
+      unit: percent
+
+# Tier 2 Commercial Species - moderate calibration
+tier2_commercial:
+  species: [YP, WO, RO, SU, WP, VP]
+  notes: |
+    Tier 2 species have coefficients from FVS dgf.f but may need calibration.
+    Site index base age differences exist between FVS and published yield tables.
+  stand_level:
+    basal_area:
+      max_percent_error: 15
+      unit: percent
+    tpa:
+      max_percent_error: 15
+      unit: percent
+    volume:
+      max_percent_error: 30
+      unit: percent
+      notes: Volume compounds height and DBH errors
+    qmd:
+      max_percent_error: 20
+      unit: percent
+    top_height:
+      max_percent_error: 25
+      unit: percent
+      notes: Height over-prediction observed in hardwoods
+  tree_level:
+    diameter_growth:
+      max_percent_error: 25
+      unit: percent
+    height_growth:
+      max_percent_error: 30
+      unit: percent
+
+# Tier 3 Important Hardwoods - limited calibration
+tier3_hardwoods:
+  species: [RM, HI, BC, WA, GA, SO, SK, CB]
+  notes: |
+    Tier 3 species use generic hardwood coefficients.
+    Expect higher uncertainty than Tier 2 species.
+  stand_level:
+    basal_area:
+      max_percent_error: 25
+      unit: percent
+    volume:
+      max_percent_error: 50
+      unit: percent
+    qmd:
+      max_percent_error: 30
+      unit: percent
+    top_height:
+      max_percent_error: 40
+      unit: percent
+
+# Yield table validation methodology
+yield_table_validation:
+  description: |
+    Compares PyFVS simulations against published yield tables from
+    Silvics of North America, Schnur (1937), Beck & Della-Bianca (1970).
+  tolerance_levels:
+    strict:
+      height: 15
+      dbh: 20
+      volume: 30
+    moderate:
+      height: 25
+      dbh: 30
+      volume: 50
+    lenient:
+      height: 40
+      dbh: 40
+      volume: 100
+  known_issues:
+    - Site index base age mismatch (hardwoods use base 50, FVS uses varied bases)
+    - Height-diameter relationship may not be well-calibrated for hardwoods
+    - Simulated uniform stands vs natural regeneration in published tables
+
 equivalence_testing:
   method: TOST
   alpha: 0.05

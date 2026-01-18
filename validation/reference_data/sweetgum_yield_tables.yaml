@@ -1,0 +1,156 @@
+species: SU
+common_name: Sweetgum
+scientific_name: Liquidambar styraciflua
+sources:
+- citation: Burns, R.M. and Honkala, B.H. 1990. Silvics of North America, Vol. 2.
+    USDA Forest Service Agriculture Handbook 654.
+  url: https://www.srs.fs.usda.gov/pubs/misc/ag_654/volume_2/liquidambar/styraciflua.htm
+- citation: Della-Bianca, L. 1990. Liquidambar styraciflua L. Sweetgum.
+    In Silvics of North America Vol 2.
+  url: https://research.fs.usda.gov/silvics/sweetgum
+site_index_base_age: 50
+site_index_range:
+  min: 60
+  max: 100
+  typical:
+  - 70
+  - 80
+  - 90
+notes: |
+  Sweetgum is a moderate to rapidly growing pioneer species common in the South.
+  Best development occurs in the Lower Mississippi Valley bottomlands.
+  Growth rates approach those of loblolly pine on favorable sites (SI >= 75).
+  10-year diameter growth: 1.9 inches (overmature) to 3.5 inches (immature high-vigor).
+yield_tables:
+  SI70_bottomland:
+    site_index: 70
+    site_index_base_age: 50
+    description: Low-medium site, bottomland stand
+    source: Estimated from Silvics Manual growth data
+    notes: Lower Mississippi Valley site, moderate productivity
+    data:
+    - age: 20
+      tpa: 500
+      ba_sqft_ac: 55
+      qmd_in: 4.5
+      height_ft: 35
+      vol_cuft_ac: 700
+    - age: 30
+      tpa: 380
+      ba_sqft_ac: 75
+      qmd_in: 6.0
+      height_ft: 48
+      vol_cuft_ac: 1350
+    - age: 40
+      tpa: 300
+      ba_sqft_ac: 90
+      qmd_in: 7.4
+      height_ft: 58
+      vol_cuft_ac: 2000
+    - age: 50
+      tpa: 245
+      ba_sqft_ac: 100
+      qmd_in: 8.7
+      height_ft: 70
+      vol_cuft_ac: 2650
+    - age: 60
+      tpa: 200
+      ba_sqft_ac: 108
+      qmd_in: 10.0
+      height_ft: 78
+      vol_cuft_ac: 3200
+  SI80_bottomland:
+    site_index: 80
+    site_index_base_age: 50
+    description: Medium-high site, bottomland stand
+    source: Estimated from Silvics Manual growth data
+    notes: Good Mississippi Delta site, approaching pine productivity
+    data:
+    - age: 20
+      tpa: 480
+      ba_sqft_ac: 65
+      qmd_in: 5.0
+      height_ft: 40
+      vol_cuft_ac: 950
+    - age: 30
+      tpa: 350
+      ba_sqft_ac: 90
+      qmd_in: 6.9
+      height_ft: 55
+      vol_cuft_ac: 1900
+    - age: 40
+      tpa: 270
+      ba_sqft_ac: 105
+      qmd_in: 8.4
+      height_ft: 67
+      vol_cuft_ac: 2800
+    - age: 50
+      tpa: 215
+      ba_sqft_ac: 118
+      qmd_in: 10.0
+      height_ft: 80
+      vol_cuft_ac: 3700
+    - age: 60
+      tpa: 175
+      ba_sqft_ac: 125
+      qmd_in: 11.4
+      height_ft: 88
+      vol_cuft_ac: 4400
+  SI90_bottomland:
+    site_index: 90
+    site_index_base_age: 50
+    description: High site, prime bottomland stand
+    source: Estimated from Silvics Manual growth data
+    notes: Excellent Lower Mississippi Valley site
+    data:
+    - age: 20
+      tpa: 460
+      ba_sqft_ac: 75
+      qmd_in: 5.5
+      height_ft: 45
+      vol_cuft_ac: 1200
+    - age: 30
+      tpa: 320
+      ba_sqft_ac: 100
+      qmd_in: 7.6
+      height_ft: 62
+      vol_cuft_ac: 2450
+    - age: 40
+      tpa: 240
+      ba_sqft_ac: 118
+      qmd_in: 9.5
+      height_ft: 76
+      vol_cuft_ac: 3600
+    - age: 50
+      tpa: 190
+      ba_sqft_ac: 130
+      qmd_in: 11.2
+      height_ft: 90
+      vol_cuft_ac: 4650
+    - age: 60
+      tpa: 155
+      ba_sqft_ac: 138
+      qmd_in: 12.8
+      height_ft: 98
+      vol_cuft_ac: 5500
+growth_benchmarks:
+  diameter_growth_10yr:
+    description: 10-year diameter increment
+    unit: inches
+    values:
+      overmature: 1.9
+      immature_high_vigor: 3.5
+      typical: 2.5
+  height_growth:
+    description: Height growth rates
+    unit: feet/year
+    values:
+      favorable_bottomland: 2.0
+      upland: 1.3
+  stand_volume_pure_stands:
+    description: Volume in pure stands (Mississippi Delta)
+    unit: cubic_meters_per_hectare
+    values:
+      typical: [84, 112]
+      very_good: [210, 280]
+      exceptional: [420, 560]
