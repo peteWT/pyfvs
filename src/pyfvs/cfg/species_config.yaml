@@ -93,6 +93,9 @@ species:
   WO:
     name: "white oak"
     file: "species/wo_white_oak.yaml"
+  RO:
+    name: "northern red oak"
+    file: "species/ro_northern_red_oak.yaml"
 
   # Other categories
   OS:

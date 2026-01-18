@@ -133,6 +133,9 @@ class SpeciesCode(str, Enum):
     SWAMP_OAK = "SK"
     """Swamp chestnut oak (Quercus michauxii) - FIA code 826. Bottomland species."""
 
+    NORTHERN_RED_OAK = "RO"
+    """Northern red oak (Quercus rubra) - FIA code 833. Major commercial oak."""
+
     # =========================================================================
     # Maples (Acer spp.)
     # =========================================================================
@@ -394,6 +397,7 @@ class SpeciesCode(str, Enum):
             cls.WHITE_OAK,
             cls.CHESTNUT_OAK,
             cls.SOUTHERN_RED_OAK,
+            cls.NORTHERN_RED_OAK,
             cls.WATER_OAK,
             cls.LAUREL_OAK,
             cls.OVERCUP_OAK,

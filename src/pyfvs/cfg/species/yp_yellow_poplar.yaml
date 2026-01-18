@@ -78,23 +78,13 @@ crown_width:
 small_tree_height_growth:
   model: chapman_richards_nc128
   threshold_diameter: 3.0
-  variants:
-    mountain:
-      fia_code: '621'
-      page_number: '39'
-      c1: 1.2673
-      c2: 1.0
-      c3: -0.0331
-      c4: 1.1149
-      c5: 0.0001
-    piedmont:
-      fia_code: '621'
-      page_number: '38'
-      c1: 1.1798
-      c2: 1.0
-      c3: -0.0339
-      c4: 0.8117
-      c5: -0.0001
+  fia_code: '621'
+  page_number: '39'
+  c1: 1.2673
+  c2: 1.0
+  c3: -0.0331
+  c4: 1.1149
+  c5: 0.0001
 large_tree_height_growth:
   model: wensel_1987
   threshold_diameter: 3.0

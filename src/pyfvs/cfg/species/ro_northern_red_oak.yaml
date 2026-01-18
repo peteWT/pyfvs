@@ -1,41 +1,54 @@
 metadata:
   code: RO
-  fia_code: 261
-  scientific_name: Tsuga canadensis
-  common_name: eastern hemlock
+  fia_code: 833
+  plants_symbol: QURU
+  scientific_name: Quercus rubra
+  common_name: northern red oak
   valid_site_species: true
 site_index:
   min: 25
   max: 115
-  site_index_group: 1
+  site_index_group: 9
   height_growth_equation: 'NC-128: Upland Oak/52'
 density:
-  sdi_max: 414
+  sdi_max: 361
 height_diameter:
   model: curtis_arney
   curtis_arney:
-    p2: 700.0636452
-    p3: 4.10607389
-    p4: -0.21392785
+    p2: 170.1330787
+    p3: 3.27815866
+    p4: -0.48744214
     dbw: 0.2
   wykoff:
-    b1: 4.5202
-    b2: -4.8896
+    b1: 4.5463
+    b2: -5.2287
 bark_ratio:
-  b1: -0.52266
-  b2: 0.95215
+  b1: -0.24096
+  b2: 0.93789
 crown_ratio:
   acr_equation: 4.3.1.4
-  d0: 3.9
-  d1: -0.07
+  d0: 4.05
+  d1: -0.12
   d2: null
   a: 5.0
-  b0: -12.4107
-  b1: 1.1363
-  c: 3.643
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
 diameter_growth:
   model: ln_dds
   coefficients:
+    INTERC: -2.732646
+    LDBH: 1.49945
+    DBH2: -0.000729
+    LCRWN: 0.344764
+    HREL: 0.466082
+    ISIO: 0.004632
+    PLTB: -0.000908
+    PNTBL: -0.001131
+    TANS: -0.174932
+    FCOS: -0.042528
+    FSIN: 0.110336
+    # Legacy b1-b11 mapping for backward compatibility
     b1: -2.732646
     b2: 1.49945
     b3: -0.000729
@@ -78,7 +91,7 @@ crown_width:
 small_tree_height_growth:
   model: chapman_richards_nc128
   threshold_diameter: 3.0
-  fia_code: Upland Oak
+  fia_code: 'Upland Oak'
   page_number: '52'
   c1: 1.2866
   c2: 0.9962

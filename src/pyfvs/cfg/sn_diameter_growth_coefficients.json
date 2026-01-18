@@ -3,10 +3,11 @@
     "title": "Large Tree Diameter Growth Coefficients for FVS Southern Variant",
     "description": "Diameter growth model (DDS - change in squared diameter inside bark) coefficients extracted from official USDA FVS source code",
     "source": "https://github.com/USDAForestService/ForestVegetationSimulator/blob/master/sn/dgf.f",
-    "extracted_date": "2025-11-29",
+    "extracted_date": "2025-01-18",
     "equation_reference": "FVS-SN Variant Overview Section 4.7",
     "threshold_diameter": 3.0,
-    "threshold_description": "Trees >= 3.0 inches DBH use large tree diameter growth model"
+    "threshold_description": "Trees >= 3.0 inches DBH use large tree diameter growth model",
+    "total_species": 90
   },
   "equation": {
     "main_equation": "ln(DDS) = CONSPP + INTERC + LDBH*ln(D) + DBH2*D^2 + LCRWN*ln(CR) + HREL*RELHT + PLTB*BA + PNTBL*PBAL + [forest_type_terms] + [eco_unit_terms]",
@@ -36,74 +37,110 @@
       "7": "SR", "8": "LL", "9": "TM", "10": "PP", "11": "PD", "12": "WP",
       "13": "LP", "14": "VP", "15": "BY", "16": "PC", "17": "HM", "18": "FM",
       "19": "BE", "20": "RM", "21": "SV", "22": "SM", "23": "BU", "24": "BB",
-      "25": "SB", "26": "AH", "27": "HI", "28": "CA", "29": "HB", "30": "RD"
+      "25": "SB", "26": "AH", "27": "HI", "28": "CA", "29": "HB", "30": "RD",
+      "31": "DW", "32": "PS", "33": "AB", "34": "AS", "35": "WA", "36": "BA",
+      "37": "GA", "38": "HL", "39": "LB", "40": "HA", "41": "HY", "42": "BN",
+      "43": "WN", "44": "SU", "45": "YP", "46": "MG", "47": "CT", "48": "MS",
+      "49": "MV", "50": "ML", "51": "AP", "52": "MB", "53": "WT", "54": "BG",
+      "55": "TS", "56": "HH", "57": "SD", "58": "RA", "59": "SY", "60": "CW",
+      "61": "BT", "62": "BC", "63": "WO", "64": "SO", "65": "SK", "66": "CB",
+      "67": "TO", "68": "LK", "69": "OV", "70": "BJ", "71": "SN", "72": "CK",
+      "73": "WK", "74": "CO", "75": "RO", "76": "QS", "77": "PO", "78": "BO",
+      "79": "LO", "80": "BK", "81": "WI", "82": "SS", "83": "BD", "84": "EL",
+      "85": "WE", "86": "AE", "87": "RL", "88": "OS", "89": "OH", "90": "OT"
     }
   },
   "core_coefficients": {
-    "SP": {
-      "species_index": 5,
-      "common_name": "Shortleaf Pine",
-      "INTERC": -0.008942,
-      "LDBH": 1.238170,
-      "DBH2": -0.001170,
-      "LCRWN": 0.053076,
-      "HREL": 0.040334,
-      "ISIO": 0.004723,
-      "PLTB": -0.004394,
-      "PNTBL": -0.003271,
-      "TANS": -0.704687,
-      "FCOS": 0.127667,
-      "FSIN": 0.028391,
-      "observations": 26008
-    },
-    "SA": {
-      "species_index": 6,
-      "common_name": "Slash Pine",
-      "INTERC": -1.641698,
-      "LDBH": 1.461093,
-      "DBH2": -0.002530,
-      "LCRWN": 0.265872,
-      "HREL": 0.069104,
-      "ISIO": 0.006851,
-      "PLTB": -0.002939,
-      "PNTBL": -0.004873,
-      "TANS": -0.018479,
-      "FCOS": -0.193157,
-      "FSIN": -0.251016,
-      "observations": 18736
-    },
-    "LL": {
-      "species_index": 8,
-      "common_name": "Longleaf Pine",
-      "INTERC": -1.331052,
-      "LDBH": 1.098112,
-      "DBH2": -0.001834,
-      "LCRWN": 0.184512,
-      "HREL": 0.388018,
-      "ISIO": 0.008774,
-      "PLTB": -0.002182,
-      "PNTBL": -0.002898,
-      "TANS": 0.225213,
-      "FCOS": 0.086883,
-      "FSIN": 0.107445,
-      "observations": 9190
-    },
-    "LP": {
-      "species_index": 13,
-      "common_name": "Loblolly Pine",
-      "INTERC": 0.222214,
-      "LDBH": 1.163040,
-      "DBH2": -0.000863,
-      "LCRWN": 0.028483,
-      "HREL": 0.006935,
-      "ISIO": 0.005018,
-      "PLTB": -0.003408,
-      "PNTBL": -0.004184,
-      "TANS": -0.759347,
-      "FCOS": 0.185360,
-      "FSIN": -0.072842,
-      "observations": 92313
-    }
+    "FR": {"species_index": 1, "common_name": "Fraser Fir", "fia_code": 10, "INTERC": -2.267851, "LDBH": 1.442529, "DBH2": -0.000548, "LCRWN": 0.568468, "HREL": -0.403762, "ISIO": -0.001151, "PLTB": -0.000824, "PNTBL": -0.002503, "TANS": -0.241408, "FCOS": 0.066508, "FSIN": 0.086959},
+    "JU": {"species_index": 2, "common_name": "Eastern Redcedar", "fia_code": 57, "INTERC": -1.864431, "LDBH": 1.403065, "DBH2": -0.001237, "LCRWN": 0.273616, "HREL": 0.177408, "ISIO": -0.000374, "PLTB": -0.003620, "PNTBL": -0.001890, "TANS": -0.231988, "FCOS": 0.077542, "FSIN": -0.025792},
+    "PI": {"species_index": 3, "common_name": "Spruce", "fia_code": 90, "INTERC": -2.267851, "LDBH": 1.442529, "DBH2": -0.000548, "LCRWN": 0.568468, "HREL": -0.403762, "ISIO": -0.001151, "PLTB": -0.000824, "PNTBL": -0.002503, "TANS": -0.241408, "FCOS": 0.066508, "FSIN": 0.086959},
+    "PU": {"species_index": 4, "common_name": "Sand Pine", "fia_code": 107, "INTERC": -3.791466, "LDBH": 1.796179, "DBH2": -0.005109, "LCRWN": 0.902185, "HREL": 0.000000, "ISIO": -0.002009, "PLTB": -0.005287, "PNTBL": -0.003203, "TANS": 0.501409, "FCOS": -1.788107, "FSIN": -1.231519},
+    "SP": {"species_index": 5, "common_name": "Shortleaf Pine", "fia_code": 110, "INTERC": -0.008942, "LDBH": 1.238170, "DBH2": -0.001170, "LCRWN": 0.053076, "HREL": 0.040334, "ISIO": 0.004723, "PLTB": -0.004394, "PNTBL": -0.003271, "TANS": -0.704687, "FCOS": 0.127667, "FSIN": 0.028391},
+    "SA": {"species_index": 6, "common_name": "Slash Pine", "fia_code": 111, "INTERC": -1.641698, "LDBH": 1.461093, "DBH2": -0.002530, "LCRWN": 0.265872, "HREL": 0.069104, "ISIO": 0.006851, "PLTB": -0.002939, "PNTBL": -0.004873, "TANS": -0.018479, "FCOS": -0.193157, "FSIN": -0.251016},
+    "SR": {"species_index": 7, "common_name": "Spruce Pine", "fia_code": 115, "INTERC": -2.431165, "LDBH": 1.691731, "DBH2": -0.000945, "LCRWN": 0.588558, "HREL": -0.326169, "ISIO": 0.000109, "PLTB": -0.001847, "PNTBL": -0.001394, "TANS": -0.324278, "FCOS": 0.526867, "FSIN": 0.009866},
+    "LL": {"species_index": 8, "common_name": "Longleaf Pine", "fia_code": 121, "INTERC": -1.331052, "LDBH": 1.098112, "DBH2": -0.001834, "LCRWN": 0.184512, "HREL": 0.388018, "ISIO": 0.008774, "PLTB": -0.002182, "PNTBL": -0.002898, "TANS": 0.225213, "FCOS": 0.086883, "FSIN": 0.107445},
+    "TM": {"species_index": 9, "common_name": "Table Mountain Pine", "fia_code": 123, "INTERC": -2.600803, "LDBH": 1.525435, "DBH2": -0.003519, "LCRWN": 0.615731, "HREL": 0.059646, "ISIO": 0.001033, "PLTB": -0.002304, "PNTBL": -0.002716, "TANS": -0.217771, "FCOS": 0.018819, "FSIN": -0.052142},
+    "PP": {"species_index": 10, "common_name": "Pitch Pine", "fia_code": 126, "INTERC": -3.639059, "LDBH": 1.397394, "DBH2": -0.001670, "LCRWN": 0.739443, "HREL": -0.193198, "ISIO": 0.008731, "PLTB": -0.002257, "PNTBL": -0.002188, "TANS": -0.317178, "FCOS": 0.083538, "FSIN": 0.150686},
+    "PD": {"species_index": 11, "common_name": "Pond Pine", "fia_code": 128, "INTERC": -2.353114, "LDBH": 1.425614, "DBH2": -0.001694, "LCRWN": 0.455833, "HREL": -0.198222, "ISIO": 0.007876, "PLTB": -0.003001, "PNTBL": -0.004510, "TANS": 0.685018, "FCOS": -2.907934, "FSIN": 1.683401},
+    "WP": {"species_index": 12, "common_name": "Eastern White Pine", "fia_code": 129, "INTERC": -3.497764, "LDBH": 1.339503, "DBH2": -0.000961, "LCRWN": 0.759060, "HREL": 0.605201, "ISIO": 0.004214, "PLTB": -0.000865, "PNTBL": -0.004065, "TANS": -0.372738, "FCOS": -0.085193, "FSIN": -0.035582},
+    "LP": {"species_index": 13, "common_name": "Loblolly Pine", "fia_code": 131, "INTERC": 0.222214, "LDBH": 1.163040, "DBH2": -0.000863, "LCRWN": 0.028483, "HREL": 0.006935, "ISIO": 0.005018, "PLTB": -0.003408, "PNTBL": -0.004184, "TANS": -0.759347, "FCOS": 0.185360, "FSIN": -0.072842},
+    "VP": {"species_index": 14, "common_name": "Virginia Pine", "fia_code": 132, "INTERC": -2.600803, "LDBH": 1.525435, "DBH2": -0.003519, "LCRWN": 0.615731, "HREL": 0.059646, "ISIO": 0.001033, "PLTB": -0.002304, "PNTBL": -0.002716, "TANS": -0.217771, "FCOS": 0.018819, "FSIN": -0.052142},
+    "BY": {"species_index": 15, "common_name": "Bald Cypress", "fia_code": 221, "INTERC": -1.735969, "LDBH": 1.505649, "DBH2": -0.000054, "LCRWN": 0.132441, "HREL": -0.119572, "ISIO": 0.003996, "PLTB": -0.000502, "PNTBL": -0.000768, "TANS": -0.560585, "FCOS": -0.428140, "FSIN": -0.739509},
+    "PC": {"species_index": 16, "common_name": "Pond Cypress", "fia_code": 222, "INTERC": -4.224977, "LDBH": 1.831739, "DBH2": -0.000595, "LCRWN": 0.446234, "HREL": -0.125847, "ISIO": 0.005975, "PLTB": -0.000191, "PNTBL": -0.000600, "TANS": 2.356739, "FCOS": -8.639114, "FSIN": 5.615465},
+    "HM": {"species_index": 17, "common_name": "Eastern Hemlock", "fia_code": 260, "INTERC": -2.267851, "LDBH": 1.442529, "DBH2": -0.000548, "LCRWN": 0.568468, "HREL": -0.403762, "ISIO": -0.001151, "PLTB": -0.000824, "PNTBL": -0.002503, "TANS": -0.241408, "FCOS": 0.066508, "FSIN": 0.086959},
+    "FM": {"species_index": 18, "common_name": "Florida Maple", "fia_code": 311, "INTERC": -1.685778, "LDBH": 1.454506, "DBH2": -0.000818, "LCRWN": 0.242436, "HREL": -0.140837, "ISIO": 0.004360, "PLTB": -0.003268, "PNTBL": -0.001923, "TANS": -0.339807, "FCOS": -0.204878, "FSIN": -0.147110},
+    "BE": {"species_index": 19, "common_name": "Boxelder", "fia_code": 313, "INTERC": -0.871047, "LDBH": 1.217898, "DBH2": -0.000105, "LCRWN": 0.240101, "HREL": 0.071213, "ISIO": -0.000022, "PLTB": -0.001242, "PNTBL": -0.000826, "TANS": -0.613177, "FCOS": 0.315909, "FSIN": -0.237088},
+    "RM": {"species_index": 20, "common_name": "Red Maple", "fia_code": 316, "INTERC": -2.260482, "LDBH": 1.449834, "DBH2": -0.000931, "LCRWN": 0.361311, "HREL": 0.282436, "ISIO": 0.003444, "PLTB": -0.002133, "PNTBL": -0.001383, "TANS": -0.097604, "FCOS": -0.069753, "FSIN": 0.094162},
+    "SV": {"species_index": 21, "common_name": "Silver Maple", "fia_code": 317, "INTERC": -2.260482, "LDBH": 1.449834, "DBH2": -0.000931, "LCRWN": 0.361311, "HREL": 0.282436, "ISIO": 0.003444, "PLTB": -0.002133, "PNTBL": -0.001383, "TANS": -0.097604, "FCOS": -0.069753, "FSIN": 0.094162},
+    "SM": {"species_index": 22, "common_name": "Sugar Maple", "fia_code": 318, "INTERC": -2.313444, "LDBH": 1.350084, "DBH2": -0.000816, "LCRWN": 0.394806, "HREL": 0.631803, "ISIO": -0.000542, "PLTB": -0.001413, "PNTBL": -0.001527, "TANS": -0.032482, "FCOS": -0.009543, "FSIN": 0.005581},
+    "BU": {"species_index": 23, "common_name": "Buckeye", "fia_code": 330, "INTERC": -1.876225, "LDBH": 1.197048, "DBH2": -0.000778, "LCRWN": 0.183857, "HREL": 0.547747, "ISIO": 0.010254, "PLTB": -0.004219, "PNTBL": -0.000586, "TANS": -0.178079, "FCOS": 0.187157, "FSIN": -0.108544},
+    "BB": {"species_index": 24, "common_name": "Birch", "fia_code": 370, "INTERC": -1.092055, "LDBH": 1.024946, "DBH2": -0.000653, "LCRWN": 0.206770, "HREL": 0.489441, "ISIO": 0.002354, "PLTB": -0.002005, "PNTBL": -0.001848, "TANS": -0.192793, "FCOS": -0.112449, "FSIN": 0.113349},
+    "SB": {"species_index": 25, "common_name": "Sweet Birch", "fia_code": 372, "INTERC": -1.092055, "LDBH": 1.024946, "DBH2": -0.000653, "LCRWN": 0.206770, "HREL": 0.489441, "ISIO": 0.002354, "PLTB": -0.002005, "PNTBL": -0.001848, "TANS": -0.192793, "FCOS": -0.112449, "FSIN": 0.113349},
+    "AH": {"species_index": 26, "common_name": "American Hornbeam", "fia_code": 391, "INTERC": -1.281144, "LDBH": 1.335625, "DBH2": 0.000000, "LCRWN": 0.111128, "HREL": -0.244632, "ISIO": 0.005347, "PLTB": -0.003852, "PNTBL": -0.000644, "TANS": -0.224489, "FCOS": 0.031993, "FSIN": -0.160702},
+    "HI": {"species_index": 27, "common_name": "Hickory", "fia_code": 400, "INTERC": -2.728289, "LDBH": 1.548449, "DBH2": -0.000761, "LCRWN": 0.203837, "HREL": 0.570012, "ISIO": 0.004399, "PLTB": -0.003339, "PNTBL": -0.001029, "TANS": -0.245761, "FCOS": 0.055798, "FSIN": 0.080648},
+    "CA": {"species_index": 28, "common_name": "Catalpa", "fia_code": 450, "INTERC": -1.068980, "LDBH": 1.164191, "DBH2": 0.000000, "LCRWN": 0.084279, "HREL": 0.501307, "ISIO": 0.009700, "PLTB": -0.001041, "PNTBL": -0.001349, "TANS": 0.075733, "FCOS": -0.601088, "FSIN": -0.757088},
+    "HB": {"species_index": 29, "common_name": "Hackberry", "fia_code": 460, "INTERC": -0.833167, "LDBH": 1.190567, "DBH2": 0.000000, "LCRWN": 0.193368, "HREL": 0.508738, "ISIO": -0.000056, "PLTB": -0.001846, "PNTBL": -0.001776, "TANS": -0.179044, "FCOS": 0.039673, "FSIN": -0.071628},
+    "RD": {"species_index": 30, "common_name": "Eastern Redbud", "fia_code": 471, "INTERC": -1.062539, "LDBH": 1.174050, "DBH2": 0.000000, "LCRWN": 0.239942, "HREL": 0.411945, "ISIO": -0.005893, "PLTB": -0.001141, "PNTBL": -0.002822, "TANS": -0.391784, "FCOS": 0.039121, "FSIN": -0.038350},
+    "DW": {"species_index": 31, "common_name": "Flowering Dogwood", "fia_code": 491, "INTERC": -2.540719, "LDBH": 1.293125, "DBH2": -0.000856, "LCRWN": 0.368481, "HREL": -0.611245, "ISIO": 0.004257, "PLTB": -0.003144, "PNTBL": -0.001235, "TANS": -0.282662, "FCOS": -0.084011, "FSIN": 0.104748},
+    "PS": {"species_index": 32, "common_name": "Common Persimmon", "fia_code": 521, "INTERC": -2.524455, "LDBH": 1.479865, "DBH2": -0.001512, "LCRWN": 0.289171, "HREL": 0.243575, "ISIO": 0.003369, "PLTB": -0.001319, "PNTBL": -0.002784, "TANS": -0.327799, "FCOS": -0.200696, "FSIN": -0.145939},
+    "AB": {"species_index": 33, "common_name": "American Beech", "fia_code": 531, "INTERC": -1.251887, "LDBH": 1.349337, "DBH2": -0.000447, "LCRWN": 0.193148, "HREL": 0.279322, "ISIO": -0.000287, "PLTB": -0.002547, "PNTBL": -0.001176, "TANS": -0.380400, "FCOS": 0.160386, "FSIN": -0.088382},
+    "AS": {"species_index": 34, "common_name": "Ash Species", "fia_code": 540, "INTERC": -2.954457, "LDBH": 1.461691, "DBH2": 0.000000, "LCRWN": 0.377819, "HREL": 0.185353, "ISIO": 0.007104, "PLTB": -0.002027, "PNTBL": -0.000779, "TANS": -0.619659, "FCOS": 0.020132, "FSIN": -0.020785},
+    "WA": {"species_index": 35, "common_name": "White Ash", "fia_code": 541, "INTERC": -1.315283, "LDBH": 1.216264, "DBH2": -0.000080, "LCRWN": 0.087907, "HREL": 0.487191, "ISIO": 0.003424, "PLTB": -0.000807, "PNTBL": -0.001262, "TANS": 0.018297, "FCOS": -0.001091, "FSIN": -0.021565},
+    "BA": {"species_index": 36, "common_name": "Black Ash", "fia_code": 543, "INTERC": -0.897707, "LDBH": 1.243091, "DBH2": 0.000000, "LCRWN": 0.090158, "HREL": 0.496594, "ISIO": -0.000465, "PLTB": -0.000001, "PNTBL": -0.001450, "TANS": -0.158064, "FCOS": -0.138225, "FSIN": -0.081197},
+    "GA": {"species_index": 37, "common_name": "Green Ash", "fia_code": 544, "INTERC": -0.897707, "LDBH": 1.243091, "DBH2": 0.000000, "LCRWN": 0.090158, "HREL": 0.496594, "ISIO": -0.000465, "PLTB": -0.000001, "PNTBL": -0.001450, "TANS": -0.158064, "FCOS": -0.138225, "FSIN": -0.081197},
+    "HL": {"species_index": 38, "common_name": "Honeylocust", "fia_code": 552, "INTERC": -0.314922, "LDBH": 0.927191, "DBH2": 0.000000, "LCRWN": 0.103234, "HREL": 0.538379, "ISIO": 0.003038, "PLTB": -0.001181, "PNTBL": -0.002489, "TANS": -0.107755, "FCOS": 0.958763, "FSIN": 0.823135},
+    "LB": {"species_index": 39, "common_name": "Loblolly Bay", "fia_code": 555, "INTERC": -2.514589, "LDBH": 1.459672, "DBH2": -0.001317, "LCRWN": 0.654209, "HREL": 0.106808, "ISIO": -0.003582, "PLTB": -0.000311, "PNTBL": -0.002192, "TANS": -3.469125, "FCOS": -10.149549, "FSIN": 1.404412},
+    "HA": {"species_index": 40, "common_name": "Silverbell", "fia_code": 580, "INTERC": -2.352258, "LDBH": 1.746852, "DBH2": 0.000000, "LCRWN": 0.291502, "HREL": -1.771604, "ISIO": 0.003239, "PLTB": 0.000000, "PNTBL": -0.000770, "TANS": 0.335703, "FCOS": -0.657751, "FSIN": 0.585839},
+    "HY": {"species_index": 41, "common_name": "American Holly", "fia_code": 591, "INTERC": -1.981934, "LDBH": 1.456263, "DBH2": -0.002061, "LCRWN": 0.215249, "HREL": -0.414064, "ISIO": 0.004240, "PLTB": -0.003096, "PNTBL": -0.000394, "TANS": -0.303627, "FCOS": 0.210525, "FSIN": -0.159362},
+    "BN": {"species_index": 42, "common_name": "Butternut", "fia_code": 601, "INTERC": -2.354190, "LDBH": 1.050171, "DBH2": -0.000154, "LCRWN": 0.425328, "HREL": 0.616257, "ISIO": 0.001348, "PLTB": -0.000564, "PNTBL": -0.000588, "TANS": 0.133415, "FCOS": -0.209729, "FSIN": 0.014948},
+    "WN": {"species_index": 43, "common_name": "Black Walnut", "fia_code": 602, "INTERC": -2.354190, "LDBH": 1.050171, "DBH2": -0.000154, "LCRWN": 0.425328, "HREL": 0.616257, "ISIO": 0.001348, "PLTB": -0.000564, "PNTBL": -0.000588, "TANS": 0.133415, "FCOS": -0.209729, "FSIN": 0.014948},
+    "SU": {"species_index": 44, "common_name": "Sweetgum", "fia_code": 611, "INTERC": -1.324147, "LDBH": 1.395884, "DBH2": -0.000490, "LCRWN": 0.145539, "HREL": 0.256765, "ISIO": 0.001993, "PLTB": -0.002978, "PNTBL": -0.001940, "TANS": -0.502977, "FCOS": 0.141477, "FSIN": 0.003549},
+    "YP": {"species_index": 45, "common_name": "Yellow-poplar", "fia_code": 621, "INTERC": -2.513351, "LDBH": 1.495351, "DBH2": -0.000756, "LCRWN": 0.530123, "HREL": 0.161718, "ISIO": 0.000746, "PLTB": -0.001839, "PNTBL": -0.002217, "TANS": -0.321777, "FCOS": -0.001645, "FSIN": 0.064815},
+    "MG": {"species_index": 46, "common_name": "Magnolia", "fia_code": 650, "INTERC": -2.516823, "LDBH": 1.454173, "DBH2": -0.000925, "LCRWN": 0.252335, "HREL": 0.243666, "ISIO": 0.007223, "PLTB": -0.001259, "PNTBL": -0.001111, "TANS": -0.025555, "FCOS": 0.149606, "FSIN": 0.032438},
+    "CT": {"species_index": 47, "common_name": "Cucumbertree", "fia_code": 651, "INTERC": -1.239592, "LDBH": 1.063360, "DBH2": -0.000092, "LCRWN": 0.243097, "HREL": 0.533202, "ISIO": -0.003084, "PLTB": 0.000680, "PNTBL": -0.001643, "TANS": -0.308453, "FCOS": -0.071496, "FSIN": 0.265688},
+    "MS": {"species_index": 48, "common_name": "Southern Magnolia", "fia_code": 652, "INTERC": -1.477929, "LDBH": 1.126474, "DBH2": -0.000267, "LCRWN": 0.134257, "HREL": 0.539000, "ISIO": 0.005884, "PLTB": -0.002740, "PNTBL": -0.000886, "TANS": 0.405735, "FCOS": -0.063579, "FSIN": 0.017095},
+    "MV": {"species_index": 49, "common_name": "Sweetbay", "fia_code": 653, "INTERC": -2.516823, "LDBH": 1.454173, "DBH2": -0.000925, "LCRWN": 0.252335, "HREL": 0.243666, "ISIO": 0.007223, "PLTB": -0.001259, "PNTBL": -0.001111, "TANS": -0.025555, "FCOS": 0.149606, "FSIN": 0.032438},
+    "ML": {"species_index": 50, "common_name": "Bigleaf Magnolia", "fia_code": 654, "INTERC": -1.477929, "LDBH": 1.126474, "DBH2": -0.000267, "LCRWN": 0.134257, "HREL": 0.539000, "ISIO": 0.005884, "PLTB": -0.002740, "PNTBL": -0.000886, "TANS": 0.405735, "FCOS": -0.063579, "FSIN": 0.017095},
+    "AP": {"species_index": 51, "common_name": "Apple", "fia_code": 660, "INTERC": -1.746231, "LDBH": 1.234133, "DBH2": -0.000017, "LCRWN": 0.285511, "HREL": 0.180572, "ISIO": 0.002596, "PLTB": -0.001709, "PNTBL": -0.000099, "TANS": -0.872861, "FCOS": -0.078948, "FSIN": -0.023609},
+    "MB": {"species_index": 52, "common_name": "Mulberry", "fia_code": 680, "INTERC": -1.746231, "LDBH": 1.234133, "DBH2": -0.000017, "LCRWN": 0.285511, "HREL": 0.180572, "ISIO": 0.002596, "PLTB": -0.001709, "PNTBL": -0.000099, "TANS": -0.872861, "FCOS": -0.078948, "FSIN": -0.023609},
+    "WT": {"species_index": 53, "common_name": "Water Tupelo", "fia_code": 691, "INTERC": -2.721782, "LDBH": 1.599221, "DBH2": -0.000162, "LCRWN": 0.351271, "HREL": 0.133939, "ISIO": 0.001783, "PLTB": -0.000370, "PNTBL": -0.000262, "TANS": -0.023349, "FCOS": 2.073647, "FSIN": -2.213173},
+    "BG": {"species_index": 54, "common_name": "Blackgum", "fia_code": 693, "INTERC": -1.508549, "LDBH": 1.306362, "DBH2": -0.000576, "LCRWN": 0.112403, "HREL": 0.121169, "ISIO": 0.003356, "PLTB": -0.002482, "PNTBL": -0.001013, "TANS": -0.296628, "FCOS": -0.131968, "FSIN": -0.031596},
+    "TS": {"species_index": 55, "common_name": "Swamp Tupelo", "fia_code": 694, "INTERC": -2.555720, "LDBH": 1.303035, "DBH2": 0.000000, "LCRWN": 0.319301, "HREL": -0.109064, "ISIO": 0.006498, "PLTB": -0.001087, "PNTBL": -0.001185, "TANS": -0.130105, "FCOS": -0.053688, "FSIN": 0.149549},
+    "HH": {"species_index": 56, "common_name": "Hophornbeam", "fia_code": 701, "INTERC": -1.431973, "LDBH": 1.452294, "DBH2": -0.001475, "LCRWN": 0.061077, "HREL": -0.208915, "ISIO": 0.004856, "PLTB": -0.003145, "PNTBL": 0.000000, "TANS": -0.422675, "FCOS": -0.236535, "FSIN": 0.201149},
+    "SD": {"species_index": 57, "common_name": "Sourwood", "fia_code": 711, "INTERC": -3.180040, "LDBH": 1.355790, "DBH2": -0.000784, "LCRWN": 0.532236, "HREL": 0.077021, "ISIO": 0.005170, "PLTB": -0.002389, "PNTBL": -0.000797, "TANS": -0.292680, "FCOS": 0.050523, "FSIN": -0.008687},
+    "RA": {"species_index": 58, "common_name": "Redbay", "fia_code": 721, "INTERC": -2.096616, "LDBH": 1.254708, "DBH2": 0.000000, "LCRWN": 0.344067, "HREL": 0.176829, "ISIO": 0.002656, "PLTB": -0.002625, "PNTBL": -0.000811, "TANS": -1.762191, "FCOS": 1.202555, "FSIN": 0.383865},
+    "SY": {"species_index": 59, "common_name": "American Sycamore", "fia_code": 731, "INTERC": -1.012995, "LDBH": 1.272885, "DBH2": -0.000238, "LCRWN": 0.234530, "HREL": 0.332494, "ISIO": 0.000406, "PLTB": -0.000252, "PNTBL": -0.001608, "TANS": -0.092471, "FCOS": 0.494599, "FSIN": -0.367667},
+    "CW": {"species_index": 60, "common_name": "Cottonwood", "fia_code": 740, "INTERC": -1.068980, "LDBH": 1.164191, "DBH2": 0.000000, "LCRWN": 0.084279, "HREL": 0.501307, "ISIO": 0.009700, "PLTB": -0.001041, "PNTBL": -0.001349, "TANS": 0.075733, "FCOS": -0.601088, "FSIN": -0.757088},
+    "BT": {"species_index": 61, "common_name": "Bigtooth Aspen", "fia_code": 743, "INTERC": -1.068980, "LDBH": 1.164191, "DBH2": 0.000000, "LCRWN": 0.084279, "HREL": 0.501307, "ISIO": 0.009700, "PLTB": -0.001041, "PNTBL": -0.001349, "TANS": 0.075733, "FCOS": -0.601088, "FSIN": -0.757088},
+    "BC": {"species_index": 62, "common_name": "Black Cherry", "fia_code": 762, "INTERC": -2.610023, "LDBH": 1.220310, "DBH2": -0.000234, "LCRWN": 0.520739, "HREL": 0.181418, "ISIO": 0.003897, "PLTB": -0.002494, "PNTBL": -0.001904, "TANS": -0.071719, "FCOS": -0.028196, "FSIN": -0.180664},
+    "WO": {"species_index": 63, "common_name": "White Oak", "fia_code": 802, "INTERC": -1.608339, "LDBH": 1.468589, "DBH2": -0.000778, "LCRWN": 0.139456, "HREL": 0.358369, "ISIO": 0.004530, "PLTB": -0.002807, "PNTBL": -0.002269, "TANS": -0.223273, "FCOS": 0.008526, "FSIN": -0.032889},
+    "SO": {"species_index": 64, "common_name": "Scarlet Oak", "fia_code": 806, "INTERC": -2.284302, "LDBH": 1.569893, "DBH2": -0.000632, "LCRWN": 0.272422, "HREL": 0.206868, "ISIO": 0.005065, "PLTB": -0.001157, "PNTBL": -0.001315, "TANS": -0.204324, "FCOS": -0.004871, "FSIN": 0.048758},
+    "SK": {"species_index": 65, "common_name": "Southern Red Oak", "fia_code": 812, "INTERC": -0.783581, "LDBH": 1.432483, "DBH2": -0.000412, "LCRWN": 0.044460, "HREL": 0.241383, "ISIO": 0.003012, "PLTB": -0.003263, "PNTBL": -0.001913, "TANS": -0.312121, "FCOS": 0.051221, "FSIN": 0.109366},
+    "CB": {"species_index": 66, "common_name": "Cherrybark Oak", "fia_code": 813, "INTERC": -0.295485, "LDBH": 1.239946, "DBH2": -0.000163, "LCRWN": 0.020622, "HREL": 0.431515, "ISIO": 0.003830, "PLTB": -0.002257, "PNTBL": -0.001826, "TANS": -0.105862, "FCOS": 0.191286, "FSIN": -0.324254},
+    "TO": {"species_index": 67, "common_name": "Turkey Oak", "fia_code": 819, "INTERC": -2.698130, "LDBH": 1.622081, "DBH2": -0.001703, "LCRWN": 0.354924, "HREL": -0.033854, "ISIO": 0.000682, "PLTB": -0.002773, "PNTBL": -0.002901, "TANS": -1.084846, "FCOS": -0.196932, "FSIN": 0.514630},
+    "LK": {"species_index": 68, "common_name": "Laurel Oak", "fia_code": 820, "INTERC": -1.561284, "LDBH": 1.335456, "DBH2": -0.000412, "LCRWN": 0.246163, "HREL": 0.381808, "ISIO": 0.004714, "PLTB": -0.001526, "PNTBL": -0.002253, "TANS": -0.704548, "FCOS": 0.421803, "FSIN": 0.296509},
+    "OV": {"species_index": 69, "common_name": "Overcup Oak", "fia_code": 822, "INTERC": -0.947174, "LDBH": 1.376350, "DBH2": -0.000482, "LCRWN": 0.099697, "HREL": 0.427943, "ISIO": 0.001280, "PLTB": -0.001416, "PNTBL": -0.002636, "TANS": -0.666854, "FCOS": -0.977891, "FSIN": -0.311322},
+    "BJ": {"species_index": 70, "common_name": "Blackjack Oak", "fia_code": 824, "INTERC": -1.948938, "LDBH": 1.611438, "DBH2": -0.000844, "LCRWN": 0.135696, "HREL": 0.056739, "ISIO": 0.002740, "PLTB": -0.003558, "PNTBL": -0.001825, "TANS": -0.071837, "FCOS": -0.147407, "FSIN": 0.241882},
+    "SN": {"species_index": 71, "common_name": "Swamp Chestnut Oak", "fia_code": 825, "INTERC": -1.321662, "LDBH": 1.640507, "DBH2": -0.000285, "LCRWN": 0.038193, "HREL": 0.086499, "ISIO": 0.005844, "PLTB": -0.004171, "PNTBL": -0.001962, "TANS": -1.251051, "FCOS": -0.342161, "FSIN": 0.077775},
+    "CK": {"species_index": 72, "common_name": "Chinkapin Oak", "fia_code": 826, "INTERC": -2.223515, "LDBH": 0.937359, "DBH2": 0.000212, "LCRWN": 0.286311, "HREL": 0.733279, "ISIO": 0.008621, "PLTB": -0.000299, "PNTBL": -0.001711, "TANS": -0.065269, "FCOS": -0.008808, "FSIN": 0.471906},
+    "WK": {"species_index": 73, "common_name": "Water Oak", "fia_code": 827, "INTERC": -0.845477, "LDBH": 1.488444, "DBH2": -0.000286, "LCRWN": 0.053292, "HREL": 0.130856, "ISIO": 0.005330, "PLTB": -0.003479, "PNTBL": -0.001641, "TANS": -0.151128, "FCOS": 0.073469, "FSIN": -0.165679},
+    "CO": {"species_index": 74, "common_name": "Chestnut Oak", "fia_code": 832, "INTERC": -2.900655, "LDBH": 1.347350, "DBH2": -0.000533, "LCRWN": 0.300133, "HREL": 0.597032, "ISIO": 0.008415, "PLTB": -0.001112, "PNTBL": -0.001536, "TANS": -0.133852, "FCOS": -0.056050, "FSIN": 0.003947},
+    "RO": {"species_index": 75, "common_name": "Northern Red Oak", "fia_code": 833, "INTERC": -2.732646, "LDBH": 1.499450, "DBH2": -0.000729, "LCRWN": 0.344764, "HREL": 0.466082, "ISIO": 0.004632, "PLTB": -0.000908, "PNTBL": -0.001131, "TANS": -0.174932, "FCOS": -0.042528, "FSIN": 0.110336},
+    "QS": {"species_index": 76, "common_name": "Shumard Oak", "fia_code": 834, "INTERC": -0.328678, "LDBH": 1.282494, "DBH2": -0.000351, "LCRWN": 0.071625, "HREL": 0.455600, "ISIO": -0.001173, "PLTB": -0.000482, "PNTBL": -0.002125, "TANS": -0.692617, "FCOS": 0.176391, "FSIN": 0.069174},
+    "PO": {"species_index": 77, "common_name": "Post Oak", "fia_code": 835, "INTERC": -1.430321, "LDBH": 1.293728, "DBH2": -0.000452, "LCRWN": 0.047937, "HREL": 0.514612, "ISIO": 0.005466, "PLTB": -0.003306, "PNTBL": -0.001375, "TANS": -0.408878, "FCOS": 0.009165, "FSIN": 0.054469},
+    "BO": {"species_index": 78, "common_name": "Black Oak", "fia_code": 837, "INTERC": -2.345845, "LDBH": 1.450330, "DBH2": -0.000674, "LCRWN": 0.251441, "HREL": 0.527504, "ISIO": 0.005921, "PLTB": -0.002235, "PNTBL": -0.000862, "TANS": -0.307814, "FCOS": -0.033568, "FSIN": 0.054762},
+    "LO": {"species_index": 79, "common_name": "Live Oak", "fia_code": 838, "INTERC": -3.640660, "LDBH": 1.448503, "DBH2": -0.000210, "LCRWN": 0.549199, "HREL": 0.073672, "ISIO": 0.009377, "PLTB": -0.003217, "PNTBL": -0.000779, "TANS": -0.099727, "FCOS": -0.174200, "FSIN": -0.102828},
+    "BK": {"species_index": 80, "common_name": "Black Locust", "fia_code": 901, "INTERC": -1.307911, "LDBH": 0.963269, "DBH2": 0.000000, "LCRWN": 0.268621, "HREL": 0.396699, "ISIO": 0.003713, "PLTB": -0.001858, "PNTBL": -0.001674, "TANS": -0.335364, "FCOS": -0.084806, "FSIN": 0.127896},
+    "WI": {"species_index": 81, "common_name": "Willow", "fia_code": 920, "INTERC": -1.109398, "LDBH": 1.187096, "DBH2": 0.000000, "LCRWN": 0.202056, "HREL": 0.093966, "ISIO": 0.006303, "PLTB": 0.000000, "PNTBL": -0.001075, "TANS": -0.135482, "FCOS": -0.083002, "FSIN": 0.059529},
+    "SS": {"species_index": 82, "common_name": "Sassafras", "fia_code": 931, "INTERC": -1.745126, "LDBH": 1.313340, "DBH2": -0.000179, "LCRWN": 0.201048, "HREL": 0.542693, "ISIO": 0.004206, "PLTB": -0.002593, "PNTBL": -0.000345, "TANS": -0.013340, "FCOS": -0.021681, "FSIN": -0.069965},
+    "BD": {"species_index": 83, "common_name": "Basswood", "fia_code": 950, "INTERC": -1.848106, "LDBH": 1.424209, "DBH2": -0.001488, "LCRWN": 0.289244, "HREL": 0.253525, "ISIO": 0.003499, "PLTB": -0.001236, "PNTBL": -0.002875, "TANS": -0.580068, "FCOS": 0.235707, "FSIN": -0.055862},
+    "EL": {"species_index": 84, "common_name": "Elm", "fia_code": 970, "INTERC": -2.356235, "LDBH": 1.479429, "DBH2": -0.000517, "LCRWN": 0.425367, "HREL": -0.083383, "ISIO": 0.002767, "PLTB": -0.003132, "PNTBL": -0.001352, "TANS": -1.000956, "FCOS": -0.064524, "FSIN": -0.146557},
+    "WE": {"species_index": 85, "common_name": "Winged Elm", "fia_code": 971, "INTERC": -0.790138, "LDBH": 0.949707, "DBH2": 0.000000, "LCRWN": 0.100266, "HREL": 0.348136, "ISIO": 0.004360, "PLTB": -0.002975, "PNTBL": -0.001030, "TANS": -0.439374, "FCOS": 0.272172, "FSIN": 0.248287},
+    "AE": {"species_index": 86, "common_name": "American Elm", "fia_code": 972, "INTERC": -0.510736, "LDBH": 1.164789, "DBH2": 0.000000, "LCRWN": 0.127893, "HREL": 0.516517, "ISIO": 0.000450, "PLTB": -0.003114, "PNTBL": -0.001524, "TANS": -0.446461, "FCOS": 0.228712, "FSIN": 0.069806},
+    "RL": {"species_index": 87, "common_name": "Slippery Elm", "fia_code": 975, "INTERC": -0.229212, "LDBH": 1.060275, "DBH2": 0.000000, "LCRWN": 0.116801, "HREL": 0.430393, "ISIO": -0.001806, "PLTB": -0.001330, "PNTBL": -0.002098, "TANS": 0.158824, "FCOS": -0.216082, "FSIN": 0.037837},
+    "OS": {"species_index": 88, "common_name": "Other Softwood", "fia_code": 299, "INTERC": -1.864431, "LDBH": 1.403065, "DBH2": -0.001237, "LCRWN": 0.273616, "HREL": 0.177408, "ISIO": -0.000374, "PLTB": -0.003620, "PNTBL": -0.001890, "TANS": -0.231988, "FCOS": 0.077542, "FSIN": -0.025792},
+    "OH": {"species_index": 89, "common_name": "Other Hardwood", "fia_code": 998, "INTERC": -1.431973, "LDBH": 1.452294, "DBH2": -0.001475, "LCRWN": 0.061077, "HREL": -0.208915, "ISIO": 0.004856, "PLTB": -0.003145, "PNTBL": 0.000000, "TANS": -0.422675, "FCOS": -0.236535, "FSIN": 0.201149},
+    "OT": {"species_index": 90, "common_name": "Other Species", "fia_code": 999, "INTERC": -1.645961, "LDBH": 1.447657, "DBH2": -0.002158, "LCRWN": 0.241038, "HREL": 0.719652, "ISIO": -0.003250, "PLTB": 0.000000, "PNTBL": -0.002468, "TANS": -1.080004, "FCOS": 0.112883, "FSIN": 0.158354}
   },
   "forest_type_coefficients": {
     "description": "Categorical variables applied based on forest type classification (IFORTP)",
@@ -112,181 +149,74 @@
         "name": "Lowland Hardwood",
         "forest_types": [168, 508, 601, 602, 605, 606, 607, 608, 702, 703, 704, 705, 706, 708],
         "coefficients": {
-          "SP": 0.106418,
-          "SA": 0.325861,
-          "LL": 0.048216,
-          "LP": 0.126441
+          "SP": 0.106418, "SA": 0.325861, "LL": 0.048216, "LP": 0.126441
         }
       },
       "NOHD": {
         "name": "No Hardwood (Pure Softwood)",
         "forest_types": [701, 801, 805],
         "coefficients": {
-          "SP": 0.455020,
-          "SA": 0.000000,
-          "LL": 0.000000,
-          "LP": -0.122163
+          "SP": 0.455020, "SA": 0.000000, "LL": 0.000000, "LP": -0.122163
         }
       },
       "OKPN": {
         "name": "Oak-Pine",
         "forest_types": [165, 403, 404, 405, 406, 407, 409],
         "coefficients": {
-          "SP": 0.017518,
-          "SA": 0.116235,
-          "LL": 0.088872,
-          "LP": 0.050835
+          "SP": 0.017518, "SA": 0.116235, "LL": 0.088872, "LP": 0.050835
         }
       },
       "SFHP": {
         "name": "Spruce-Fir/Hemlock-Pine",
         "forest_types": [104, 105, 121, 124],
         "coefficients": {
-          "SP": 0.000000,
-          "SA": 0.000000,
-          "LL": 0.000000,
-          "LP": 0.000000
+          "SP": 0.000000, "SA": 0.000000, "LL": 0.000000, "LP": 0.000000
         }
       },
       "UPHD": {
         "name": "Upland Hardwood",
         "forest_types": [103, 167, 181, 401, 402, 506, 507, 511, 512, 513, 519, 520, 802, 803, 807, 809],
         "coefficients": {
-          "SP": 0.066811,
-          "SA": 0.162020,
-          "LL": 0.086720,
-          "LP": 0.063669
+          "SP": 0.066811, "SA": 0.162020, "LL": 0.086720, "LP": 0.063669
         }
       },
       "UPOK": {
         "name": "Upland Oak",
         "forest_types": [501, 502, 503, 504, 505, 510, 514, 515],
         "coefficients": {
-          "SP": -0.040181,
-          "SA": 0.410684,
-          "LL": 0.106061,
-          "LP": -0.016885
+          "SP": -0.040181, "SA": 0.410684, "LL": 0.106061, "LP": -0.016885
         }
       },
       "YLPN": {
         "name": "Yellow Pine",
         "forest_types": [141, 142, 161, 162, 163, 164, 166],
         "coefficients": {
-          "SP": 0.000000,
-          "SA": 0.000000,
-          "LL": 0.000000,
-          "LP": 0.000000
+          "SP": 0.000000, "SA": 0.000000, "LL": 0.000000, "LP": 0.000000
         }
       }
     },
     "plant_effect": {
       "description": "Applied when MANAGD keyword is set (plantation effect)",
       "coefficients": {
-        "SP": 0.000000,
-        "SA": 0.227572,
-        "LL": 0.110751,
-        "LP": 0.245669
+        "SP": 0.000000, "SA": 0.227572, "LL": 0.110751, "LP": 0.245669
       }
     }
   },
   "ecological_unit_coefficients": {
     "description": "Categorical variables based on ecological unit classification (Bailey's ecoregion codes)",
     "provinces": {
-      "PM221": {
-        "name": "Mountain Province 221",
-        "description": "Mountainous terrain in province 221",
-        "coefficients": {"SP": -0.569409, "SA": 0.000000, "LL": 0.000000, "LP": -0.069716}
-      },
-      "PM222": {
-        "name": "Mountain Province 222/223",
-        "description": "Mountainous terrain in provinces 222 or 223",
-        "coefficients": {"SP": -0.252741, "SA": 0.000000, "LL": 0.000000, "LP": 0.581967}
-      },
-      "PM231": {
-        "name": "Mountain Province 231",
-        "description": "Mountainous terrain in province 231",
-        "coefficients": {"SP": -0.265699, "SA": 0.000000, "LL": 0.000000, "LP": 0.790149}
-      },
-      "P221": {
-        "name": "Province 221 (non-mountain)",
-        "description": "Coastal plains/piedmont in province 221",
-        "coefficients": {"SP": -0.694484, "SA": 0.000000, "LL": 0.000000, "LP": -0.584818}
-      },
-      "P222": {
-        "name": "Province 222/223",
-        "description": "Province 222 or 223",
-        "coefficients": {"SP": -0.285112, "SA": 0.000000, "LL": -0.034553, "LP": -0.364073}
-      },
-      "S231T": {
-        "name": "Section 231 (Transition)",
-        "description": "Province 231 transition sections (A,C,D,I)",
-        "coefficients": {"SP": -0.504565, "SA": -0.025549, "LL": -0.175073, "LP": -0.183317}
-      },
-      "S231L": {
-        "name": "Section 231 (Lowland)",
-        "description": "Province 231 lowland sections (B,E,F,G)",
-        "coefficients": {"SP": 0.000000, "SA": 0.324111, "LL": -0.067793, "LP": 0.256273}
-      },
-      "P232": {
-        "name": "Province 232",
-        "description": "Outer Coastal Plain Mixed Forest Province",
-        "coefficients": {"SP": -0.113258, "SA": 0.000000, "LL": 0.000000, "LP": 0.000000}
-      },
-      "P234": {
-        "name": "Province 234",
-        "description": "Lower Mississippi Riverine Forest Province",
-        "coefficients": {"SP": 0.114097, "SA": 0.306793, "LL": 0.123262, "LP": 0.281790}
-      },
-      "P255": {
-        "name": "Province 255",
-        "description": "Prairie Parkland Province",
-        "coefficients": {"SP": 0.092458, "SA": 0.000000, "LL": 0.000000, "LP": 0.274618}
-      },
-      "P411": {
-        "name": "Province 411",
-        "description": "Everglades Province",
-        "coefficients": {"SP": 0.000000, "SA": -0.342293, "LL": 0.000000, "LP": 0.000000}
-      }
+      "PM221": {"name": "Mountain Province 221", "description": "Mountainous terrain in province 221", "coefficients": {"SP": -0.569409, "SA": 0.000000, "LL": 0.000000, "LP": -0.069716}},
+      "PM222": {"name": "Mountain Province 222/223", "description": "Mountainous terrain in provinces 222 or 223", "coefficients": {"SP": -0.252741, "SA": 0.000000, "LL": 0.000000, "LP": 0.581967}},
+      "PM231": {"name": "Mountain Province 231", "description": "Mountainous terrain in province 231", "coefficients": {"SP": -0.265699, "SA": 0.000000, "LL": 0.000000, "LP": 0.790149}},
+      "P221": {"name": "Province 221 (non-mountain)", "description": "Coastal plains/piedmont in province 221", "coefficients": {"SP": -0.694484, "SA": 0.000000, "LL": 0.000000, "LP": -0.584818}},
+      "P222": {"name": "Province 222/223", "description": "Province 222 or 223", "coefficients": {"SP": -0.285112, "SA": 0.000000, "LL": -0.034553, "LP": -0.364073}},
+      "S231T": {"name": "Section 231 (Transition)", "description": "Province 231 transition sections (A,C,D,I)", "coefficients": {"SP": -0.504565, "SA": -0.025549, "LL": -0.175073, "LP": -0.183317}},
+      "S231L": {"name": "Section 231 (Lowland)", "description": "Province 231 lowland sections (B,E,F,G)", "coefficients": {"SP": 0.000000, "SA": 0.324111, "LL": -0.067793, "LP": 0.256273}},
+      "P232": {"name": "Province 232", "description": "Outer Coastal Plain Mixed Forest Province", "coefficients": {"SP": -0.113258, "SA": 0.000000, "LL": 0.000000, "LP": 0.000000}},
+      "P234": {"name": "Province 234", "description": "Lower Mississippi Riverine Forest Province", "coefficients": {"SP": 0.114097, "SA": 0.306793, "LL": 0.123262, "LP": 0.281790}},
+      "P255": {"name": "Province 255", "description": "Prairie Parkland Province", "coefficients": {"SP": 0.092458, "SA": 0.000000, "LL": 0.000000, "LP": 0.274618}},
+      "P411": {"name": "Province 411", "description": "Everglades Province", "coefficients": {"SP": 0.000000, "SA": -0.342293, "LL": 0.000000, "LP": 0.000000}}
     }
-  },
-  "fort_bragg_equations": {
-    "description": "Special diameter growth equations for Fort Bragg forest (IFOR=20)",
-    "applies_to_species": ["LL", "LP"],
-    "LL": {
-      "species_index": 8,
-      "equation": "DG5 = (D*BARK) * ((-0.4553*(0.09737-exp(-0.2428*D))) + 0.05574*(CR/100) - 0.0002965*BA - 0.00002481*PBA - 0.001192*((PCT/100)^(-0.9663)) + 0.0010110*SI - 0.007711*RELHT)",
-      "coefficients": {
-        "dbh_exp_a": -0.4553,
-        "dbh_exp_b": 0.09737,
-        "dbh_exp_c": -0.2428,
-        "crown_ratio": 0.05574,
-        "basal_area": -0.0002965,
-        "point_basal_area": -0.00002481,
-        "percentile_a": -0.001192,
-        "percentile_b": -0.9663,
-        "site_index": 0.0010110,
-        "relative_height": -0.007711
-      },
-      "observations": 2056
-    },
-    "LP": {
-      "species_index": 13,
-      "equation": "DG5 = (D*BARK) * ((-0.3428*(-0.1741-exp(-0.1328*D))) + 0.1145*(CR/100) - 0.0001682*BA - 0.00003978*PBA - 0.159400*((PCT/100)^(-0.1299)) + 0.0006204*SI + 0.02474*RELHT)",
-      "coefficients": {
-        "dbh_exp_a": -0.3428,
-        "dbh_exp_b": -0.1741,
-        "dbh_exp_c": -0.1328,
-        "crown_ratio": 0.1145,
-        "basal_area": -0.0001682,
-        "point_basal_area": -0.00003978,
-        "percentile_a": -0.159400,
-        "percentile_b": -0.1299,
-        "site_index": 0.0006204,
-        "relative_height": 0.02474
-      },
-      "observations": 689
-    },
-    "conversion_note": "DDS = ln((DG5*(2.0*D*BARK+DG5))) where DG5 >= 0.01"
   },
   "implementation_notes": {
     "array_indexing": "FVS uses 1-based Fortran arrays. Subtract 1 for Python 0-based indexing.",
