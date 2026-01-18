@@ -1,0 +1,148 @@
+metadata:
+  code: QS
+  fia_code: 800
+  plants_symbol: QUERC
+  scientific_name: Quercus spp.
+  common_name: oak species
+  valid_site_species: false
+  fvs_index: 76
+  note: Generic oak species - uses FVS QS (Shumard Oak) coefficients as proxy
+site_index:
+  min: 30
+  max: 100
+  site_index_group: 9
+  height_growth_equation: 'NC-128: Upland Oak/52'
+density:
+  sdi_max: 361
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 215.0009406
+    p3: 3.14204012
+    p4: -0.39067352
+    dbw: 0.1
+  wykoff:
+    b1: 4.6106
+    b2: -5.4380
+bark_ratio:
+  b1: -0.24096
+  b2: 0.93789
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -0.328678
+    b2: 1.282494
+    b3: -0.000351
+    b4: 0.071625
+    b5: 0.455600
+    b6: -0.001173
+    b7: -0.000482
+    b8: -0.002125
+    b9: -0.692617
+    b10: 0.176391
+    b11: 0.069174
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+    note: No diameter bounds applied
+volume:
+  pulpwood:
+    min_dbh: 6
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 10
+    top_diameter: 7
+crown_width:
+  forest_grown:
+    equation_number: '80001'
+    a1: 3.2375
+    a2: 1.5234
+    a3: null
+    a4: 0.0455
+    a5: -0.0324
+    bounds: FCW < 69
+  open_grown:
+    equation_number: '80004'
+    a1: 1.8
+    a2: 1.883
+    a3: null
+    a4: null
+    a5: null
+    bounds: OCW < 69
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  fia_code: Upland Oak
+  page_number: '52'
+  c1: 1.2866
+  c2: 0.9962
+  c3: -0.0355
+  c4: 1.4485
+  c5: -0.0316
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  methodology:
+    approach: Wensel and others (1987)
+    crown_ratio_weight: 0.25
+    relative_height_weight: 0.75
+  shade_tolerance: Intermediate
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+fortype:
+  base_fortype: FTUPOK
+  coefficients:
+    FTLOHD: 0.214921
+    FTNOHD: 0.196181
+    FTOKPN: 0.106951
+    FTSFHP: 0.210088
+    FTUPHD: 0.100081
+    FTUPOK: 0.0
+    FTYLPN: 0.154886
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: 231T
+    coefficients:
+      M221: -0.191164
+      M222: -0.155148
+      M231: -0.154994
+      '221': -0.063321
+      '222': -0.031876
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: 231T
+    coefficients:
+      231L: 0.16471
+      '232': 0.031862
+      '234': 0.089972
+      '255': 0.448682
+      '411': 0.0
+mortality:
+  background_mortality:
+    equation: 5.0.1
+    formula: RI = [1 / (1 + exp(p0 + p1 * DBH))]
+    coefficients:
+      p0: 5.9617
+      p1: -0.0340128
+  mortality_weight:
+    mwt: 0.5
+regeneration:
+  parameters:
+    sprouting_capable: true
+    min_bud_width: 0.2
+    min_height: 1.38
+    max_height: 20

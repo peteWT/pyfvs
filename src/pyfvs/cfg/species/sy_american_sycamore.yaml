@@ -1,0 +1,104 @@
+metadata:
+  code: SY
+  fia_code: 731
+  plants_symbol: PLOC
+  scientific_name: Platanus occidentalis
+  common_name: American sycamore
+  valid_site_species: true
+  fvs_index: 59
+site_index:
+  min: 50
+  max: 120
+  site_index_group: 6
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 644.3567687
+    p3: 3.92045786
+    p4: -0.21444786
+    dbw: 0.1
+  wykoff:
+    b1: 4.6355
+    b2: -5.2776
+bark_ratio:
+  b1: -0.1800
+  b2: 0.9350
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -1.012995
+    b2: 1.272885
+    b3: -0.000238
+    b4: 0.234530
+    b5: 0.332494
+    b6: 0.000406
+    b7: -0.000252
+    b8: -0.001608
+    b9: -0.092471
+    b10: 0.494599
+    b11: -0.367667
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+volume:
+  pulpwood:
+    min_dbh: 6
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 12
+    top_diameter: 8
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  c1: 1.45
+  c2: 0.99
+  c3: -0.038
+  c4: 1.5
+  c5: -0.035
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  shade_tolerance: Intolerant
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: 231T
+    coefficients:
+      M221: -0.05
+      M222: 0.0
+      M231: 0.1
+      '221': -0.1
+      '222': -0.05
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: 231T
+    coefficients:
+      231L: 0.15
+      '232': 0.05
+      '234': 0.2
+      '255': 0.25
+      '411': 0.0
+mortality:
+  background_mortality:
+    coefficients:
+      p0: 5.9
+      p1: -0.034
+  mortality_weight:
+    mwt: 0.55

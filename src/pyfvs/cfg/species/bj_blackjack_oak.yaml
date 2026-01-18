@@ -1,0 +1,117 @@
+metadata:
+  code: BJ
+  fia_code: 824
+  plants_symbol: QUMA3
+  scientific_name: Quercus marilandica
+  common_name: blackjack oak
+  valid_site_species: true
+  fvs_index: 70
+  note: FVS code BJ - also available as BO in this system
+site_index:
+  min: 25
+  max: 70
+  site_index_group: 9
+  height_growth_equation: 'NC-128: Upland Oak/52'
+density:
+  sdi_max: 300
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 157.4828626
+    p3: 3.38919504
+    p4: -0.39151499
+    dbw: 0.2
+  wykoff:
+    b1: 3.9191
+    b2: -4.3503
+bark_ratio:
+  b1: -0.24096
+  b2: 0.93789
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -1.948938
+    b2: 1.611438
+    b3: -0.000844
+    b4: 0.135696
+    b5: 0.056739
+    b6: 0.002740
+    b7: -0.003558
+    b8: -0.001825
+    b9: -0.071837
+    b10: -0.147407
+    b11: 0.241882
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+volume:
+  pulpwood:
+    min_dbh: 6
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 10
+    top_diameter: 7
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  fia_code: Upland Oak
+  c1: 1.2866
+  c2: 0.9962
+  c3: -0.0355
+  c4: 1.4485
+  c5: -0.0316
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  shade_tolerance: Intermediate
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+fortype:
+  base_fortype: FTUPOK
+  coefficients:
+    FTLOHD: 0.214921
+    FTNOHD: 0.196181
+    FTOKPN: 0.106951
+    FTSFHP: 0.210088
+    FTUPHD: 0.100081
+    FTUPOK: 0.0
+    FTYLPN: 0.154886
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: 231T
+    coefficients:
+      M221: -0.191164
+      M222: -0.155148
+      M231: -0.154994
+      '221': -0.063321
+      '222': -0.031876
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: 231T
+    coefficients:
+      231L: 0.16471
+      '232': 0.031862
+      '234': 0.089972
+      '255': 0.448682
+      '411': 0.0
+mortality:
+  background_mortality:
+    coefficients:
+      p0: 5.9617
+      p1: -0.0340128
+  mortality_weight:
+    mwt: 0.5

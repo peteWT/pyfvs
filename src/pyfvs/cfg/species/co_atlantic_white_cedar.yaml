@@ -1,0 +1,148 @@
+metadata:
+  code: CO
+  fia_code: 43
+  plants_symbol: CHTH2
+  scientific_name: Chamaecyparis thyoides
+  common_name: Atlantic white cedar
+  valid_site_species: true
+  fvs_index: 88
+  note: Uses FVS OS (Other Softwood) coefficients - species not specifically modeled in FVS-SN
+site_index:
+  min: 30
+  max: 80
+  site_index_group: 1
+  height_growth_equation: 'Generic softwood'
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 212.7932729
+    p3: 3.47154903
+    p4: -0.3258523
+    dbw: 0.3
+  wykoff:
+    b1: 4.3898
+    b2: -5.7183
+bark_ratio:
+  b1: -0.1691
+  b2: 0.9301
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -1.864431
+    b2: 1.403065
+    b3: -0.001237
+    b4: 0.273616
+    b5: 0.177408
+    b6: -0.000374
+    b7: -0.003620
+    b8: -0.001890
+    b9: -0.231988
+    b10: 0.077542
+    b11: -0.025792
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+    note: No diameter bounds applied
+volume:
+  pulpwood:
+    min_dbh: 5
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 9
+    top_diameter: 6
+crown_width:
+  forest_grown:
+    equation_number: '04301'
+    a1: 2.5
+    a2: 1.4
+    a3: null
+    a4: 0.03
+    a5: -0.02
+    bounds: FCW < 50
+  open_grown:
+    equation_number: '04304'
+    a1: 1.5
+    a2: 1.6
+    a3: null
+    a4: null
+    a5: null
+    bounds: OCW < 50
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  fia_code: Other Softwood
+  page_number: generic
+  c1: 1.5
+  c2: 0.98
+  c3: -0.03
+  c4: 1.3
+  c5: -0.03
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  methodology:
+    approach: Wensel and others (1987)
+    crown_ratio_weight: 0.25
+    relative_height_weight: 0.75
+  shade_tolerance: Tolerant
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+fortype:
+  base_fortype: FTSFHP
+  coefficients:
+    FTLOHD: 0.0
+    FTNOHD: 0.0
+    FTOKPN: 0.0
+    FTSFHP: 0.0
+    FTUPHD: 0.0
+    FTUPOK: 0.0
+    FTYLPN: 0.0
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: '232'
+    coefficients:
+      M221: 0.0
+      M222: 0.0
+      M231: 0.0
+      '221': 0.0
+      '222': 0.0
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: '232'
+    coefficients:
+      231L: 0.0
+      '232': 0.0
+      '234': 0.0
+      '255': 0.0
+      '411': 0.0
+mortality:
+  background_mortality:
+    equation: 5.0.1
+    formula: RI = [1 / (1 + exp(p0 + p1 * DBH))]
+    coefficients:
+      p0: 5.5
+      p1: -0.03
+  mortality_weight:
+    mwt: 0.4
+regeneration:
+  parameters:
+    sprouting_capable: false
+    min_bud_width: 0.1
+    min_height: 1.0
+    max_height: 15

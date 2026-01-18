@@ -1,0 +1,104 @@
+metadata:
+  code: HY
+  fia_code: 591
+  plants_symbol: ILOP
+  scientific_name: Ilex opaca
+  common_name: American holly
+  valid_site_species: false
+  fvs_index: 41
+site_index:
+  min: 25
+  max: 60
+  site_index_group: 8
+density:
+  sdi_max: 250
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 1467.643523
+    p3: 5.33438509
+    p4: -0.17395792
+    dbw: 0.1
+  wykoff:
+    b1: 4.0151
+    b2: -4.3314
+bark_ratio:
+  b1: -0.2000
+  b2: 0.9400
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -1.981934
+    b2: 1.456263
+    b3: -0.002061
+    b4: 0.215249
+    b5: -0.414064
+    b6: 0.004240
+    b7: -0.003096
+    b8: -0.000394
+    b9: -0.303627
+    b10: 0.210525
+    b11: -0.159362
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+volume:
+  pulpwood:
+    min_dbh: 5
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 8
+    top_diameter: 6
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  c1: 1.15
+  c2: 0.96
+  c3: -0.03
+  c4: 1.25
+  c5: -0.025
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  shade_tolerance: Tolerant
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: '232'
+    coefficients:
+      M221: 0.0
+      M222: 0.0
+      M231: 0.0
+      '221': 0.0
+      '222': 0.0
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: '232'
+    coefficients:
+      231L: 0.0
+      '232': 0.0
+      '234': 0.0
+      '255': 0.0
+      '411': 0.0
+mortality:
+  background_mortality:
+    coefficients:
+      p0: 5.4
+      p1: -0.025
+  mortality_weight:
+    mwt: 0.35

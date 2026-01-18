@@ -1,0 +1,104 @@
+metadata:
+  code: ML
+  fia_code: 654
+  plants_symbol: MAMA2
+  scientific_name: Magnolia macrophylla
+  common_name: bigleaf magnolia
+  valid_site_species: false
+  fvs_index: 50
+site_index:
+  min: 40
+  max: 80
+  site_index_group: 8
+density:
+  sdi_max: 300
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 366.4744742
+    p3: 2.8733336
+    p4: -0.1819814
+    dbw: 0.2
+  wykoff:
+    b1: 4.4004
+    b2: -4.7519
+bark_ratio:
+  b1: -0.1900
+  b2: 0.9400
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -1.477929
+    b2: 1.126474
+    b3: -0.000267
+    b4: 0.134257
+    b5: 0.539000
+    b6: 0.005884
+    b7: -0.002740
+    b8: -0.000886
+    b9: 0.405735
+    b10: -0.063579
+    b11: 0.017095
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+volume:
+  pulpwood:
+    min_dbh: 6
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 10
+    top_diameter: 7
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  c1: 1.3
+  c2: 0.98
+  c3: -0.033
+  c4: 1.38
+  c5: -0.03
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  shade_tolerance: Tolerant
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: 231T
+    coefficients:
+      M221: 0.1
+      M222: 0.08
+      M231: 0.15
+      '221': -0.05
+      '222': 0.0
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: 231T
+    coefficients:
+      231L: 0.08
+      '232': 0.02
+      '234': 0.05
+      '255': 0.1
+      '411': 0.0
+mortality:
+  background_mortality:
+    coefficients:
+      p0: 5.7
+      p1: -0.03
+  mortality_weight:
+    mwt: 0.4

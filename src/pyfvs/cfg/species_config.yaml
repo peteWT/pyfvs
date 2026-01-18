@@ -118,6 +118,221 @@ species:
     name: "cherrybark oak"
     file: "species/cb_cherrybark_oak.yaml"
 
+  # Tier 4 - Additional Oaks
+  WK:
+    name: "water oak"
+    file: "species/wk_water_oak.yaml"
+  LK:
+    name: "laurel oak"
+    file: "species/lk_laurel_oak.yaml"
+  OV:
+    name: "overcup oak"
+    file: "species/ov_overcup_oak.yaml"
+  CW:
+    name: "chestnut oak"
+    file: "species/cw_chestnut_oak.yaml"
+  PO:
+    name: "post oak"
+    file: "species/po_post_oak.yaml"
+    fvs_index: 77
+    fia_code: 835
+  BK:
+    name: "black oak"
+    file: "species/bk_black_oak.yaml"
+    fvs_index: 78
+    fia_code: 837
+    note: "Uses FVS BO coefficients (Black Oak)"
+  CK:
+    name: "chinkapin oak"
+    file: "species/ck_chinkapin_oak.yaml"
+  BO:
+    name: "blackjack oak"
+    file: "species/bo_blackjack_oak.yaml"
+  LO:
+    name: "live oak"
+    file: "species/lo_live_oak.yaml"
+  QS:
+    name: "oak species"
+    file: "species/qs_oak_species.yaml"
+
+  # Tier 4 - Additional Maples and Ashes
+  MS:
+    name: "maple species"
+    file: "species/ms_maple_species.yaml"
+  BA:
+    name: "black ash"
+    file: "species/ba_black_ash.yaml"
+  RA:
+    name: "red ash"
+    file: "species/ra_red_ash.yaml"
+
+  # Tier 4 - Cypress and Additional Softwoods
+  SD:
+    name: "sand pine"
+    file: "species/sd_sand_pine.yaml"
+  CO:
+    name: "Atlantic white cedar"
+    file: "species/co_atlantic_white_cedar.yaml"
+
+  # Tier 4 - Additional Hardwoods
+  BG:
+    name: "black gum"
+    file: "species/bg_black_gum.yaml"
+  WT:
+    name: "water tupelo"
+    file: "species/wt_water_tupelo.yaml"
+  AS:
+    name: "american sycamore"
+    file: "species/as_american_sycamore.yaml"
+  AE:
+    name: "american elm"
+    file: "species/ae_american_elm.yaml"
+  WN:
+    name: "black walnut"
+    file: "species/wn_black_walnut.yaml"
+  BB:
+    name: "american basswood"
+    file: "species/bb_american_basswood.yaml"
+  PS:
+    name: "persimmon"
+    file: "species/ps_persimmon.yaml"
+  SS:
+    name: "sassafras"
+    file: "species/ss_sassafras.yaml"
+  SN:
+    name: "sourwood"
+    file: "species/sn_sourwood.yaml"
+
+  # Tier 4 - Minor/Understory Species
+  DW:
+    name: "dogwood"
+    file: "species/dw_dogwood.yaml"
+  AH:
+    name: "american hornbeam"
+    file: "species/ah_american_hornbeam.yaml"
+  HB:
+    name: "hornbeam"
+    file: "species/hb_hornbeam.yaml"
+  HL:
+    name: "holly"
+    file: "species/hl_holly.yaml"
+  RD:
+    name: "redbud"
+    file: "species/rd_redbud.yaml"
+  HA:
+    name: "hawthorn"
+    file: "species/ha_hawthorn.yaml"
+  CT:
+    name: "catalpa"
+    file: "species/ct_catalpa.yaml"
+  BU:
+    name: "buckeye"
+    file: "species/bu_buckeye.yaml"
+  WI:
+    name: "willow"
+    file: "species/wi_willow.yaml"
+  MG:
+    name: "magnolia"
+    file: "species/mg_magnolia.yaml"
+  BD:
+    name: "sweet birch"
+    file: "species/bd_sweet_birch.yaml"
+  LB:
+    name: "loblolly bay"
+    file: "species/lb_loblolly_bay.yaml"
+
+  # Tier 5 - Final FVS Species (completing all 90)
+  AB:
+    name: "american beech"
+    file: "species/ab_american_beech.yaml"
+    fvs_index: 33
+    fia_code: 531
+  AP:
+    name: "apple"
+    file: "species/ap_apple.yaml"
+    fvs_index: 51
+    fia_code: 660
+  BJ:
+    name: "blackjack oak (FVS code)"
+    file: "species/bj_blackjack_oak.yaml"
+    fvs_index: 70
+    fia_code: 824
+  BN:
+    name: "butternut"
+    file: "species/bn_butternut.yaml"
+    fvs_index: 42
+    fia_code: 601
+  BT:
+    name: "bigtooth aspen"
+    file: "species/bt_bigtooth_aspen.yaml"
+    fvs_index: 61
+    fia_code: 743
+  CA:
+    name: "catalpa (FVS code)"
+    file: "species/ca_catalpa.yaml"
+    fvs_index: 28
+    fia_code: 450
+  EL:
+    name: "elm"
+    file: "species/el_elm.yaml"
+    fvs_index: 84
+    fia_code: 970
+  HH:
+    name: "hophornbeam"
+    file: "species/hh_hophornbeam.yaml"
+    fvs_index: 56
+    fia_code: 701
+  HY:
+    name: "american holly (FVS code)"
+    file: "species/hy_american_holly.yaml"
+    fvs_index: 41
+    fia_code: 591
+  MB:
+    name: "mulberry"
+    file: "species/mb_mulberry.yaml"
+    fvs_index: 52
+    fia_code: 680
+  ML:
+    name: "bigleaf magnolia"
+    file: "species/ml_bigleaf_magnolia.yaml"
+    fvs_index: 50
+    fia_code: 654
+  MV:
+    name: "sweetbay"
+    file: "species/mv_sweetbay.yaml"
+    fvs_index: 49
+    fia_code: 653
+  RL:
+    name: "slippery elm"
+    file: "species/rl_slippery_elm.yaml"
+    fvs_index: 87
+    fia_code: 975
+  SB:
+    name: "sweet birch"
+    file: "species/sb_sweet_birch.yaml"
+    fvs_index: 25
+    fia_code: 372
+  SY:
+    name: "american sycamore (FVS code)"
+    file: "species/sy_american_sycamore.yaml"
+    fvs_index: 59
+    fia_code: 731
+  TO:
+    name: "turkey oak"
+    file: "species/to_turkey_oak.yaml"
+    fvs_index: 67
+    fia_code: 819
+  TS:
+    name: "swamp tupelo"
+    file: "species/ts_swamp_tupelo.yaml"
+    fvs_index: 55
+    fia_code: 694
+  WE:
+    name: "winged elm"
+    file: "species/we_winged_elm.yaml"
+    fvs_index: 85
+    fia_code: 971
+
   # Other categories
   OS:
     name: "other softwood"

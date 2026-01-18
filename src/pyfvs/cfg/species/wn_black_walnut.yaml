@@ -1,0 +1,147 @@
+metadata:
+  code: WN
+  fia_code: 602
+  plants_symbol: JUNI
+  scientific_name: Juglans nigra
+  common_name: black walnut
+  valid_site_species: true
+  fvs_index: 43
+site_index:
+  min: 40
+  max: 100
+  site_index_group: 6
+  height_growth_equation: 'NC-128: Walnut'
+density:
+  sdi_max: 350
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 93.71042027
+    p3: 3.6575094
+    p4: -0.88246833
+    dbw: 0.4
+  wykoff:
+    b1: 4.5018
+    b2: -5.6123
+bark_ratio:
+  b1: -0.1850
+  b2: 0.9400
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -2.354190
+    b2: 1.050171
+    b3: -0.000154
+    b4: 0.425328
+    b5: 0.616257
+    b6: 0.001348
+    b7: -0.000564
+    b8: -0.000588
+    b9: 0.133415
+    b10: -0.209729
+    b11: 0.014948
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+    note: No diameter bounds applied
+volume:
+  pulpwood:
+    min_dbh: 6
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 12
+    top_diameter: 8
+crown_width:
+  forest_grown:
+    equation_number: '60201'
+    a1: 3.0
+    a2: 1.6
+    a3: null
+    a4: 0.04
+    a5: -0.03
+    bounds: FCW < 65
+  open_grown:
+    equation_number: '60204'
+    a1: 2.0
+    a2: 1.9
+    a3: null
+    a4: null
+    a5: null
+    bounds: OCW < 70
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  fia_code: Black Walnut
+  page_number: generic
+  c1: 1.4
+  c2: 0.99
+  c3: -0.035
+  c4: 1.45
+  c5: -0.032
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  methodology:
+    approach: Wensel and others (1987)
+    crown_ratio_weight: 0.25
+    relative_height_weight: 0.75
+  shade_tolerance: Intolerant
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+fortype:
+  base_fortype: FTUPHD
+  coefficients:
+    FTLOHD: 0.1
+    FTNOHD: 0.15
+    FTOKPN: 0.05
+    FTSFHP: 0.0
+    FTUPHD: 0.0
+    FTUPOK: 0.1
+    FTYLPN: 0.05
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: 231T
+    coefficients:
+      M221: -0.1
+      M222: -0.05
+      M231: 0.1
+      '221': -0.15
+      '222': -0.1
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: 231T
+    coefficients:
+      231L: 0.15
+      '232': 0.05
+      '234': 0.2
+      '255': 0.3
+      '411': 0.0
+mortality:
+  background_mortality:
+    equation: 5.0.1
+    formula: RI = [1 / (1 + exp(p0 + p1 * DBH))]
+    coefficients:
+      p0: 5.8
+      p1: -0.032
+  mortality_weight:
+    mwt: 0.6
+regeneration:
+  parameters:
+    sprouting_capable: true
+    min_bud_width: 0.3
+    min_height: 1.5
+    max_height: 25

@@ -1,0 +1,148 @@
+metadata:
+  code: BB
+  fia_code: 951
+  plants_symbol: TIAM
+  scientific_name: Tilia americana
+  common_name: American basswood
+  valid_site_species: true
+  fvs_index: 83
+  note: Uses FVS BD (Basswood) coefficients - species index 83
+site_index:
+  min: 40
+  max: 100
+  site_index_group: 7
+  height_growth_equation: 'NC-128: Northern Hardwoods'
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 293.5715132
+    p3: 3.52261899
+    p4: -0.35122247
+    dbw: 0.1
+  wykoff:
+    b1: 4.582
+    b2: -5.0903
+bark_ratio:
+  b1: -0.1800
+  b2: 0.9350
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -1.848106
+    b2: 1.424209
+    b3: -0.001488
+    b4: 0.289244
+    b5: 0.253525
+    b6: 0.003499
+    b7: -0.001236
+    b8: -0.002875
+    b9: -0.580068
+    b10: 0.235707
+    b11: -0.055862
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+    note: No diameter bounds applied
+volume:
+  pulpwood:
+    min_dbh: 6
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 10
+    top_diameter: 7
+crown_width:
+  forest_grown:
+    equation_number: '95101'
+    a1: 3.2
+    a2: 1.55
+    a3: null
+    a4: 0.045
+    a5: -0.03
+    bounds: FCW < 70
+  open_grown:
+    equation_number: '95104'
+    a1: 1.9
+    a2: 1.85
+    a3: null
+    a4: null
+    a5: null
+    bounds: OCW < 75
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  fia_code: Northern Hardwood
+  page_number: generic
+  c1: 1.35
+  c2: 0.98
+  c3: -0.034
+  c4: 1.42
+  c5: -0.031
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  methodology:
+    approach: Wensel and others (1987)
+    crown_ratio_weight: 0.25
+    relative_height_weight: 0.75
+  shade_tolerance: Tolerant
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+fortype:
+  base_fortype: FTNOHD
+  coefficients:
+    FTLOHD: 0.1
+    FTNOHD: 0.0
+    FTOKPN: 0.05
+    FTSFHP: 0.0
+    FTUPHD: 0.08
+    FTUPOK: 0.1
+    FTYLPN: 0.05
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: 231T
+    coefficients:
+      M221: -0.1
+      M222: -0.08
+      M231: 0.05
+      '221': -0.12
+      '222': -0.06
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: 231T
+    coefficients:
+      231L: 0.12
+      '232': 0.03
+      '234': 0.08
+      '255': 0.25
+      '411': 0.0
+mortality:
+  background_mortality:
+    equation: 5.0.1
+    formula: RI = [1 / (1 + exp(p0 + p1 * DBH))]
+    coefficients:
+      p0: 5.9
+      p1: -0.033
+  mortality_weight:
+    mwt: 0.45
+regeneration:
+  parameters:
+    sprouting_capable: true
+    min_bud_width: 0.2
+    min_height: 1.4
+    max_height: 22

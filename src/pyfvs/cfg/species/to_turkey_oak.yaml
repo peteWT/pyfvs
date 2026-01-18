@@ -1,0 +1,116 @@
+metadata:
+  code: TO
+  fia_code: 819
+  plants_symbol: QULA2
+  scientific_name: Quercus laevis
+  common_name: turkey oak
+  valid_site_species: true
+  fvs_index: 67
+site_index:
+  min: 25
+  max: 65
+  site_index_group: 9
+  height_growth_equation: 'NC-128: Upland Oak/52'
+density:
+  sdi_max: 280
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 2137.575644
+    p3: 5.80907868
+    p4: -0.15590506
+    dbw: 0.2
+  wykoff:
+    b1: 3.9365
+    b2: -4.4599
+bark_ratio:
+  b1: -0.24096
+  b2: 0.93789
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -2.698130
+    b2: 1.622081
+    b3: -0.001703
+    b4: 0.354924
+    b5: -0.033854
+    b6: 0.000682
+    b7: -0.002773
+    b8: -0.002901
+    b9: -1.084846
+    b10: -0.196932
+    b11: 0.514630
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+volume:
+  pulpwood:
+    min_dbh: 6
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 10
+    top_diameter: 7
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  fia_code: Upland Oak
+  c1: 1.2866
+  c2: 0.9962
+  c3: -0.0355
+  c4: 1.4485
+  c5: -0.0316
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  shade_tolerance: Intolerant
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+fortype:
+  base_fortype: FTUPOK
+  coefficients:
+    FTLOHD: 0.214921
+    FTNOHD: 0.196181
+    FTOKPN: 0.106951
+    FTSFHP: 0.210088
+    FTUPHD: 0.100081
+    FTUPOK: 0.0
+    FTYLPN: 0.154886
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: '232'
+    coefficients:
+      M221: 0.0
+      M222: 0.0
+      M231: 0.0
+      '221': 0.0
+      '222': 0.0
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: '232'
+    coefficients:
+      231L: 0.0
+      '232': 0.0
+      '234': 0.0
+      '255': 0.0
+      '411': 0.0
+mortality:
+  background_mortality:
+    coefficients:
+      p0: 5.7
+      p1: -0.032
+  mortality_weight:
+    mwt: 0.55

@@ -1,0 +1,148 @@
+metadata:
+  code: SN
+  fia_code: 711
+  plants_symbol: OXAR
+  scientific_name: Oxydendrum arboreum
+  common_name: sourwood
+  valid_site_species: true
+  fvs_index: 57
+  note: Uses FVS SD (Sourwood) coefficients - species index 57
+site_index:
+  min: 30
+  max: 70
+  site_index_group: 8
+  height_growth_equation: 'NC-128: Upland Hardwood'
+density:
+  sdi_max: 300
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 690.4917743
+    p3: 4.15983216
+    p4: -0.18613455
+    dbw: 0.2
+  wykoff:
+    b1: 4.1352
+    b2: -3.7450
+bark_ratio:
+  b1: -0.2100
+  b2: 0.9450
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -3.180040
+    b2: 1.355790
+    b3: -0.000784
+    b4: 0.532236
+    b5: 0.077021
+    b6: 0.005170
+    b7: -0.002389
+    b8: -0.000797
+    b9: -0.292680
+    b10: 0.050523
+    b11: -0.008687
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+    note: No diameter bounds applied
+volume:
+  pulpwood:
+    min_dbh: 5
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 10
+    top_diameter: 6
+crown_width:
+  forest_grown:
+    equation_number: '71101'
+    a1: 2.8
+    a2: 1.45
+    a3: null
+    a4: 0.04
+    a5: -0.025
+    bounds: FCW < 45
+  open_grown:
+    equation_number: '71104'
+    a1: 1.7
+    a2: 1.75
+    a3: null
+    a4: null
+    a5: null
+    bounds: OCW < 50
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  fia_code: Upland Hardwood
+  page_number: generic
+  c1: 1.25
+  c2: 0.97
+  c3: -0.035
+  c4: 1.35
+  c5: -0.03
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  methodology:
+    approach: Wensel and others (1987)
+    crown_ratio_weight: 0.25
+    relative_height_weight: 0.75
+  shade_tolerance: Tolerant
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+fortype:
+  base_fortype: FTUPHD
+  coefficients:
+    FTLOHD: 0.08
+    FTNOHD: 0.1
+    FTOKPN: 0.1
+    FTSFHP: 0.0
+    FTUPHD: 0.0
+    FTUPOK: 0.12
+    FTYLPN: 0.08
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: 231T
+    coefficients:
+      M221: 0.1
+      M222: 0.05
+      M231: 0.15
+      '221': -0.05
+      '222': -0.02
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: 231T
+    coefficients:
+      231L: 0.08
+      '232': 0.02
+      '234': 0.05
+      '255': 0.15
+      '411': 0.0
+mortality:
+  background_mortality:
+    equation: 5.0.1
+    formula: RI = [1 / (1 + exp(p0 + p1 * DBH))]
+    coefficients:
+      p0: 5.6
+      p1: -0.028
+  mortality_weight:
+    mwt: 0.4
+regeneration:
+  parameters:
+    sprouting_capable: true
+    min_bud_width: 0.15
+    min_height: 1.2
+    max_height: 15

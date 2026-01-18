@@ -1,0 +1,104 @@
+metadata:
+  code: MB
+  fia_code: 680
+  plants_symbol: MORUS
+  scientific_name: Morus spp.
+  common_name: mulberry
+  valid_site_species: false
+  fvs_index: 52
+site_index:
+  min: 30
+  max: 70
+  site_index_group: 8
+density:
+  sdi_max: 280
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 750.1823388
+    p3: 4.14262749
+    p4: -0.15940723
+    dbw: 0.2
+  wykoff:
+    b1: 3.9613
+    b2: -3.1993
+bark_ratio:
+  b1: -0.2000
+  b2: 0.9400
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -1.746231
+    b2: 1.234133
+    b3: -0.000017
+    b4: 0.285511
+    b5: 0.180572
+    b6: 0.002596
+    b7: -0.001709
+    b8: -0.000099
+    b9: -0.872861
+    b10: -0.078948
+    b11: -0.023609
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+volume:
+  pulpwood:
+    min_dbh: 5
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 10
+    top_diameter: 6
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  c1: 1.25
+  c2: 0.97
+  c3: -0.032
+  c4: 1.35
+  c5: -0.029
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  shade_tolerance: Intolerant
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: 231T
+    coefficients:
+      M221: 0.0
+      M222: 0.0
+      M231: 0.0
+      '221': 0.0
+      '222': 0.0
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: 231T
+    coefficients:
+      231L: 0.0
+      '232': 0.0
+      '234': 0.0
+      '255': 0.0
+      '411': 0.0
+mortality:
+  background_mortality:
+    coefficients:
+      p0: 5.6
+      p1: -0.03
+  mortality_weight:
+    mwt: 0.5

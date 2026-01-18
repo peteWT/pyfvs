@@ -1,0 +1,104 @@
+metadata:
+  code: CA
+  fia_code: 450
+  plants_symbol: CATAL
+  scientific_name: Catalpa spp.
+  common_name: catalpa
+  valid_site_species: false
+  fvs_index: 28
+site_index:
+  min: 30
+  max: 70
+  site_index_group: 8
+density:
+  sdi_max: 280
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 190.9797059
+    p3: 3.69278884
+    p4: -0.52730469
+    dbw: 0.3
+  wykoff:
+    b1: 4.9396
+    b2: -8.1838
+bark_ratio:
+  b1: -0.2000
+  b2: 0.9400
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -1.068980
+    b2: 1.164191
+    b3: 0.000000
+    b4: 0.084279
+    b5: 0.501307
+    b6: 0.009700
+    b7: -0.001041
+    b8: -0.001349
+    b9: 0.075733
+    b10: -0.601088
+    b11: -0.757088
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+volume:
+  pulpwood:
+    min_dbh: 6
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 10
+    top_diameter: 7
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  c1: 1.4
+  c2: 0.98
+  c3: -0.035
+  c4: 1.4
+  c5: -0.032
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  shade_tolerance: Intolerant
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: 231T
+    coefficients:
+      M221: 0.0
+      M222: 0.0
+      M231: 0.0
+      '221': 0.0
+      '222': 0.0
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: 231T
+    coefficients:
+      231L: 0.0
+      '232': 0.0
+      '234': 0.0
+      '255': 0.0
+      '411': 0.0
+mortality:
+  background_mortality:
+    coefficients:
+      p0: 5.6
+      p1: -0.03
+  mortality_weight:
+    mwt: 0.5

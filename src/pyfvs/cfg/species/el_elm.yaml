@@ -1,0 +1,105 @@
+metadata:
+  code: EL
+  fia_code: 970
+  plants_symbol: ULMUS
+  scientific_name: Ulmus spp.
+  common_name: elm
+  valid_site_species: false
+  fvs_index: 84
+  note: Generic elm species
+site_index:
+  min: 40
+  max: 90
+  site_index_group: 8
+density:
+  sdi_max: 350
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 1005.80672
+    p3: 4.6473994
+    p4: -0.20336143
+    dbw: 0.1
+  wykoff:
+    b1: 4.3744
+    b2: -4.5257
+bark_ratio:
+  b1: -0.1900
+  b2: 0.9400
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -2.356235
+    b2: 1.479429
+    b3: -0.000517
+    b4: 0.425367
+    b5: -0.083383
+    b6: 0.002767
+    b7: -0.003132
+    b8: -0.001352
+    b9: -1.000956
+    b10: -0.064524
+    b11: -0.146557
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+volume:
+  pulpwood:
+    min_dbh: 6
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 10
+    top_diameter: 7
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  c1: 1.35
+  c2: 0.98
+  c3: -0.034
+  c4: 1.42
+  c5: -0.031
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  shade_tolerance: Intermediate
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: 231T
+    coefficients:
+      M221: -0.1
+      M222: -0.08
+      M231: 0.05
+      '221': -0.12
+      '222': -0.06
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: 231T
+    coefficients:
+      231L: 0.12
+      '232': 0.03
+      '234': 0.08
+      '255': 0.2
+      '411': 0.0
+mortality:
+  background_mortality:
+    coefficients:
+      p0: 5.8
+      p1: -0.032
+  mortality_weight:
+    mwt: 0.5

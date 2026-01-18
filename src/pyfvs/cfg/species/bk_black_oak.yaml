@@ -1,0 +1,153 @@
+metadata:
+  code: BK
+  fia_code: 837
+  plants_symbol: QUVE
+  scientific_name: Quercus velutina
+  common_name: black oak
+  valid_site_species: true
+  fvs_index: 78
+  note: Uses FVS BO (Black Oak) coefficients - species index 78
+site_index:
+  min: 30
+  max: 100
+  site_index_group: 9
+  height_growth_equation: 'NC-128: Upland Oak/52'
+density:
+  sdi_max: 361
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 224.716279
+    p3: 3.11648501
+    p4: -0.35982064
+    dbw: 0.2
+  wykoff:
+    b1: 4.4747
+    b2: -4.8698
+bark_ratio:
+  b1: -0.24096
+  b2: 0.93789
+crown_ratio:
+  acr_equation: 4.3.1.4
+  d0: 4.05
+  d1: -0.12
+  d2: null
+  a: 5.0
+  b0: -16.0927
+  b1: 1.2319
+  c: 3.5016
+diameter_growth:
+  model: ln_dds
+  coefficients:
+    b1: -2.345845
+    b2: 1.450330
+    b3: -0.000674
+    b4: 0.251441
+    b5: 0.527504
+    b6: 0.005921
+    b7: -0.002235
+    b8: -0.000862
+    b9: -0.307814
+    b10: -0.033568
+    b11: 0.054762
+  dbh_bounds:
+    lower_limit: null
+    upper_limit: null
+    note: No diameter bounds applied
+volume:
+  pulpwood:
+    min_dbh: 6
+    top_diameter: 4
+  sawtimber:
+    min_dbh: 10
+    top_diameter: 7
+crown_width:
+  forest_grown:
+    equation_number: '83701'
+    a1: 3.2375
+    a2: 1.5234
+    a3: null
+    a4: 0.0455
+    a5: -0.0324
+    bounds: FCW < 69
+  open_grown:
+    equation_number: '83704'
+    a1: 1.8
+    a2: 1.883
+    a3: null
+    a4: null
+    a5: null
+    bounds: OCW < 69
+small_tree_height_growth:
+  model: chapman_richards_nc128
+  threshold_diameter: 3.0
+  fia_code: Upland Oak
+  page_number: '52'
+  c1: 1.2866
+  c2: 0.9962
+  c3: -0.0355
+  c4: 1.4485
+  c5: -0.0316
+large_tree_height_growth:
+  model: wensel_1987
+  threshold_diameter: 3.0
+  methodology:
+    approach: Wensel and others (1987)
+    crown_ratio_weight: 0.25
+    relative_height_weight: 0.75
+  equations:
+    main: HTG = POTHTG * (0.25 * HGMDCR + 0.75 * HGMDRH)
+    crown_ratio_modifier: HGMDCR = 100 * CR^3.0 * exp(-5.0*CR)
+    relative_height_modifier: HGMDRH = RHK * (1 + FCTRKX * exp(FCTRRB*FCTRXB))^FCTRM
+  shade_tolerance: Intermediate
+  shade_tolerance_coefficients:
+    RHR: 15
+    RHYXS: 0.1
+    RHM: 1.1
+    RHB: -1.45
+    RHXS: 0
+    RHK: 1
+fortype:
+  base_fortype: FTUPOK
+  coefficients:
+    FTLOHD: 0.214921
+    FTNOHD: 0.196181
+    FTOKPN: 0.106951
+    FTSFHP: 0.210088
+    FTUPHD: 0.100081
+    FTUPOK: 0.0
+    FTYLPN: 0.154886
+ecounit:
+  table_4_7_1_5:
+    base_ecounit: 231T
+    coefficients:
+      M221: -0.191164
+      M222: -0.155148
+      M231: -0.154994
+      '221': -0.063321
+      '222': -0.031876
+      231T: 0.0
+  table_4_7_1_6:
+    base_ecounit: 231T
+    coefficients:
+      231L: 0.16471
+      '232': 0.031862
+      '234': 0.089972
+      '255': 0.448682
+      '411': 0.0
+mortality:
+  background_mortality:
+    equation: 5.0.1
+    formula: RI = [1 / (1 + exp(p0 + p1 * DBH))]
+    coefficients:
+      p0: 5.9617
+      p1: -0.0340128
+  mortality_weight:
+    mwt: 0.5
+    description: Species-specific mortality weight value representing shade tolerance
+regeneration:
+  parameters:
+    sprouting_capable: true
+    min_bud_width: 0.2
+    min_height: 1.38
+    max_height: 20
