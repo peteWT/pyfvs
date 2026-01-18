@@ -136,6 +136,12 @@ class SpeciesCode(str, Enum):
     NORTHERN_RED_OAK = "RO"
     """Northern red oak (Quercus rubra) - FIA code 833. Major commercial oak."""
 
+    SCARLET_OAK = "SO"
+    """Scarlet oak (Quercus coccinea) - FIA code 806. Upland red oak group."""
+
+    CHERRYBARK_OAK = "CB"
+    """Cherrybark oak (Quercus pagoda) - FIA code 813. Premium bottomland oak."""
+
     # =========================================================================
     # Maples (Acer spp.)
     # =========================================================================
@@ -398,6 +404,7 @@ class SpeciesCode(str, Enum):
             cls.CHESTNUT_OAK,
             cls.SOUTHERN_RED_OAK,
             cls.NORTHERN_RED_OAK,
+            cls.CHERRYBARK_OAK,
             cls.WATER_OAK,
             cls.LAUREL_OAK,
             cls.OVERCUP_OAK,

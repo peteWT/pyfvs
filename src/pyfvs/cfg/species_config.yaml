@@ -96,6 +96,27 @@ species:
   RO:
     name: "northern red oak"
     file: "species/ro_northern_red_oak.yaml"
+  HI:
+    name: "hickory species"
+    file: "species/hi_hickory_species.yaml"
+  BC:
+    name: "black cherry"
+    file: "species/bc_black_cherry.yaml"
+  WA:
+    name: "white ash"
+    file: "species/wa_white_ash.yaml"
+  GA:
+    name: "green ash"
+    file: "species/ga_green_ash.yaml"
+  SO:
+    name: "scarlet oak"
+    file: "species/so_scarlet_oak.yaml"
+  SK:
+    name: "southern red oak"
+    file: "species/sk_southern_red_oak.yaml"
+  CB:
+    name: "cherrybark oak"
+    file: "species/cb_cherrybark_oak.yaml"
 
   # Other categories
   OS:
