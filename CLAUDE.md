@@ -12,6 +12,7 @@ Forest Vegetation Simulator (FVS) - Python implementation supporting multiple FV
 - **PN (Pacific Northwest Coast)** - 39 species for WA, OR, and northern CA coast including Douglas-fir, Western Hemlock, and Sitka Spruce
 - **WC (West Cascades)** - 37 species for western Oregon and Washington Cascades including Douglas-fir, Western Hemlock, and Western Red Cedar
 - **NE (Northeast)** - 108 species for New England and Mid-Atlantic (CT, DE, MA, MD, ME, NH, NJ, NY, OH, PA, RI, VT, WV) including Red Maple, Sugar Maple, Northern Red Oak, Eastern White Pine
+- **CS (Central States)** - 96 species for Midwest oak-hickory forests (IL, IN, IA, MO) including White Oak, Northern Red Oak, Sugar Maple, Black Walnut
 
 ## Key Development Commands
 
@@ -197,19 +198,21 @@ src/pyfvs/cfg/
 25. **String Normalization Utilities** - Added `utils/string_utils.py` with `normalize_code()`, `normalize_species_code()`, and `normalize_ecounit()` functions for consistent string handling throughout the codebase.
 26. **Test Fixtures Consolidation** - Created `tests/conftest.py` with 30+ shared pytest fixtures for trees (seedling, small, transition, large, mature), tree lists (sample, mixed species, density levels), and stands (young, mature, high/low site, ecounits).
 27. **VolumeCalculator Caching** - Added module-level cache for VolumeCalculator instances in `volume_library.py`, keyed by species code. The `get_volume_library()` function returns cached instances for performance.
-28. **Multi-Variant Architecture** - Added support for multiple FVS regional variants. Implemented Lake States (LS), Pacific Northwest Coast (PN), West Cascades (WC), and Northeast (NE) variants alongside existing Southern (SN) variant. Key changes:
+28. **Multi-Variant Architecture** - Added support for multiple FVS regional variants. Implemented Lake States (LS), Pacific Northwest Coast (PN), West Cascades (WC), Northeast (NE), and Central States (CS) variants alongside existing Southern (SN) variant. Key changes:
     - `config_loader.py`: Added `SUPPORTED_VARIANTS` dict, `set_default_variant()`, `get_default_variant()` functions
     - `ls_diameter_growth.py`: New module implementing LS 12-coefficient linear DDS equation
     - `pn_diameter_growth.py`: New module implementing PN 18-coefficient ln(DDS) equation with topographic effects
     - `wc_diameter_growth.py`: New module implementing WC 19-coefficient ln(DDS) equation (same structure as PN)
     - `ne_diameter_growth.py`: New module implementing NE-TWIGS iterative BA growth model
-    - `tree.py`: Added variant parameter, variant-specific growth methods (`_grow_large_tree_ls()`, `_grow_large_tree_pn()`, `_grow_large_tree_wc()`, `_grow_large_tree_ne()`)
+    - `cs_diameter_growth.py`: New module implementing CS linear DDS equation (same structure as LS)
+    - `tree.py`: Added variant parameter, variant-specific growth methods (`_grow_large_tree_ls()`, `_grow_large_tree_pn()`, `_grow_large_tree_wc()`, `_grow_large_tree_ne()`, `_grow_large_tree_cs()`)
     - `stand.py`: Added variant parameter, `_calculate_qmd_ge5()` for RELDBH computation
     - `height_diameter.py`: Added `VARIANT_COEFFICIENT_FILES` mapping for variant-aware coefficient loading
     - Created `cfg/ls/` with 71 configuration files (LS: 67 species)
     - Created `cfg/pn/` with coefficient files and species configs (PN: 39 species)
     - Created `cfg/wc/` with coefficient files and species configs (WC: 37 species)
     - Created `cfg/ne/` with coefficient files and species configs (NE: 108 species)
+    - Created `cfg/cs/` with coefficient files and species configs (CS: 96 species)
 
 ## Recent Refactoring (2025)
 
@@ -225,6 +228,7 @@ All growth model classes now inherit from `ParameterizedModel` (`model_base.py`)
 - **PNDiameterGrowthModel** (`pn_diameter_growth.py`) - Pacific Northwest Coast variant
 - **WCDiameterGrowthModel** (`wc_diameter_growth.py`) - West Cascades variant
 - **NEDiameterGrowthModel** (`ne_diameter_growth.py`) - Northeast variant
+- **CSDiameterGrowthModel** (`cs_diameter_growth.py`) - Central States variant
 
 Benefits:
 - Standardized coefficient loading from JSON files via `ConfigLoader`
@@ -295,6 +299,7 @@ PyFVS supports multiple FVS regional variants with variant-specific growth equat
 | **PN** | Pacific Northwest Coast (WA, OR, CA coast) | 39 | DF (Douglas-fir) | 10 years | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, elev, slope, aspect) |
 | **WC** | West Cascades (OR, WA interior) | 37 | DF (Douglas-fir) | 10 years | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, elev, slope, aspect) |
 | **NE** | Northeast (New England, Mid-Atlantic) | 108 | RM (Red Maple) | 10 years | BA Growth = B1 * SI * (1 - exp(-B2 * DBH)) |
+| **CS** | Central States (IL, IN, IA, MO) | 96 | WO (White Oak) | 10 years | ln(DDS) = f(D, CR, RELDBH, SI, BA, BAL) |
 
 ### Key Model Differences
 
@@ -335,6 +340,14 @@ PyFVS supports multiple FVS regional variants with variant-specific growth equat
 - Competition via BAGMOD based on BAL (basal area in larger trees)
 - 108 species covering 13 northeastern states (CT, DE, MA, MD, ME, NH, NJ, NY, OH, PA, RI, VT, WV)
 - Major species: Red Maple (RM), Sugar Maple (SM), Northern Red Oak (RO), Eastern White Pine (WP)
+- Curtis-Arney height-diameter relationship
+
+**CS (Central States) Variant:**
+- Uses same equation structure as LS (linear DDS with RELDBH)
+- ln(DDS) = INTERC + VDBHC/D + DBHC*D + DBH2C*D² + RDBHC*RELDBH + RDBHSQC*RELDBH² + CRWNC*CR + CRSQC*CR² + SBAC*BA + BALC*BAL + SITEC*SI
+- Competition via RELDBH (relative DBH to QMD of trees ≥5" DBH)
+- 96 species covering Midwest oak-hickory forests (IL, IN, IA, MO)
+- Major species: White Oak (WO), Northern Red Oak (RO), Sugar Maple (SM), Black Walnut (WN), Yellow-Poplar (YP)
 - Curtis-Arney height-diameter relationship
 
 ### Variant Usage
@@ -391,6 +404,16 @@ stand_ne = Stand.initialize_planted(
 )
 stand_ne.grow(years=50)
 # Produces ~89 sq ft BA, ~7.4" QMD (slower-growing hardwoods)
+
+# CS variant (Central States)
+stand_cs = Stand.initialize_planted(
+    trees_per_acre=500,
+    site_index=65,      # CS sites typically SI 50-80
+    species='WO',       # White Oak (CS default)
+    variant='CS'        # Central States variant
+)
+stand_cs.grow(years=50)
+# Produces ~209 sq ft BA, ~9.4" QMD (Midwest oak-hickory)
 ```
 
 ### Adding New Variants
@@ -501,7 +524,7 @@ See `test_output/manuscript_validation/` for validation reports
 3. ~~**ParameterizedModel Refactoring**~~ **DONE** - All growth models inherit from base class (see Recent Refactoring 2025)
 4. ~~**GrowthParameters Dataclass**~~ **DONE** - Encapsulates tree growth inputs (see Recently Fixed #23)
 5. ~~**SpeciesCode Enum**~~ **DONE** - Type-safe species handling (see Recently Fixed #24)
-6. ~~**Multi-Variant Support**~~ **DONE** - 5 variants implemented: SN (90), LS (67), PN (39), WC (37), NE (108 species) - see Recently Fixed #28
+6. ~~**Multi-Variant Support**~~ **DONE** - 6 variants implemented: SN (90), LS (67), PN (39), WC (37), NE (108), CS (96 species) - Eastern variants 100% complete - see Recently Fixed #28
 
 ### Testing & Validation
 1. ~~Re-run manuscript validation tests with appropriate ecounit settings~~ **DONE**
