@@ -105,6 +105,9 @@ class SpeciesCode(str, Enum):
     TAMARACK = "TM"
     """Tamarack/larch (Larix laricina) - FIA code 071. Deciduous conifer."""
 
+    ATLANTIC_WHITE_CEDAR = "CO"
+    """Atlantic white cedar (Chamaecyparis thyoides) - FIA code 043. Coastal wetland conifer."""
+
     OTHER_SOFTWOOD = "OS"
     """Generic softwood species - catch-all for unlisted conifers."""
 
@@ -118,8 +121,11 @@ class SpeciesCode(str, Enum):
     CHESTNUT_OAK = "CW"
     """Chestnut oak (Quercus montana) - FIA code 832. Ridge/dry site specialist."""
 
-    SOUTHERN_RED_OAK = "SO"
+    SOUTHERN_RED_OAK = "SK"
     """Southern red oak (Quercus falcata) - FIA code 812. Common upland oak."""
+
+    SCARLET_OAK = "SO"
+    """Scarlet oak (Quercus coccinea) - FIA code 806. Upland red oak group."""
 
     WATER_OAK = "WK"
     """Water oak (Quercus nigra) - FIA code 827. Bottomland/mesic species."""
@@ -130,17 +136,29 @@ class SpeciesCode(str, Enum):
     OVERCUP_OAK = "OV"
     """Overcup oak (Quercus lyrata) - FIA code 822. Floodplain specialist."""
 
-    SWAMP_OAK = "SK"
-    """Swamp chestnut oak (Quercus michauxii) - FIA code 826. Bottomland species."""
-
     NORTHERN_RED_OAK = "RO"
     """Northern red oak (Quercus rubra) - FIA code 833. Major commercial oak."""
 
-    SCARLET_OAK = "SO"
-    """Scarlet oak (Quercus coccinea) - FIA code 806. Upland red oak group."""
-
     CHERRYBARK_OAK = "CB"
     """Cherrybark oak (Quercus pagoda) - FIA code 813. Premium bottomland oak."""
+
+    POST_OAK = "PO"
+    """Post oak (Quercus stellata) - FIA code 835. Drought-tolerant upland oak."""
+
+    BLACK_OAK = "BK"
+    """Black oak (Quercus velutina) - FIA code 837. Common upland red oak."""
+
+    BLACKJACK_OAK = "BO"
+    """Blackjack oak (Quercus marilandica) - FIA code 824. Dry site specialist."""
+
+    CHINKAPIN_OAK = "CK"
+    """Chinkapin oak (Quercus muehlenbergii) - FIA code 823. Limestone specialist."""
+
+    LIVE_OAK = "LO"
+    """Live oak (Quercus virginiana) - FIA code 838. Coastal evergreen oak."""
+
+    OAK_SPECIES = "QS"
+    """Generic oak species - used when exact species is unknown."""
 
     # =========================================================================
     # Maples (Acer spp.)
@@ -282,6 +300,12 @@ class SpeciesCode(str, Enum):
     LOBLOLLY_BAY = "LB"
     """Loblolly bay (Gordonia lasianthus) - Coastal plain evergreen."""
 
+    SASSAFRAS = "SS"
+    """Sassafras (Sassafras albidum) - FIA code 931. Aromatic pioneer species."""
+
+    SOURWOOD = "SN"
+    """Sourwood (Oxydendrum arboreum) - FIA code 711. Appalachian understory tree."""
+
     # =========================================================================
     # Generic/Catch-all Categories
     # =========================================================================
@@ -403,12 +427,17 @@ class SpeciesCode(str, Enum):
             cls.WHITE_OAK,
             cls.CHESTNUT_OAK,
             cls.SOUTHERN_RED_OAK,
+            cls.SCARLET_OAK,
             cls.NORTHERN_RED_OAK,
             cls.CHERRYBARK_OAK,
             cls.WATER_OAK,
             cls.LAUREL_OAK,
             cls.OVERCUP_OAK,
-            cls.SWAMP_OAK,
+            cls.POST_OAK,
+            cls.BLACK_OAK,
+            cls.BLACKJACK_OAK,
+            cls.CHINKAPIN_OAK,
+            cls.LIVE_OAK,
         ]
 
     @classmethod

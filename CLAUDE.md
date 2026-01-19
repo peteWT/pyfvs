@@ -4,7 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Forest Vegetation Simulator (FVS) - Python implementation of the Southern variant for simulating growth and yield of southern yellow pine species (Loblolly, Shortleaf, Longleaf, and Slash pine). Uses object-oriented architecture with modular growth models.
+Forest Vegetation Simulator (FVS) - Python implementation supporting multiple FVS regional variants for simulating growth and yield of forest species across the United States. Uses object-oriented architecture with modular growth models.
+
+**Supported Variants:**
+- **SN (Southern)** - 90 species including southern yellow pines (Loblolly, Shortleaf, Longleaf, Slash) and hardwoods
+- **LS (Lake States)** - 67 species for Great Lakes region (MI, WI, MN) including Red Pine, Jack Pine, and northern hardwoods
 
 ## Key Development Commands
 
@@ -28,8 +32,11 @@ uv run black src/fvs_python tests
 uv run flake8 src/fvs_python tests
 uv run mypy src/fvs_python
 
-# Run simulation via API
+# Run simulation via API (SN variant - default)
 uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(500, 70, 'LP'); s.grow(50); print(s.get_metrics())"
+
+# Run simulation with LS (Lake States) variant
+uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(500, 65, 'RN', variant='LS'); s.grow(50); print(s.get_metrics())"
 
 # Run example simulation
 uv run python -m pyfvs.main
@@ -68,8 +75,9 @@ model_base.py (ParameterizedModel - abstract base class)
 
 tree.py
   ├── growth_parameters.py (GrowthParameters dataclass)
-  ├── large_tree_height_growth.py (FVS Section 4.7.2 equations)
-  ├── height_diameter.py (Curtis-Arney/Wykoff equations)
+  ├── large_tree_height_growth.py (FVS Section 4.7.2 equations, SN variant)
+  ├── ls_diameter_growth.py (12-coef linear DDS, LS variant)
+  ├── height_diameter.py (Curtis-Arney/Wykoff equations, variant-aware)
   ├── crown_ratio.py (Weibull-based crown ratio)
   ├── bark_ratio.py (Clark 1991 DIB/DOB)
   ├── crown_width.py (forest/open grown equations)
@@ -92,10 +100,22 @@ utils/
 ```
 
 ### Configuration System
-- Species configs: `/cfg/species/*.yaml` (90 species)
-- Model coefficients: `/cfg/sn_*.json` (height-diameter, crown width, bark ratio, CCF, etc.)
-- Functional forms: `/cfg/functional_forms.yaml` (equation specifications)
+Multi-variant configuration structure:
+```
+src/pyfvs/cfg/
+├── sn_*.json                          # SN (Southern) variant coefficients
+├── species/*.yaml                     # SN species configs (90 species)
+├── species_config.yaml               # SN species registry
+├── ls/                               # LS (Lake States) variant directory
+│   ├── ls_diameter_growth_coefficients.json
+│   ├── ls_height_diameter_coefficients.json
+│   ├── ls_mortality_coefficients.json
+│   ├── ls_species_config.yaml
+│   └── species/*.yaml                # LS species configs (67 species)
+└── functional_forms.yaml             # Equation specifications (shared)
+```
 - All JSON loading uses `ConfigLoader.load_coefficient_file()` with centralized caching
+- Variant-specific paths resolved automatically via `get_default_variant()`
 
 ### Testing
 - Unit tests in `/tests/` for individual modules
@@ -153,6 +173,13 @@ utils/
 25. **String Normalization Utilities** - Added `utils/string_utils.py` with `normalize_code()`, `normalize_species_code()`, and `normalize_ecounit()` functions for consistent string handling throughout the codebase.
 26. **Test Fixtures Consolidation** - Created `tests/conftest.py` with 30+ shared pytest fixtures for trees (seedling, small, transition, large, mature), tree lists (sample, mixed species, density levels), and stands (young, mature, high/low site, ecounits).
 27. **VolumeCalculator Caching** - Added module-level cache for VolumeCalculator instances in `volume_library.py`, keyed by species code. The `get_volume_library()` function returns cached instances for performance.
+28. **Multi-Variant Architecture** - Added support for multiple FVS regional variants. Implemented Lake States (LS) variant with 67 species alongside existing Southern (SN) variant with 90 species. Key changes:
+    - `config_loader.py`: Added `SUPPORTED_VARIANTS` dict, `set_default_variant()`, `get_default_variant()` functions
+    - `ls_diameter_growth.py`: New module implementing LS 12-coefficient linear DDS equation
+    - `tree.py`: Added variant parameter, variant-specific `_grow_large_tree_ls()` method, RELDBH calculation
+    - `stand.py`: Added variant parameter, `_calculate_qmd_ge5()` for RELDBH computation
+    - `height_diameter.py`: Added `VARIANT_COEFFICIENT_FILES` mapping for variant-aware coefficient loading
+    - Created `cfg/ls/` with 71 configuration files (coefficients + 67 species YAMLs)
 
 ## Recent Refactoring (2025)
 
@@ -220,6 +247,66 @@ Key fixtures available in `tests/conftest.py`:
 | Density | `sparse_stand_trees`, `dense_stand_trees`, `very_dense_stand_trees` |
 | Stands | `young_stand`, `mature_stand`, `low_density_stand`, `high_density_stand`, `high_site_stand`, `low_site_stand`, `mountain_ecounit_stand`, `empty_stand`, `small_stand` |
 | Parameters | `standard_growth_params`, `high_competition_params`, `low_competition_params` |
+
+## FVS Variants
+
+PyFVS supports multiple FVS regional variants with variant-specific growth equations, coefficients, and species.
+
+### Supported Variants
+
+| Variant | Region | Species | Default Species | Base Cycle | DDS Equation |
+|---------|--------|---------|-----------------|------------|--------------|
+| **SN** | Southern US | 90 | LP (Loblolly Pine) | 5 years | ln(DDS) = f(D, CR, RELHT, SI, BA, ecounit) |
+| **LS** | Lake States (MI, WI, MN) | 67 | RN (Red Pine) | 10 years | DDS = f(D, CR, RELDBH, SI, BA, BAL) |
+
+### Key Model Differences
+
+**SN (Southern) Variant:**
+- Uses ln(DDS) transformation (exponential growth relationship)
+- Competition via RELHT (relative height to dominant trees)
+- Ecological unit modifiers (232, 231L, M231, etc.) with significant effects
+- Small-tree model uses Chapman-Richards height growth
+
+**LS (Lake States) Variant:**
+- Uses linear DDS (direct diameter-squared growth)
+- Competition via RELDBH (relative DBH to QMD of trees ≥5" DBH)
+- 12 coefficients: INTERC, VDBHC, DBHC, DBH2C, RDBHC, RDBHSQC, CRWNC, CRSQC, SBAC, BALC, SITEC
+- Curtis-Arney height-diameter relationship
+
+### Variant Usage
+
+```python
+from pyfvs import Stand, set_default_variant, get_default_variant
+
+# Set global default variant
+set_default_variant('LS')
+
+# Or specify per-stand
+stand = Stand.initialize_planted(
+    trees_per_acre=500,
+    site_index=65,
+    species='RN',      # Red Pine (LS default)
+    variant='LS'       # Lake States variant
+)
+stand.grow(years=50)
+
+# SN variant (default)
+stand_sn = Stand.initialize_planted(
+    trees_per_acre=500,
+    site_index=70,
+    species='LP',
+    variant='SN'       # Southern variant (or omit for default)
+)
+```
+
+### Adding New Variants
+
+To add a new FVS variant:
+1. Create `cfg/<variant>/` directory with coefficient JSON files
+2. Add variant to `SUPPORTED_VARIANTS` in `config_loader.py`
+3. Add variant-specific logic to `tree.py` growth methods
+4. Update `HeightDiameterModel` with variant coefficient file mapping
+5. Create species configs in `cfg/<variant>/species/`
 
 ## Ecological Unit Effects on Growth
 
@@ -320,6 +407,7 @@ See `test_output/manuscript_validation/` for validation reports
 3. ~~**ParameterizedModel Refactoring**~~ **DONE** - All growth models inherit from base class (see Recent Refactoring 2025)
 4. ~~**GrowthParameters Dataclass**~~ **DONE** - Encapsulates tree growth inputs (see Recently Fixed #23)
 5. ~~**SpeciesCode Enum**~~ **DONE** - Type-safe species handling (see Recently Fixed #24)
+6. ~~**Multi-Variant Support**~~ **DONE** - SN (90 species) and LS (67 species) variants implemented (see Recently Fixed #28)
 
 ### Testing & Validation
 1. ~~Re-run manuscript validation tests with appropriate ecounit settings~~ **DONE**
