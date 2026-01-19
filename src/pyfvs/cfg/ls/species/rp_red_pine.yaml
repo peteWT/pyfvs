@@ -1,0 +1,35 @@
+metadata:
+  code: RP
+  fia_code: 125
+  scientific_name: ''
+  common_name: red pine
+  valid_site_species: true
+  fvs_index: 4
+site_index:
+  min: 30
+  max: 90
+density:
+  sdi_max: 450
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 266.456
+    p3: 3.993
+    p4: -0.386
+    dbw: 0.1
+diameter_growth:
+  model: ls_dds
+  coefficients:
+    INTERC: 0.21748
+    VDBHC: 0.0
+    DBHC: 0.30253
+    DBH2C: -0.00885
+    RDBHC: 0.0
+    RDBHSQC: 0.0
+    SBAC: -0.00114
+    BALC: -0.00306
+    CRWNC: 0.01947
+    CRSQC: 0.0
+    SITEC: 0.00581
+mortality:
+  shade_tolerance: 0.3

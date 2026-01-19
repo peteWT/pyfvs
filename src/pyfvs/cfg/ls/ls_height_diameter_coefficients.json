@@ -1,0 +1,616 @@
+{
+  "metadata": {
+    "variant": "LS",
+    "variant_name": "Lake States",
+    "description": "Height-diameter coefficients for the Lake States (LS) variant of FVS",
+    "source": "FVS Lake States Variant htdbh.f, USDA Forest Service",
+    "model": "curtis_arney",
+    "equation": "HT = 4.5 + P2 * exp(-P3 * DBH^P4)",
+    "notes": "Curtis-Arney model with P2, P3, P4 coefficients; Dbw is transition diameter"
+  },
+  "coefficients": {
+    "JP": {
+      "species_index": 1,
+      "common_name": "jack pine",
+      "fia_code": 105,
+      "P2": 266.456,
+      "P3": 3.993,
+      "P4": -0.386,
+      "Dbw": 0.1
+    },
+    "SC": {
+      "species_index": 2,
+      "common_name": "scotch pine",
+      "fia_code": 130,
+      "P2": 142.747,
+      "P3": 3.973,
+      "P4": -0.587,
+      "Dbw": 0.1
+    },
+    "RN": {
+      "species_index": 3,
+      "common_name": "red pine",
+      "fia_code": 125,
+      "P2": 266.456,
+      "P3": 3.993,
+      "P4": -0.386,
+      "Dbw": 0.1
+    },
+    "RP": {
+      "species_index": 4,
+      "common_name": "red pine",
+      "fia_code": 125,
+      "P2": 266.456,
+      "P3": 3.993,
+      "P4": -0.386,
+      "Dbw": 0.1
+    },
+    "WP": {
+      "species_index": 5,
+      "common_name": "eastern white pine",
+      "fia_code": 129,
+      "P2": 2108.844,
+      "P3": 5.659,
+      "P4": -0.186,
+      "Dbw": 0.1
+    },
+    "WS": {
+      "species_index": 6,
+      "common_name": "white spruce",
+      "fia_code": 94,
+      "P2": 2163.947,
+      "P3": 6.269,
+      "P4": -0.216,
+      "Dbw": 0.1
+    },
+    "NS": {
+      "species_index": 7,
+      "common_name": "norway spruce",
+      "fia_code": 91,
+      "P2": 2163.947,
+      "P3": 6.269,
+      "P4": -0.216,
+      "Dbw": 0.1
+    },
+    "BF": {
+      "species_index": 8,
+      "common_name": "balsam fir",
+      "fia_code": 12,
+      "P2": 2163.947,
+      "P3": 6.269,
+      "P4": -0.216,
+      "Dbw": 0.1
+    },
+    "BS": {
+      "species_index": 9,
+      "common_name": "black spruce",
+      "fia_code": 95,
+      "P2": 2163.947,
+      "P3": 6.269,
+      "P4": -0.216,
+      "Dbw": 0.1
+    },
+    "TA": {
+      "species_index": 10,
+      "common_name": "tamarack",
+      "fia_code": 71,
+      "P2": 2163.947,
+      "P3": 6.269,
+      "P4": -0.216,
+      "Dbw": 0.1
+    },
+    "WC": {
+      "species_index": 11,
+      "common_name": "northern white cedar",
+      "fia_code": 241,
+      "P2": 2163.947,
+      "P3": 6.269,
+      "P4": -0.216,
+      "Dbw": 0.1
+    },
+    "EH": {
+      "species_index": 12,
+      "common_name": "eastern hemlock",
+      "fia_code": 261,
+      "P2": 266.456,
+      "P3": 3.993,
+      "P4": -0.386,
+      "Dbw": 0.1
+    },
+    "OS": {
+      "species_index": 13,
+      "common_name": "other softwood",
+      "fia_code": 299,
+      "P2": 212.793,
+      "P3": 3.472,
+      "P4": -0.326,
+      "Dbw": 0.1
+    },
+    "RC": {
+      "species_index": 14,
+      "common_name": "eastern redcedar",
+      "fia_code": 68,
+      "P2": 926.180,
+      "P3": 4.462,
+      "P4": -0.201,
+      "Dbw": 0.1
+    },
+    "BA": {
+      "species_index": 15,
+      "common_name": "black ash",
+      "fia_code": 543,
+      "P2": 178.931,
+      "P3": 4.929,
+      "P4": -0.638,
+      "Dbw": 0.2
+    },
+    "GA": {
+      "species_index": 16,
+      "common_name": "green ash",
+      "fia_code": 544,
+      "P2": 178.931,
+      "P3": 4.929,
+      "P4": -0.638,
+      "Dbw": 0.2
+    },
+    "EC": {
+      "species_index": 17,
+      "common_name": "eastern cottonwood",
+      "fia_code": 742,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "SV": {
+      "species_index": 18,
+      "common_name": "silver maple",
+      "fia_code": 317,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "RM": {
+      "species_index": 19,
+      "common_name": "red maple",
+      "fia_code": 316,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "BC": {
+      "species_index": 20,
+      "common_name": "black cherry",
+      "fia_code": 762,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "AE": {
+      "species_index": 21,
+      "common_name": "american elm",
+      "fia_code": 972,
+      "P2": 644.357,
+      "P3": 3.920,
+      "P4": -0.214,
+      "Dbw": 0.2
+    },
+    "RL": {
+      "species_index": 22,
+      "common_name": "rock elm",
+      "fia_code": 975,
+      "P2": 644.357,
+      "P3": 3.920,
+      "P4": -0.214,
+      "Dbw": 0.2
+    },
+    "RE": {
+      "species_index": 23,
+      "common_name": "slippery elm",
+      "fia_code": 977,
+      "P2": 644.357,
+      "P3": 3.920,
+      "P4": -0.214,
+      "Dbw": 0.2
+    },
+    "YB": {
+      "species_index": 24,
+      "common_name": "yellow birch",
+      "fia_code": 371,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "BW": {
+      "species_index": 25,
+      "common_name": "black willow",
+      "fia_code": 951,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "SM": {
+      "species_index": 26,
+      "common_name": "sugar maple",
+      "fia_code": 318,
+      "P2": 575.247,
+      "P3": 4.512,
+      "P4": -0.285,
+      "Dbw": 0.2
+    },
+    "BM": {
+      "species_index": 27,
+      "common_name": "black maple",
+      "fia_code": 314,
+      "P2": 575.247,
+      "P3": 4.512,
+      "P4": -0.285,
+      "Dbw": 0.2
+    },
+    "AB": {
+      "species_index": 28,
+      "common_name": "american beech",
+      "fia_code": 531,
+      "P2": 575.247,
+      "P3": 4.512,
+      "P4": -0.285,
+      "Dbw": 0.2
+    },
+    "WA": {
+      "species_index": 29,
+      "common_name": "white ash",
+      "fia_code": 541,
+      "P2": 178.931,
+      "P3": 4.929,
+      "P4": -0.638,
+      "Dbw": 0.2
+    },
+    "WO": {
+      "species_index": 30,
+      "common_name": "white oak",
+      "fia_code": 802,
+      "P2": 765.291,
+      "P3": 4.224,
+      "P4": -0.190,
+      "Dbw": 0.2
+    },
+    "SW": {
+      "species_index": 31,
+      "common_name": "swamp white oak",
+      "fia_code": 804,
+      "P2": 765.291,
+      "P3": 4.224,
+      "P4": -0.190,
+      "Dbw": 0.2
+    },
+    "BR": {
+      "species_index": 32,
+      "common_name": "bur oak",
+      "fia_code": 823,
+      "P2": 765.291,
+      "P3": 4.224,
+      "P4": -0.190,
+      "Dbw": 0.2
+    },
+    "CK": {
+      "species_index": 33,
+      "common_name": "chinkapin oak",
+      "fia_code": 826,
+      "P2": 765.291,
+      "P3": 4.224,
+      "P4": -0.190,
+      "Dbw": 0.2
+    },
+    "RO": {
+      "species_index": 34,
+      "common_name": "northern red oak",
+      "fia_code": 833,
+      "P2": 765.291,
+      "P3": 4.224,
+      "P4": -0.190,
+      "Dbw": 0.2
+    },
+    "BO": {
+      "species_index": 35,
+      "common_name": "black oak",
+      "fia_code": 837,
+      "P2": 765.291,
+      "P3": 4.224,
+      "P4": -0.190,
+      "Dbw": 0.2
+    },
+    "NP": {
+      "species_index": 36,
+      "common_name": "norway pine",
+      "fia_code": 125,
+      "P2": 266.456,
+      "P3": 3.993,
+      "P4": -0.386,
+      "Dbw": 0.1
+    },
+    "BH": {
+      "species_index": 37,
+      "common_name": "bitternut hickory",
+      "fia_code": 402,
+      "P2": 575.247,
+      "P3": 4.512,
+      "P4": -0.285,
+      "Dbw": 0.2
+    },
+    "PH": {
+      "species_index": 38,
+      "common_name": "pignut hickory",
+      "fia_code": 403,
+      "P2": 575.247,
+      "P3": 4.512,
+      "P4": -0.285,
+      "Dbw": 0.2
+    },
+    "SH": {
+      "species_index": 39,
+      "common_name": "shagbark hickory",
+      "fia_code": 407,
+      "P2": 575.247,
+      "P3": 4.512,
+      "P4": -0.285,
+      "Dbw": 0.2
+    },
+    "BT": {
+      "species_index": 40,
+      "common_name": "bigtooth aspen",
+      "fia_code": 743,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "QA": {
+      "species_index": 41,
+      "common_name": "quaking aspen",
+      "fia_code": 746,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "BP": {
+      "species_index": 42,
+      "common_name": "balsam poplar",
+      "fia_code": 741,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "PB": {
+      "species_index": 43,
+      "common_name": "paper birch",
+      "fia_code": 375,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "BN": {
+      "species_index": 45,
+      "common_name": "butternut",
+      "fia_code": 601,
+      "P2": 575.247,
+      "P3": 4.512,
+      "P4": -0.285,
+      "Dbw": 0.2
+    },
+    "WN": {
+      "species_index": 46,
+      "common_name": "black walnut",
+      "fia_code": 602,
+      "P2": 575.247,
+      "P3": 4.512,
+      "P4": -0.285,
+      "Dbw": 0.2
+    },
+    "HH": {
+      "species_index": 47,
+      "common_name": "hophornbeam",
+      "fia_code": 701,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "BK": {
+      "species_index": 48,
+      "common_name": "birch species",
+      "fia_code": 901,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "OH": {
+      "species_index": 49,
+      "common_name": "other hardwood",
+      "fia_code": 998,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "BE": {
+      "species_index": 50,
+      "common_name": "beech",
+      "fia_code": 531,
+      "P2": 575.247,
+      "P3": 4.512,
+      "P4": -0.285,
+      "Dbw": 0.2
+    },
+    "ST": {
+      "species_index": 51,
+      "common_name": "striped maple",
+      "fia_code": 315,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "MM": {
+      "species_index": 52,
+      "common_name": "mountain maple",
+      "fia_code": 319,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "AH": {
+      "species_index": 53,
+      "common_name": "american hornbeam",
+      "fia_code": 391,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "AC": {
+      "species_index": 54,
+      "common_name": "american chestnut",
+      "fia_code": 421,
+      "P2": 575.247,
+      "P3": 4.512,
+      "P4": -0.285,
+      "Dbw": 0.2
+    },
+    "HK": {
+      "species_index": 55,
+      "common_name": "hickory species",
+      "fia_code": 400,
+      "P2": 575.247,
+      "P3": 4.512,
+      "P4": -0.285,
+      "Dbw": 0.2
+    },
+    "DW": {
+      "species_index": 56,
+      "common_name": "dogwood",
+      "fia_code": 491,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "HT": {
+      "species_index": 57,
+      "common_name": "hackberry",
+      "fia_code": 462,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "AP": {
+      "species_index": 58,
+      "common_name": "apple",
+      "fia_code": 660,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "BG": {
+      "species_index": 59,
+      "common_name": "black gum",
+      "fia_code": 693,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "SY": {
+      "species_index": 60,
+      "common_name": "sycamore",
+      "fia_code": 731,
+      "P2": 644.357,
+      "P3": 3.920,
+      "P4": -0.214,
+      "Dbw": 0.2
+    },
+    "PR": {
+      "species_index": 61,
+      "common_name": "pin cherry",
+      "fia_code": 761,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "CC": {
+      "species_index": 62,
+      "common_name": "chokecherry",
+      "fia_code": 763,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "PL": {
+      "species_index": 63,
+      "common_name": "plum species",
+      "fia_code": 760,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "WI": {
+      "species_index": 64,
+      "common_name": "willow",
+      "fia_code": 920,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "BL": {
+      "species_index": 65,
+      "common_name": "black locust",
+      "fia_code": 901,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "DM": {
+      "species_index": 66,
+      "common_name": "boxelder",
+      "fia_code": 313,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "SS": {
+      "species_index": 67,
+      "common_name": "sassafras",
+      "fia_code": 931,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    },
+    "MA": {
+      "species_index": 68,
+      "common_name": "mulberry",
+      "fia_code": 935,
+      "P2": 396.251,
+      "P3": 4.248,
+      "P4": -0.348,
+      "Dbw": 0.2
+    }
+  }
+}

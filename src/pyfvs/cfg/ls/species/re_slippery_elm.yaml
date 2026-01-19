@@ -1,0 +1,35 @@
+metadata:
+  code: RE
+  fia_code: 977
+  scientific_name: ''
+  common_name: slippery elm
+  valid_site_species: true
+  fvs_index: 23
+site_index:
+  min: 40
+  max: 100
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 644.357
+    p3: 3.92
+    p4: -0.214
+    dbw: 0.2
+diameter_growth:
+  model: ls_dds
+  coefficients:
+    INTERC: 3.2435
+    VDBHC: -10.737
+    DBHC: 0.0
+    DBH2C: 0.0
+    RDBHC: 0.0
+    RDBHSQC: 0.0
+    SBAC: 0.0
+    BALC: 0.0
+    CRWNC: 0.05258
+    CRSQC: -0.00038
+    SITEC: 0.0
+mortality:
+  shade_tolerance: 0.5

@@ -20,7 +20,11 @@ class HeightDiameterModel(ParameterizedModel):
     """Height-diameter model implementing Curtis-Arney and Wykoff equations.
 
     Uses the base class pattern for loading species-specific coefficients
-    from sn_height_diameter_coefficients.json with fallback support.
+    from variant-specific coefficient files with fallback support.
+
+    Supported variants:
+        - SN: sn_height_diameter_coefficients.json
+        - LS: ls/ls_height_diameter_coefficients.json
 
     The JSON file stores coefficients in a flat structure per species:
         {"LP": {"P2": ..., "P3": ..., "P4": ..., "Dbw": ..., "Wykoff_B1": ..., "Wykoff_B2": ...}, ...}
@@ -29,8 +33,14 @@ class HeightDiameterModel(ParameterizedModel):
         {"curtis_arney": {"p2": ..., "p3": ..., "p4": ..., "dbw": ...}, "wykoff": {"b1": ..., "b2": ...}}
     """
 
+    # Variant-specific coefficient file mapping
+    VARIANT_COEFFICIENT_FILES = {
+        'SN': 'sn_height_diameter_coefficients.json',
+        'LS': 'ls/ls_height_diameter_coefficients.json',
+    }
+
     # Class attributes for ParameterizedModel base class
-    COEFFICIENT_FILE = 'sn_height_diameter_coefficients.json'
+    COEFFICIENT_FILE = 'sn_height_diameter_coefficients.json'  # Default for SN
     COEFFICIENT_KEY = None  # Special case: species are top-level keys, not nested
     FALLBACK_PARAMETERS = {
         'LP': {
@@ -49,15 +59,34 @@ class HeightDiameterModel(ParameterizedModel):
             'P2': 98.56082813, 'P3': 3.89930709, 'P4': -0.86730393, 'Dbw': 0.5,
             'Wykoff_B1': 4.5991, 'Wykoff_B2': -5.9111
         },
+        # LS variant fallbacks
+        'JP': {  # Jack Pine
+            'P2': 266.456, 'P3': 3.993, 'P4': -0.386, 'Dbw': 0.1,
+            'Wykoff_B1': 4.5, 'Wykoff_B2': -6.5
+        },
+        'RN': {  # Red Pine
+            'P2': 311.165, 'P3': 3.832, 'P4': -0.357, 'Dbw': 0.1,
+            'Wykoff_B1': 4.6, 'Wykoff_B2': -6.6
+        },
     }
     DEFAULT_SPECIES = "LP"
 
-    def __init__(self, species_code: str = "LP"):
+    def __init__(self, species_code: str = "LP", variant: str = None):
         """Initialize with species-specific parameters.
 
         Args:
-            species_code: Species code (e.g., "LP", "SP", "SA", etc.)
+            species_code: Species code (e.g., "LP", "SP", "SA", "JP", "RN", etc.)
+            variant: FVS variant code (e.g., "SN", "LS"). If None, uses current default.
         """
+        # Set variant before calling parent init (which calls _load_parameters)
+        from .config_loader import get_default_variant
+        self.variant = (variant or get_default_variant()).upper()
+
+        # Set the coefficient file based on variant
+        self.COEFFICIENT_FILE = self.VARIANT_COEFFICIENT_FILES.get(
+            self.variant, self.VARIANT_COEFFICIENT_FILES['SN']
+        )
+
         super().__init__(species_code)
 
     def _load_parameters(self) -> None:
@@ -257,16 +286,17 @@ class HeightDiameterModel(ParameterizedModel):
             raise ValueError(f"Unknown model: {model}")
 
 
-def create_height_diameter_model(species_code: str = "LP") -> HeightDiameterModel:
+def create_height_diameter_model(species_code: str = "LP", variant: str = None) -> HeightDiameterModel:
     """Factory function to create a height-diameter model for a species.
 
     Args:
-        species_code: Species code (e.g., "LP", "SP", "SA", etc.)
+        species_code: Species code (e.g., "LP", "SP", "SA", "JP", "RN", etc.)
+        variant: FVS variant code (e.g., "SN", "LS"). If None, uses current default.
 
     Returns:
         HeightDiameterModel instance
     """
-    return HeightDiameterModel(species_code)
+    return HeightDiameterModel(species_code, variant=variant)
 
 
 def curtis_arney_height(dbh: float, p2: float, p3: float, p4: float, dbw: float = 0.1) -> float:

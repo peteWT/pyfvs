@@ -1,0 +1,35 @@
+metadata:
+  code: WA
+  fia_code: 541
+  scientific_name: ''
+  common_name: white ash
+  valid_site_species: true
+  fvs_index: 29
+site_index:
+  min: 40
+  max: 100
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 178.931
+    p3: 4.929
+    p4: -0.638
+    dbw: 0.2
+diameter_growth:
+  model: ls_dds
+  coefficients:
+    INTERC: 2.47033
+    VDBHC: -9.9428
+    DBHC: 0.0
+    DBH2C: 0.0
+    RDBHC: 0.0
+    RDBHSQC: 0.0
+    SBAC: -0.00228
+    BALC: 0.0
+    CRWNC: 0.04226
+    CRSQC: -0.00029
+    SITEC: 0.01152
+mortality:
+  shade_tolerance: 0.3

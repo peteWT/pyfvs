@@ -1,0 +1,35 @@
+metadata:
+  code: BN
+  fia_code: 601
+  scientific_name: ''
+  common_name: butternut
+  valid_site_species: true
+  fvs_index: 45
+site_index:
+  min: 40
+  max: 100
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 575.247
+    p3: 4.512
+    p4: -0.285
+    dbw: 0.2
+diameter_growth:
+  model: ls_dds
+  coefficients:
+    INTERC: 2.9591
+    VDBHC: -9.5199
+    DBHC: 0.0
+    DBH2C: 0.0
+    RDBHC: 0.0
+    RDBHSQC: 0.0
+    SBAC: 0.0
+    BALC: -0.00169
+    CRWNC: 0.03012
+    CRSQC: 0.0
+    SITEC: 0.00356
+mortality:
+  shade_tolerance: 0.1

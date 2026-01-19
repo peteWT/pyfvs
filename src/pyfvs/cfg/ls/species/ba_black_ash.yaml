@@ -1,0 +1,35 @@
+metadata:
+  code: BA
+  fia_code: 543
+  scientific_name: ''
+  common_name: black ash
+  valid_site_species: true
+  fvs_index: 15
+site_index:
+  min: 40
+  max: 100
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 178.931
+    p3: 4.929
+    p4: -0.638
+    dbw: 0.2
+diameter_growth:
+  model: ls_dds
+  coefficients:
+    INTERC: 2.5313
+    VDBHC: -10.146
+    DBHC: 0.0
+    DBH2C: 0.0
+    RDBHC: 0.0
+    RDBHSQC: 0.0
+    SBAC: -0.00095
+    BALC: 0.0
+    CRWNC: 0.01677
+    CRSQC: 0.0
+    SITEC: 0.01285
+mortality:
+  shade_tolerance: 0.3

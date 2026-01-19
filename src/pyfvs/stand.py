@@ -5,7 +5,11 @@ This module provides the Stand class which coordinates tree growth, mortality,
 harvest operations, and output generation through composition with specialized
 component classes.
 
-Implements FVS Southern variant stand-level calculations including:
+Supports multiple FVS variants:
+- SN (Southern): Southeastern US pine/hardwood
+- LS (Lake States): Great Lakes region (MI, WI, MN)
+
+Implements stand-level calculations including:
 - Crown Competition Factor (CCF) using official equation 4.5.1
 - Stand Density Index (SDI) using Reineke's equation
 - Relative SDI (RELSDI) for competition modeling
@@ -20,7 +24,7 @@ if TYPE_CHECKING:
     import polars as pl
 
 from .tree import Tree
-from .config_loader import load_stand_config
+from .config_loader import load_stand_config, get_default_variant, SUPPORTED_VARIANTS
 from .validation import ParameterValidator
 from .logging_config import get_logger
 from .utils import normalize_code
@@ -45,11 +49,14 @@ class Stand:
     - CompetitionCalculator for competition metrics
     - StandOutputGenerator for output generation
 
+    Supports multiple FVS variants (SN, LS, etc.) through the variant parameter.
+
     Attributes:
         trees: List of Tree objects in the stand
-        site_index: Site index (base age 25) in feet
+        site_index: Site index in feet (base age varies by variant)
         age: Stand age in years
         species: Default species code
+        variant: FVS variant code (e.g., 'SN', 'LS')
     """
 
     def __init__(
@@ -58,18 +65,28 @@ class Stand:
         site_index: float = 70,
         species: str = 'LP',
         forest_type: Optional[str] = None,
-        ecounit: Optional[str] = None
+        ecounit: Optional[str] = None,
+        variant: Optional[str] = None
     ):
         """Initialize a stand with a list of trees.
 
         Args:
             trees: List of Tree objects. If None, creates an empty stand.
-            site_index: Site index (base age 25) in feet
+            site_index: Site index in feet (base age varies by variant)
             species: Default species code for stand parameters
             forest_type: FVS forest type group (e.g., "FTYLPN", "FTLOHD")
             ecounit: Ecological unit code (e.g., "M221", "232")
+            variant: FVS variant code (e.g., 'SN', 'LS'). If None, uses default.
         """
         self.trees = trees if trees is not None else []
+
+        # Set variant (default based on global setting)
+        self.variant = (variant or get_default_variant()).upper()
+        if self.variant not in SUPPORTED_VARIANTS:
+            raise ValueError(
+                f"Unsupported variant '{self.variant}'. "
+                f"Supported variants: {list(SUPPORTED_VARIANTS.keys())}"
+            )
 
         # Validate parameters
         validated_params = ParameterValidator.validate_stand_parameters(
@@ -87,8 +104,8 @@ class Stand:
         # Set up logging
         self.logger = get_logger(__name__)
 
-        # Load configuration
-        self.params = load_stand_config(species)
+        # Load configuration with variant
+        self.params = load_stand_config(species, variant=self.variant)
         self._load_growth_params()
 
         # Initialize component classes
@@ -171,6 +188,27 @@ class Stand:
         """Calculate Quadratic Mean Diameter."""
         return self._metrics.calculate_qmd(self.trees)
 
+    def _calculate_qmd_ge5(self) -> float:
+        """Calculate QMD of trees >= 5" DBH (for LS variant RELDBH).
+
+        The LS variant uses relative diameter (RELDBH = D / QMDGE5) in its
+        diameter growth equation. QMDGE5 is the quadratic mean diameter of
+        all trees with DBH >= 5 inches.
+
+        Returns:
+            QMD of trees >= 5" DBH, or overall QMD if no trees >= 5"
+        """
+        import math
+        trees_ge5 = [t for t in self.trees if t.dbh >= 5.0]
+
+        if not trees_ge5:
+            # Fall back to overall QMD if no trees >= 5"
+            return self.calculate_qmd()
+
+        # QMD = sqrt(sum(D^2) / n)
+        sum_dbh_sq = sum(t.dbh ** 2 for t in trees_ge5)
+        return math.sqrt(sum_dbh_sq / len(trees_ge5))
+
     def calculate_top_height(self, n_trees: int = 40) -> float:
         """Calculate top height (average of n largest trees by DBH)."""
         return self._metrics.calculate_top_height(self.trees, n_trees)
@@ -226,19 +264,28 @@ class Stand:
         site_index: float = 70,
         species: str = 'LP',
         ecounit: Optional[str] = None,
-        forest_type: Optional[str] = None
+        forest_type: Optional[str] = None,
+        variant: Optional[str] = None
     ):
         """Create a new planted stand.
 
         Args:
             trees_per_acre: Number of trees per acre to plant
-            site_index: Site index (base age 25) in feet
+            site_index: Site index in feet (base age varies by variant)
             species: Species code for the plantation
             ecounit: Ecological unit code (e.g., "M231", "232") for regional growth effects
             forest_type: FVS forest type group (e.g., "FTYLPN")
+            variant: FVS variant code (e.g., 'SN', 'LS'). If None, uses default.
 
         Returns:
             Stand: New stand instance
+
+        Examples:
+            Southern variant (default):
+                >>> stand = Stand.initialize_planted(500, 70, 'LP')
+
+            Lake States variant:
+                >>> stand = Stand.initialize_planted(500, 60, 'RN', variant='LS')
         """
         if trees_per_acre <= 0:
             raise ValueError(f"trees_per_acre must be positive, got {trees_per_acre}")
@@ -252,7 +299,7 @@ class Stand:
         site_index = validated_params['site_index']
 
         # Create temporary stand to access config
-        temp_stand = cls([], site_index, species)
+        temp_stand = cls([], site_index, species, variant=variant)
         initial_params = temp_stand.growth_params.get('initial_tree', {})
 
         dbh_params = initial_params.get('dbh', {})
@@ -263,17 +310,20 @@ class Stand:
         initial_height = initial_params.get('height', {}).get('planted', 1.0)
 
         # Create trees with random variation
+        # Get the actual variant from temp_stand to ensure consistency
+        actual_variant = temp_stand.variant
         trees = [
             Tree(
                 dbh=max(dbh_min, dbh_mean + random.gauss(0, dbh_sd)),
                 height=initial_height,
                 species=species,
-                age=0
+                age=0,
+                variant=actual_variant
             )
             for _ in range(trees_per_acre)
         ]
 
-        return cls(trees, site_index, species, forest_type=forest_type, ecounit=ecounit)
+        return cls(trees, site_index, species, forest_type=forest_type, ecounit=ecounit, variant=variant)
 
     @classmethod
     def from_fia_data(
@@ -539,6 +589,9 @@ class Stand:
         ba = self.calculate_basal_area()
         relsdi = self.calculate_relsdi()
 
+        # Calculate QMD of trees >= 5" DBH (needed for LS variant RELDBH)
+        qmd_ge5 = self._calculate_qmd_ge5()
+
         # Get competition metrics for each tree
         competition_metrics = self._calculate_competition_metrics()
 
@@ -563,7 +616,8 @@ class Stand:
                 relsdi=metrics.get('relsdi', relsdi),
                 time_step=years,
                 ecounit=self.ecounit,
-                forest_type=self.forest_type
+                forest_type=self.forest_type,
+                qmd_ge5=qmd_ge5  # For LS variant RELDBH calculation
             )
 
         # Apply mortality

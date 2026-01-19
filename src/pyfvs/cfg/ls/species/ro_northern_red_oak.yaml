@@ -1,0 +1,35 @@
+metadata:
+  code: RO
+  fia_code: 833
+  scientific_name: ''
+  common_name: northern red oak
+  valid_site_species: true
+  fvs_index: 34
+site_index:
+  min: 40
+  max: 100
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 765.291
+    p3: 4.224
+    p4: -0.19
+    dbw: 0.2
+diameter_growth:
+  model: ls_dds
+  coefficients:
+    INTERC: 0.4452
+    VDBHC: 0.0
+    DBHC: 0.22472
+    DBH2C: -0.00397
+    RDBHC: 0.0
+    RDBHSQC: 0.0
+    SBAC: 0.0
+    BALC: -0.00148
+    CRWNC: 0.0
+    CRSQC: 9.0e-05
+    SITEC: 0.01305
+mortality:
+  shade_tolerance: 0.5

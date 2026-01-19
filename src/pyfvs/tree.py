@@ -13,21 +13,22 @@ __all__ = ['Tree']
 
 
 class Tree:
-    def __init__(self, dbh, height, species="LP", age=0, crown_ratio=0.85):
+    def __init__(self, dbh, height, species="LP", age=0, crown_ratio=0.85, variant=None):
         """Initialize a tree with basic measurements.
-        
+
         Args:
             dbh: Diameter at breast height (inches)
             height: Total height (feet)
-            species: Species code (e.g., "LP" for loblolly pine)
+            species: Species code (e.g., "LP" for loblolly pine, "RN" for red pine)
             age: Tree age in years
             crown_ratio: Initial crown ratio (proportion of tree height with live crown)
+            variant: FVS variant code (e.g., 'SN', 'LS'). If None, uses current default.
         """
         # Validate parameters
         validated = ParameterValidator.validate_tree_parameters(
             dbh, height, age, crown_ratio, species
         )
-        
+
         self.dbh = validated['dbh']
         self.height = validated['height']
         self.species = species
@@ -40,29 +41,36 @@ class Tree:
 
         # Set up logging
         self.logger = get_logger(__name__)
-        
+
         # Check height-DBH relationship (disabled warning for small seedlings)
         if self.height > 4.5 and not ParameterValidator.check_height_dbh_relationship(self.dbh, self.height):
             self.logger.warning(
                 f"Unusual height-DBH relationship: DBH={self.dbh}, Height={self.height}"
             )
-        
-        # Load configuration
-        self._load_config()
+
+        # Load configuration with variant
+        self._load_config(variant)
     
-    def _load_config(self):
-        """Load configuration using the new config loader."""
+    def _load_config(self, variant: str = None):
+        """Load configuration using the new config loader.
+
+        Args:
+            variant: FVS variant code (e.g., 'SN', 'LS'). If None, uses current default.
+        """
         from .config_loader import get_config_loader
-        
-        loader = get_config_loader()
-        
+
+        loader = get_config_loader(variant)
+
         # Load species-specific parameters
         self.species_params = loader.load_species_config(self.species)
-        
+
+        # Store the variant for use in growth equations
+        self._variant = self.species_params.get('_variant', loader.variant)
+
         # Load functional forms and site index parameters
         self.functional_forms = loader.functional_forms
         self.site_index_params = loader.site_index_params
-        
+
         # Load growth model parameters
         try:
             growth_params_file = loader.cfg_dir / 'growth_model_parameters.yaml'
@@ -89,6 +97,7 @@ class Tree:
         time_step: int = 5,
         ecounit: str = None,
         forest_type: str = None,
+        qmd_ge5: float = None,
         *,
         site_index: float = None
     ) -> None:
@@ -111,6 +120,7 @@ class Tree:
             time_step: Number of years to grow the tree. Default: 5.
             ecounit: Ecological unit code (e.g., "232", "M231") - passed from Stand.
             forest_type: Forest type group (e.g., "FTYLPN") - passed from Stand.
+            qmd_ge5: QMD of trees >= 5" DBH (for LS variant RELDBH calculation).
             site_index: Alternative keyword argument for site_index (for clarity when
                 not using GrowthParameters).
 
@@ -217,7 +227,7 @@ class Tree:
         self.height = initial_height
         
         # Calculate large tree growth
-        self._grow_large_tree(site_index, competition_factor, ba, pbal, slope, aspect, time_step)
+        self._grow_large_tree(site_index, competition_factor, ba, pbal, slope, aspect, time_step, qmd_ge5)
         large_dbh = self.dbh
         large_height = self.height
         
@@ -357,7 +367,100 @@ class Tree:
             adjusted_increment = dbh_increment * ecounit_multiplier
             self.dbh = original_dbh + adjusted_increment
     
-    def _grow_large_tree(self, site_index, competition_factor, ba, pbal, slope, aspect, time_step=5):
+    def _grow_large_tree(self, site_index, competition_factor, ba, pbal, slope, aspect, time_step=5, qmd_ge5=None):
+        """Implement large tree diameter growth model using variant-specific equations.
+
+        Dispatches to the appropriate growth model based on the tree's variant:
+        - SN (Southern): Uses ln(DDS) formulation from dgf.f
+        - LS (Lake States): Uses linear DDS formulation from ls_diameter_growth.py
+
+        Args:
+            site_index: Site index in feet (base age varies by variant)
+            competition_factor: Competition factor (0-1)
+            ba: Stand basal area (sq ft/acre)
+            pbal: Plot basal area in larger trees (sq ft/acre)
+            slope: Ground slope as tangent (rise/run)
+            aspect: Aspect in radians
+            time_step: Number of years to grow (default: 5)
+            qmd_ge5: QMD of trees >= 5" DBH (for LS variant RELDBH calculation)
+        """
+        # Dispatch to variant-specific growth model
+        variant = getattr(self, '_variant', 'SN')
+
+        if variant == 'LS':
+            self._grow_large_tree_ls(site_index, ba, pbal, time_step, qmd_ge5)
+            return
+
+        # SN variant (default) - uses ln(DDS) formulation
+        self._grow_large_tree_sn(site_index, competition_factor, ba, pbal, slope, aspect, time_step)
+
+    def _grow_large_tree_ls(self, site_index, ba, pbal, time_step=10, qmd_ge5=None):
+        """Implement large tree diameter growth model for LS (Lake States) variant.
+
+        Uses the LS variant DDS equation:
+        DDS = INTERC + VDBHC/D + DBHC*D + DBH2C*D² + RDBHC*RELDBH
+              + RDBHSQC*RELDBH² + CRWNC*CR + CRSQC*CR² + SBAC*BA + BALC*BAL + SITEC*SI
+
+        Args:
+            site_index: Site index (base age 50) in feet
+            ba: Stand basal area (sq ft/acre)
+            pbal: Basal area in larger trees (sq ft/acre)
+            time_step: Number of years to grow (default: 10 for LS)
+            qmd_ge5: QMD of trees >= 5" DBH (for RELDBH calculation)
+        """
+        from .ls_diameter_growth import get_ls_diameter_growth_model
+        from .bark_ratio import create_bark_ratio_model
+
+        # Get the LS diameter growth model for this species
+        dg_model = get_ls_diameter_growth_model(self.species)
+
+        # Get bark ratio for diameter conversion
+        bark_model = create_bark_ratio_model(self.species)
+        bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
+
+        # Calculate diameter growth using LS model
+        diameter_increment = dg_model.calculate_diameter_growth(
+            dbh=self.dbh,
+            crown_ratio=self.crown_ratio,
+            site_index=site_index,
+            ba=ba,
+            bal=pbal,
+            bark_ratio=bark_ratio,
+            qmd_ge5=qmd_ge5,
+            time_step=time_step
+        )
+
+        # Apply increment to DBH
+        self.dbh = self.dbh + diameter_increment
+
+        # Update height using height-diameter relationship for LS
+        # LS variant uses Curtis-Arney height-diameter relationship
+        self._update_height_large_tree_ls(site_index)
+
+    def _update_height_large_tree_ls(self, site_index):
+        """Update height for LS variant large trees using height-diameter relationship.
+
+        The LS variant uses the Curtis-Arney height-diameter model to update height
+        based on the new diameter after growth. The Curtis-Arney model uses
+        species-specific coefficients and doesn't directly use site index.
+
+        Args:
+            site_index: Site index (base age 50) in feet - stored for potential future use
+        """
+        from .height_diameter import create_height_diameter_model
+
+        # Get height-diameter model for this species
+        hd_model = create_height_diameter_model(self.species, variant='LS')
+
+        # Calculate expected height for current DBH using Curtis-Arney model
+        # Note: Curtis-Arney uses fixed species coefficients, not site index
+        expected_height = hd_model.predict_height(self.dbh)
+
+        # Apply smooth transition to new height (avoid abrupt changes)
+        # Weight current height 30%, predicted height 70%
+        self.height = 0.3 * self.height + 0.7 * expected_height
+
+    def _grow_large_tree_sn(self, site_index, competition_factor, ba, pbal, slope, aspect, time_step=5):
         """Implement large tree diameter growth model using official FVS-SN equations.
 
         Based on USDA Forest Service FVS Southern Variant (SN) from dgf.f:

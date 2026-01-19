@@ -1,0 +1,35 @@
+metadata:
+  code: SM
+  fia_code: 318
+  scientific_name: ''
+  common_name: sugar maple
+  valid_site_species: true
+  fvs_index: 26
+site_index:
+  min: 40
+  max: 100
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 575.247
+    p3: 4.512
+    p4: -0.285
+    dbw: 0.2
+diameter_growth:
+  model: ls_dds
+  coefficients:
+    INTERC: 3.2946
+    VDBHC: -12.691
+    DBHC: 0.0
+    DBH2C: 0.0
+    RDBHC: 0.0
+    RDBHSQC: 0.0
+    SBAC: -0.0021
+    BALC: 0.0
+    CRWNC: 0.01787
+    CRSQC: 0.0
+    SITEC: 0.00496
+mortality:
+  shade_tolerance: 0.9

@@ -64,7 +64,14 @@ from .forest_type import (
 # =============================================================================
 # Configuration Loading
 # =============================================================================
-from .config_loader import get_config_loader, load_stand_config, load_tree_config
+from .config_loader import (
+    get_config_loader,
+    load_stand_config,
+    load_tree_config,
+    set_default_variant,
+    get_default_variant,
+    SUPPORTED_VARIANTS,
+)
 
 # =============================================================================
 # Simulation Engine
@@ -183,6 +190,15 @@ from .exceptions import (
 from .model_base import ParameterizedModel
 
 # =============================================================================
+# Variant-Specific Growth Models
+# =============================================================================
+from .ls_diameter_growth import (
+    LSDiameterGrowthModel,
+    get_ls_diameter_growth_model,
+    calculate_ls_diameter_growth,
+)
+
+# =============================================================================
 # Entry Point
 # =============================================================================
 from .main import main
@@ -222,6 +238,9 @@ __all__ = [
     "get_config_loader",
     "load_stand_config",
     "load_tree_config",
+    "set_default_variant",
+    "get_default_variant",
+    "SUPPORTED_VARIANTS",
     # Simulation Engine
     "SimulationEngine",
     # Height-Diameter Models
@@ -288,6 +307,10 @@ __all__ = [
     "InvalidDataError",
     # Base Classes
     "ParameterizedModel",
+    # Variant-Specific Growth Models
+    "LSDiameterGrowthModel",
+    "get_ls_diameter_growth_model",
+    "calculate_ls_diameter_growth",
     # Entry Point
     "main",
 ]

@@ -8,16 +8,34 @@ Supports:
 - JSON (.json) - coefficient files (bark ratio, crown width, CCF, etc.)
 
 Features:
+- Multi-variant support (SN, LS, CS, NE, etc.)
 - Coefficient file caching for performance
 - Unified API for all configuration types
+
+Variants:
+- SN: Southern (default) - southeastern US pine/hardwood
+- LS: Lake States - Great Lakes region (MI, WI, MN)
+- CS: Central States - Midwest oak-hickory
+- NE: Northeast - New England/Mid-Atlantic
 """
 import json
 import yaml
 from pathlib import Path
-from typing import Dict, Any, Union
+from typing import Dict, Any, Union, Optional
 import sys
 from .exceptions import ConfigurationError
 from .utils import normalize_species_code
+
+# Supported FVS variants
+SUPPORTED_VARIANTS = {
+    'SN': {'name': 'Southern', 'config_dir': '', 'species_count': 90},
+    'LS': {'name': 'Lake States', 'config_dir': 'ls', 'species_count': 67},
+    # Future variants:
+    # 'CS': {'name': 'Central States', 'config_dir': 'cs', 'species_count': 96},
+    # 'NE': {'name': 'Northeast', 'config_dir': 'ne', 'species_count': 117},
+}
+
+DEFAULT_VARIANT = 'SN'
 
 # Handle TOML imports for different Python versions
 if sys.version_info >= (3, 11):
@@ -42,23 +60,43 @@ class ConfigLoader:
     - Functional forms (YAML)
     - Coefficient files (JSON) with caching
 
+    Supports multiple FVS variants (SN, LS, CS, NE, etc.)
+
     Attributes:
-        cfg_dir: Path to the configuration directory
+        cfg_dir: Path to the base configuration directory
+        variant: FVS variant code (SN, LS, etc.)
+        variant_dir: Path to the variant-specific configuration directory
         species_config: Loaded species configuration
         functional_forms: Loaded functional forms
         site_index_params: Loaded site index parameters
     """
 
-    def __init__(self, cfg_dir: Path = None):
+    def __init__(self, cfg_dir: Path = None, variant: str = None):
         """Initialize the configuration loader.
 
         Args:
             cfg_dir: Path to the configuration directory. Defaults to ../cfg relative to this file.
+            variant: FVS variant code (SN, LS, CS, NE). Defaults to SN (Southern).
         """
         if cfg_dir is None:
             # cfg/ directory is now inside the package
             cfg_dir = Path(__file__).parent / 'cfg'
         self.cfg_dir = cfg_dir
+
+        # Set variant (default to SN)
+        self.variant = (variant or DEFAULT_VARIANT).upper()
+        if self.variant not in SUPPORTED_VARIANTS:
+            raise ConfigurationError(
+                f"Unsupported variant '{self.variant}'. "
+                f"Supported variants: {list(SUPPORTED_VARIANTS.keys())}"
+            )
+
+        # Set variant-specific directory
+        variant_subdir = SUPPORTED_VARIANTS[self.variant]['config_dir']
+        if variant_subdir:
+            self.variant_dir = self.cfg_dir / variant_subdir
+        else:
+            self.variant_dir = self.cfg_dir  # SN uses base cfg dir
 
         # Cache for coefficient files (loaded once, reused)
         self._coefficient_cache: Dict[str, Dict[str, Any]] = {}
@@ -149,39 +187,64 @@ class ConfigLoader:
             raise ValueError(f"Unsupported configuration file format: {suffix}")
     
     def _load_main_config(self):
-        """Load the main configuration files."""
+        """Load the main configuration files for the selected variant."""
+        # Determine species config file name based on variant
+        if self.variant == 'SN':
+            config_names = ['species_config.toml', 'species_config.yaml']
+        else:
+            # Other variants use variant-prefixed config files
+            variant_lower = self.variant.lower()
+            config_names = [
+                f'{variant_lower}_species_config.toml',
+                f'{variant_lower}_species_config.yaml'
+            ]
+
         # Try to load species configuration (prefer TOML, fallback to YAML)
-        species_config_files = [
-            self.cfg_dir / 'species_config.toml',
-            self.cfg_dir / 'species_config.yaml'
-        ]
-        
+        species_config_files = [self.variant_dir / name for name in config_names]
+
         species_config_file = None
         for config_file in species_config_files:
             if config_file.exists():
                 species_config_file = config_file
                 break
-        
+
         if species_config_file is None:
             raise FileNotFoundError(
-                f"No species configuration file found. Looked for: {species_config_files}"
+                f"No species configuration file found for variant {self.variant}. "
+                f"Looked for: {species_config_files}"
             )
-        
+
         self.species_config = self._load_config_file(species_config_file)
-        
-        # Load functional forms
-        functional_forms_file = self.cfg_dir / self.species_config['functional_forms_file']
-        self.functional_forms = self._load_config_file(functional_forms_file)
-        
-        # Load site index transformations
-        site_index_file = self.cfg_dir / self.species_config['site_index_transformation_file']
-        self.site_index_params = self._load_config_file(site_index_file)
+
+        # Load functional forms (SN variant has these, others may not)
+        if 'functional_forms_file' in self.species_config:
+            functional_forms_file = self.cfg_dir / self.species_config['functional_forms_file']
+            self.functional_forms = self._load_config_file(functional_forms_file)
+        else:
+            # Use SN functional forms as fallback for other variants
+            fallback_file = self.cfg_dir / 'functional_forms.yaml'
+            if fallback_file.exists():
+                self.functional_forms = self._load_config_file(fallback_file)
+            else:
+                self.functional_forms = {}
+
+        # Load site index transformations (SN variant has these, others may not)
+        if 'site_index_transformation_file' in self.species_config:
+            site_index_file = self.cfg_dir / self.species_config['site_index_transformation_file']
+            self.site_index_params = self._load_config_file(site_index_file)
+        else:
+            # Use SN site index params as fallback
+            fallback_file = self.cfg_dir / 'site_index_transformation.yaml'
+            if fallback_file.exists():
+                self.site_index_params = self._load_config_file(fallback_file)
+            else:
+                self.site_index_params = {}
     
     def load_species_config(self, species_code: str) -> Dict[str, Any]:
         """Load configuration for a specific species.
 
         Args:
-            species_code: Species code (e.g., 'LP', 'SP', 'SA', 'LL')
+            species_code: Species code (e.g., 'LP', 'SP', 'JP', 'RP')
 
         Returns:
             Dictionary containing species-specific parameters
@@ -194,18 +257,26 @@ class ConfigLoader:
 
         normalized_code = normalize_species_code(species_code)
         if normalized_code not in self.species_config['species']:
-            raise SpeciesNotFoundError(species_code)
+            available = list(self.species_config['species'].keys())[:10]
+            raise SpeciesNotFoundError(
+                f"{species_code} (variant: {self.variant}). Available species: {available}..."
+            )
 
         try:
             species_info = self.species_config['species'][normalized_code]
-            species_file = self.cfg_dir / species_info['file']
-            
-            return self._load_config_file(species_file)
+            # Use variant_dir for species files
+            species_file = self.variant_dir / species_info['file']
+
+            config = self._load_config_file(species_file)
+            # Add variant info to the config
+            config['_variant'] = self.variant
+            return config
         except Exception as e:
             if isinstance(e, SpeciesNotFoundError):
                 raise
             raise ConfigurationError(
-                f"Failed to load configuration for species '{species_code}': {str(e)}"
+                f"Failed to load configuration for species '{species_code}' "
+                f"in variant {self.variant}: {str(e)}"
             ) from e
     
     def get_stand_params(self, species_code: str = 'LP') -> Dict[str, Any]:
@@ -256,11 +327,11 @@ class ConfigLoader:
         """Load a JSON coefficient file with caching.
 
         Coefficient files are loaded once and cached for performance.
-        This is the preferred method for loading JSON files like:
-        - sn_bark_ratio_coefficients.json
-        - sn_crown_width_coefficients.json
-        - sn_ccf_coefficients.json
-        - sn_diameter_growth_coefficients.json
+        Looks in variant directory first, then falls back to base cfg directory.
+
+        For variant-specific files:
+        - LS variant: ls_diameter_growth_coefficients.json
+        - SN variant: sn_diameter_growth_coefficients.json
         - etc.
 
         Args:
@@ -273,10 +344,26 @@ class ConfigLoader:
             FileNotFoundError: If the file doesn't exist
             ConfigurationError: If the file cannot be parsed
         """
-        if filename not in self._coefficient_cache:
-            file_path = self.cfg_dir / filename
-            self._coefficient_cache[filename] = self._load_config_file(file_path)
-        return self._coefficient_cache[filename]
+        cache_key = f"{self.variant}:{filename}"
+        if cache_key not in self._coefficient_cache:
+            # Try variant directory first
+            file_path = self.variant_dir / filename
+            if not file_path.exists():
+                # Fall back to base cfg directory
+                file_path = self.cfg_dir / filename
+            self._coefficient_cache[cache_key] = self._load_config_file(file_path)
+        return self._coefficient_cache[cache_key]
+
+    def get_variant_info(self) -> Dict[str, Any]:
+        """Get information about the current variant.
+
+        Returns:
+            Dictionary with variant code, name, and species count
+        """
+        info = SUPPORTED_VARIANTS[self.variant].copy()
+        info['code'] = self.variant
+        info['variant_dir'] = str(self.variant_dir)
+        return info
 
     def clear_coefficient_cache(self) -> None:
         """Clear the coefficient file cache.
@@ -337,35 +424,85 @@ class ConfigLoader:
                 print(f"Converted {yaml_path} -> {toml_path}")
 
 
-# Global configuration loader instance
-_config_loader = None
-
-def get_config_loader() -> ConfigLoader:
-    """Get the global configuration loader instance."""
-    global _config_loader
-    if _config_loader is None:
-        _config_loader = ConfigLoader()
-    return _config_loader
-
-def load_stand_config(species_code: str = 'LP') -> Dict[str, Any]:
-    """Convenience function to load stand configuration."""
-    return get_config_loader().get_stand_params(species_code)
-
-def load_tree_config(species_code: str = 'LP') -> Dict[str, Any]:
-    """Convenience function to load tree configuration."""
-    return get_config_loader().get_tree_params(species_code)
+# Global configuration loader instances (one per variant)
+_config_loaders: Dict[str, ConfigLoader] = {}
+_current_variant = DEFAULT_VARIANT
 
 
-def load_coefficient_file(filename: str) -> Dict[str, Any]:
+def get_config_loader(variant: str = None) -> ConfigLoader:
+    """Get a configuration loader instance for the specified variant.
+
+    Args:
+        variant: FVS variant code (SN, LS, CS, NE). If None, uses current default.
+
+    Returns:
+        ConfigLoader instance for the specified variant
+    """
+    global _config_loaders, _current_variant
+    variant = (variant or _current_variant).upper()
+
+    if variant not in _config_loaders:
+        _config_loaders[variant] = ConfigLoader(variant=variant)
+
+    return _config_loaders[variant]
+
+
+def set_default_variant(variant: str) -> None:
+    """Set the default variant for all subsequent operations.
+
+    Args:
+        variant: FVS variant code (SN, LS, CS, NE)
+    """
+    global _current_variant
+    variant = variant.upper()
+    if variant not in SUPPORTED_VARIANTS:
+        raise ConfigurationError(
+            f"Unsupported variant '{variant}'. "
+            f"Supported variants: {list(SUPPORTED_VARIANTS.keys())}"
+        )
+    _current_variant = variant
+
+
+def get_default_variant() -> str:
+    """Get the current default variant.
+
+    Returns:
+        Current default variant code
+    """
+    return _current_variant
+
+
+def load_stand_config(species_code: str = 'LP', variant: str = None) -> Dict[str, Any]:
+    """Convenience function to load stand configuration.
+
+    Args:
+        species_code: Species code (e.g., 'LP' for SN, 'JP' for LS)
+        variant: FVS variant code. If None, uses current default.
+    """
+    return get_config_loader(variant).get_stand_params(species_code)
+
+
+def load_tree_config(species_code: str = 'LP', variant: str = None) -> Dict[str, Any]:
+    """Convenience function to load tree configuration.
+
+    Args:
+        species_code: Species code (e.g., 'LP' for SN, 'JP' for LS)
+        variant: FVS variant code. If None, uses current default.
+    """
+    return get_config_loader(variant).get_tree_params(species_code)
+
+
+def load_coefficient_file(filename: str, variant: str = None) -> Dict[str, Any]:
     """Convenience function to load a JSON coefficient file with caching.
 
     Args:
         filename: Name of the coefficient file (e.g., 'sn_bark_ratio_coefficients.json')
+        variant: FVS variant code. If None, uses current default.
 
     Returns:
         Dictionary containing coefficient data
     """
-    return get_config_loader().load_coefficient_file(filename)
+    return get_config_loader(variant).load_coefficient_file(filename)
 
 def convert_yaml_to_toml(cfg_dir: Path = None, output_dir: Path = None) -> None:
     """Convert YAML configuration files to TOML format.
