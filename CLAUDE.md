@@ -9,6 +9,7 @@ Forest Vegetation Simulator (FVS) - Python implementation supporting multiple FV
 **Supported Variants:**
 - **SN (Southern)** - 90 species including southern yellow pines (Loblolly, Shortleaf, Longleaf, Slash) and hardwoods
 - **LS (Lake States)** - 67 species for Great Lakes region (MI, WI, MN) including Red Pine, Jack Pine, and northern hardwoods
+- **PN (Pacific Northwest Coast)** - 39 species for WA, OR, and northern CA coast including Douglas-fir, Western Hemlock, and Sitka Spruce
 
 ## Key Development Commands
 
@@ -37,6 +38,9 @@ uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(500, 70,
 
 # Run simulation with LS (Lake States) variant
 uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(500, 65, 'RN', variant='LS'); s.grow(50); print(s.get_metrics())"
+
+# Run simulation with PN (Pacific Northwest Coast) variant
+uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(400, 120, 'DF', variant='PN'); s.grow(50); print(s.get_metrics())"
 
 # Run example simulation
 uv run python -m pyfvs.main
@@ -77,6 +81,7 @@ tree.py
   ├── growth_parameters.py (GrowthParameters dataclass)
   ├── large_tree_height_growth.py (FVS Section 4.7.2 equations, SN variant)
   ├── ls_diameter_growth.py (12-coef linear DDS, LS variant)
+  ├── pn_diameter_growth.py (18-coef ln(DDS) with topographic effects, PN variant)
   ├── height_diameter.py (Curtis-Arney/Wykoff equations, variant-aware)
   ├── crown_ratio.py (Weibull-based crown ratio)
   ├── bark_ratio.py (Clark 1991 DIB/DOB)
@@ -112,6 +117,11 @@ src/pyfvs/cfg/
 │   ├── ls_mortality_coefficients.json
 │   ├── ls_species_config.yaml
 │   └── species/*.yaml                # LS species configs (67 species)
+├── pn/                               # PN (Pacific Northwest Coast) variant
+│   ├── pn_diameter_growth_coefficients.json  # 20 coefficient sets
+│   ├── pn_height_diameter_coefficients.json  # Curtis-Arney P2,P3,P4
+│   ├── pn_species_config.yaml
+│   └── species/*.yaml                # PN species configs (39 species)
 └── functional_forms.yaml             # Equation specifications (shared)
 ```
 - All JSON loading uses `ConfigLoader.load_coefficient_file()` with centralized caching
@@ -173,13 +183,15 @@ src/pyfvs/cfg/
 25. **String Normalization Utilities** - Added `utils/string_utils.py` with `normalize_code()`, `normalize_species_code()`, and `normalize_ecounit()` functions for consistent string handling throughout the codebase.
 26. **Test Fixtures Consolidation** - Created `tests/conftest.py` with 30+ shared pytest fixtures for trees (seedling, small, transition, large, mature), tree lists (sample, mixed species, density levels), and stands (young, mature, high/low site, ecounits).
 27. **VolumeCalculator Caching** - Added module-level cache for VolumeCalculator instances in `volume_library.py`, keyed by species code. The `get_volume_library()` function returns cached instances for performance.
-28. **Multi-Variant Architecture** - Added support for multiple FVS regional variants. Implemented Lake States (LS) variant with 67 species alongside existing Southern (SN) variant with 90 species. Key changes:
+28. **Multi-Variant Architecture** - Added support for multiple FVS regional variants. Implemented Lake States (LS) and Pacific Northwest Coast (PN) variants alongside existing Southern (SN) variant. Key changes:
     - `config_loader.py`: Added `SUPPORTED_VARIANTS` dict, `set_default_variant()`, `get_default_variant()` functions
     - `ls_diameter_growth.py`: New module implementing LS 12-coefficient linear DDS equation
-    - `tree.py`: Added variant parameter, variant-specific `_grow_large_tree_ls()` method, RELDBH calculation
+    - `pn_diameter_growth.py`: New module implementing PN 18-coefficient ln(DDS) equation with topographic effects
+    - `tree.py`: Added variant parameter, variant-specific `_grow_large_tree_ls()` and `_grow_large_tree_pn()` methods
     - `stand.py`: Added variant parameter, `_calculate_qmd_ge5()` for RELDBH computation
     - `height_diameter.py`: Added `VARIANT_COEFFICIENT_FILES` mapping for variant-aware coefficient loading
-    - Created `cfg/ls/` with 71 configuration files (coefficients + 67 species YAMLs)
+    - Created `cfg/ls/` with 71 configuration files (LS: 67 species)
+    - Created `cfg/pn/` with coefficient files and species configs (PN: 39 species)
 
 ## Recent Refactoring (2025)
 
@@ -191,6 +203,8 @@ All growth model classes now inherit from `ParameterizedModel` (`model_base.py`)
 - **CrownCompetitionFactorModel** (`crown_competition_factor.py`)
 - **HeightDiameterModel** (`height_diameter.py`)
 - **LargeTreeHeightGrowthModel** (`large_tree_height_growth.py`)
+- **LSDiameterGrowthModel** (`ls_diameter_growth.py`) - Lake States variant
+- **PNDiameterGrowthModel** (`pn_diameter_growth.py`) - Pacific Northwest Coast variant
 
 Benefits:
 - Standardized coefficient loading from JSON files via `ConfigLoader`
@@ -258,6 +272,7 @@ PyFVS supports multiple FVS regional variants with variant-specific growth equat
 |---------|--------|---------|-----------------|------------|--------------|
 | **SN** | Southern US | 90 | LP (Loblolly Pine) | 5 years | ln(DDS) = f(D, CR, RELHT, SI, BA, ecounit) |
 | **LS** | Lake States (MI, WI, MN) | 67 | RN (Red Pine) | 10 years | DDS = f(D, CR, RELDBH, SI, BA, BAL) |
+| **PN** | Pacific Northwest Coast (WA, OR, CA coast) | 39 | DF (Douglas-fir) | 10 years | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, elev, slope, aspect) |
 
 ### Key Model Differences
 
@@ -272,6 +287,14 @@ PyFVS supports multiple FVS regional variants with variant-specific growth equat
 - Competition via RELDBH (relative DBH to QMD of trees ≥5" DBH)
 - 12 coefficients: INTERC, VDBHC, DBHC, DBH2C, RDBHC, RDBHSQC, CRWNC, CRSQC, SBAC, BALC, SITEC
 - Curtis-Arney height-diameter relationship
+
+**PN (Pacific Northwest Coast) Variant:**
+- Uses ln(DDS) transformation like SN but with topographic effects
+- Competition via RELHT (relative height, capped at 1.5)
+- Direct elevation, slope, and aspect effects in growth equation
+- Major species: Douglas-fir (DF), Western Hemlock (WH), Western Red Cedar (RC), Sitka Spruce (SS)
+- Very high productivity region (SI 100-200 feet common)
+- Species-specific site index curves for height growth
 
 ### Variant Usage
 
@@ -297,6 +320,16 @@ stand_sn = Stand.initialize_planted(
     species='LP',
     variant='SN'       # Southern variant (or omit for default)
 )
+
+# PN variant (Pacific Northwest Coast)
+stand_pn = Stand.initialize_planted(
+    trees_per_acre=400,
+    site_index=120,     # PNW sites often SI 100-200
+    species='DF',       # Douglas-fir (PN default)
+    variant='PN'        # Pacific Northwest Coast variant
+)
+stand_pn.grow(years=50)
+# Produces ~480 sq ft BA, ~15" QMD, ~18,000 cu ft/acre
 ```
 
 ### Adding New Variants

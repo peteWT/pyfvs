@@ -1,0 +1,55 @@
+# Western Red Cedar (Thuja plicata) - PN Variant
+# Long-lived species valued for decay-resistant wood
+
+species_code: RC
+common_name: Western Red Cedar
+scientific_name: Thuja plicata
+fia_code: "242"
+plants_code: THPL
+variant: PN
+
+# Tree size characteristics
+max_dbh: 180.0  # inches, can reach massive sizes
+max_height: 230.0  # feet
+max_age: 1500  # years
+
+# Growth transition thresholds
+growth_model:
+  xmin: 1.0
+  xmax: 3.0
+  coefficient_index: 8
+
+# Site index
+site_index:
+  base_age: 50  # Farr 1984 curves
+  typical_range: [60, 140]
+  max_si: 160
+
+# Shade tolerance
+shade_tolerance: very_tolerant
+tolerance_class: 5
+
+# Crown characteristics
+crown:
+  form: conical_to_irregular
+  typical_ratio: 0.45
+  seedling_ratio: 0.80
+
+# Bark characteristics
+bark:
+  young_color: reddish-brown, fibrous
+  mature_color: gray-brown, stringy
+  thickness_factor: 0.93
+
+# Wood properties
+wood:
+  specific_gravity: 0.32
+  uses: ["shingles", "siding", "decking", "outdoor structures"]
+
+# Ecological notes
+ecology:
+  fire_regime: long interval, sensitive to fire
+  succession: climax species
+  preferred_sites: moist, poorly-drained sites
+  elevation_range: [0, 4500]
+  precipitation_range: [35, 200]

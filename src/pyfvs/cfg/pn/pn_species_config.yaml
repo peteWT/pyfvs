@@ -1,0 +1,148 @@
+# Pacific Northwest Coast (PN) Variant - Species Configuration
+# Source: FVS blkdat.f - Pacific Northwest Coast variant
+# 39 species total
+
+metadata:
+  variant: PN
+  variant_name: Pacific Northwest Coast
+  description: "Parameters for the Pacific Northwest Coast (PN) variant of FVS covering western WA, OR, and northern CA coast"
+  source: "FVS Pacific Northwest Coast Variant Overview"
+
+# Path to functional form definitions
+functional_forms_file: "functional_forms.yaml"
+
+species:
+  # Firs
+  SF:
+    name: "Pacific Silver Fir"
+    file: "species/sf_pacific_silver_fir.yaml"
+  WF:
+    name: "White Fir"
+    file: "species/wf_white_fir.yaml"
+  GF:
+    name: "Grand Fir"
+    file: "species/gf_grand_fir.yaml"
+  AF:
+    name: "Subalpine Fir"
+    file: "species/af_subalpine_fir.yaml"
+  RF:
+    name: "Red Fir"
+    file: "species/rf_red_fir.yaml"
+  NF:
+    name: "Noble Fir"
+    file: "species/nf_noble_fir.yaml"
+
+  # Spruces
+  SS:
+    name: "Sitka Spruce"
+    file: "species/ss_sitka_spruce.yaml"
+  ES:
+    name: "Engelmann Spruce"
+    file: "species/es_engelmann_spruce.yaml"
+
+  # Cedars
+  YC:
+    name: "Alaska Yellow Cedar"
+    file: "species/yc_alaska_yellow_cedar.yaml"
+  IC:
+    name: "Incense Cedar"
+    file: "species/ic_incense_cedar.yaml"
+  RC:
+    name: "Western Red Cedar"
+    file: "species/rc_western_red_cedar.yaml"
+
+  # Pines
+  LP:
+    name: "Lodgepole Pine"
+    file: "species/lp_lodgepole_pine.yaml"
+  JP:
+    name: "Jeffrey Pine"
+    file: "species/jp_jeffrey_pine.yaml"
+  SP:
+    name: "Sugar Pine"
+    file: "species/sp_sugar_pine.yaml"
+  WP:
+    name: "Western White Pine"
+    file: "species/wp_western_white_pine.yaml"
+  PP:
+    name: "Ponderosa Pine"
+    file: "species/pp_ponderosa_pine.yaml"
+
+  # Douglas-fir
+  DF:
+    name: "Douglas-fir"
+    file: "species/df_douglas_fir.yaml"
+
+  # Redwood
+  RW:
+    name: "Redwood"
+    file: "species/rw_redwood.yaml"
+
+  # Hemlocks
+  WH:
+    name: "Western Hemlock"
+    file: "species/wh_western_hemlock.yaml"
+  MH:
+    name: "Mountain Hemlock"
+    file: "species/mh_mountain_hemlock.yaml"
+
+  # Hardwoods
+  BM:
+    name: "Bigleaf Maple"
+    file: "species/bm_bigleaf_maple.yaml"
+  RA:
+    name: "Red Alder"
+    file: "species/ra_red_alder.yaml"
+  WA:
+    name: "White Alder"
+    file: "species/wa_white_alder.yaml"
+  PB:
+    name: "Paper Birch"
+    file: "species/pb_paper_birch.yaml"
+  GC:
+    name: "Giant Chinkapin"
+    file: "species/gc_giant_chinkapin.yaml"
+  AS:
+    name: "Quaking Aspen"
+    file: "species/as_quaking_aspen.yaml"
+  CW:
+    name: "Black Cottonwood"
+    file: "species/cw_black_cottonwood.yaml"
+  WO:
+    name: "Oregon White Oak"
+    file: "species/wo_oregon_white_oak.yaml"
+  CH:
+    name: "Cherry Species"
+    file: "species/ch_cherry.yaml"
+  WI:
+    name: "Willow Species"
+    file: "species/wi_willow.yaml"
+
+  # Other species
+  WJ:
+    name: "Western Juniper"
+    file: "species/wj_western_juniper.yaml"
+  WB:
+    name: "Whitebark Pine"
+    file: "species/wb_whitebark_pine.yaml"
+  KP:
+    name: "Knobcone Pine"
+    file: "species/kp_knobcone_pine.yaml"
+  PY:
+    name: "Pacific Yew"
+    file: "species/py_pacific_yew.yaml"
+  DG:
+    name: "Pacific Dogwood"
+    file: "species/dg_pacific_dogwood.yaml"
+  HT:
+    name: "Hawthorn Species"
+    file: "species/ht_hawthorn.yaml"
+  LL:
+    name: "Subalpine Larch"
+    file: "species/ll_subalpine_larch.yaml"
+  OS:
+    name: "Other Softwood"
+    file: "species/os_other_softwood.yaml"
+  OT:
+    name: "Other Species"
+    file: "species/ot_other.yaml"

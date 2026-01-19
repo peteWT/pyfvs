@@ -1,0 +1,55 @@
+# Western Hemlock (Tsuga heterophylla) - PN Variant
+# Dominant late-successional species in PNW coastal forests
+
+species_code: WH
+common_name: Western Hemlock
+scientific_name: Tsuga heterophylla
+fia_code: "263"
+plants_code: TSHE
+variant: PN
+
+# Tree size characteristics
+max_dbh: 90.0  # inches
+max_height: 260.0  # feet
+max_age: 500  # years
+
+# Growth transition thresholds
+growth_model:
+  xmin: 1.0
+  xmax: 3.0
+  coefficient_index: 9
+
+# Site index
+site_index:
+  base_age: 50  # Wiley 1978 curves
+  typical_range: [80, 160]
+  max_si: 180
+
+# Shade tolerance
+shade_tolerance: very_tolerant
+tolerance_class: 5
+
+# Crown characteristics
+crown:
+  form: narrow_conical
+  typical_ratio: 0.40
+  seedling_ratio: 0.85
+
+# Bark characteristics
+bark:
+  young_color: brown, scaly
+  mature_color: reddish-brown, furrowed
+  thickness_factor: 0.92
+
+# Wood properties
+wood:
+  specific_gravity: 0.42
+  uses: ["pulp", "lumber", "plywood"]
+
+# Ecological notes
+ecology:
+  fire_regime: infrequent, stand-replacing
+  succession: climax species
+  preferred_sites: moist, cool sites
+  elevation_range: [0, 4000]
+  precipitation_range: [40, 150]

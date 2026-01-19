@@ -37,6 +37,7 @@ class HeightDiameterModel(ParameterizedModel):
     VARIANT_COEFFICIENT_FILES = {
         'SN': 'sn_height_diameter_coefficients.json',
         'LS': 'ls/ls_height_diameter_coefficients.json',
+        'PN': 'pn/pn_height_diameter_coefficients.json',
     }
 
     # Class attributes for ParameterizedModel base class
@@ -67,6 +68,23 @@ class HeightDiameterModel(ParameterizedModel):
         'RN': {  # Red Pine
             'P2': 311.165, 'P3': 3.832, 'P4': -0.357, 'Dbw': 0.1,
             'Wykoff_B1': 4.6, 'Wykoff_B2': -6.6
+        },
+        # PN variant fallbacks
+        'DF': {  # Douglas-fir
+            'P2': 1091.85, 'P3': 5.29, 'P4': -0.26, 'Dbw': 0.1,
+            'Wykoff_B1': 4.7, 'Wykoff_B2': -6.8
+        },
+        'WH': {  # Western Hemlock
+            'P2': 609.42, 'P3': 5.59, 'P4': -0.38, 'Dbw': 0.1,
+            'Wykoff_B1': 4.6, 'Wykoff_B2': -6.5
+        },
+        'RC': {  # Western Red Cedar
+            'P2': 665.09, 'P3': 5.50, 'P4': -0.32, 'Dbw': 0.1,
+            'Wykoff_B1': 4.5, 'Wykoff_B2': -6.3
+        },
+        'SS': {  # Sitka Spruce
+            'P2': 3844.39, 'P3': 7.07, 'P4': -0.21, 'Dbw': 0.1,
+            'Wykoff_B1': 4.8, 'Wykoff_B2': -6.9
         },
     }
     DEFAULT_SPECIES = "LP"

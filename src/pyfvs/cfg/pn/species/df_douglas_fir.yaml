@@ -1,0 +1,55 @@
+# Douglas-fir (Pseudotsuga menziesii) - PN Variant
+# Most important commercial species in the Pacific Northwest
+
+species_code: DF
+common_name: Douglas-fir
+scientific_name: Pseudotsuga menziesii
+fia_code: "202"
+plants_code: PSME
+variant: PN
+
+# Tree size characteristics
+max_dbh: 120.0  # inches, can reach very large sizes
+max_height: 330.0  # feet, one of tallest trees in North America
+max_age: 1000  # years
+
+# Growth transition thresholds (small tree to large tree model)
+growth_model:
+  xmin: 1.0  # inches - minimum DBH for transition zone
+  xmax: 3.0  # inches - maximum DBH for transition zone
+  coefficient_index: 7
+
+# Site index
+site_index:
+  base_age: 50  # King 1966 site index curves
+  typical_range: [80, 180]  # feet at base age
+  max_si: 200
+
+# Shade tolerance
+shade_tolerance: intermediate
+tolerance_class: 3  # 1=very intolerant, 5=very tolerant
+
+# Crown characteristics
+crown:
+  form: conical
+  typical_ratio: 0.35  # mature trees
+  seedling_ratio: 0.80
+
+# Bark characteristics
+bark:
+  young_color: gray-green, smooth
+  mature_color: dark brown, deeply furrowed
+  thickness_factor: 0.90  # inside bark / outside bark ratio
+
+# Wood properties
+wood:
+  specific_gravity: 0.48
+  uses: ["structural lumber", "plywood", "veneer", "poles"]
+
+# Ecological notes
+ecology:
+  fire_regime: mixed severity
+  succession: early to mid-seral
+  preferred_sites: well-drained, moist slopes
+  elevation_range: [0, 6000]  # feet
+  precipitation_range: [20, 100]  # inches/year

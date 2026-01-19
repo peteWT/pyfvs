@@ -30,6 +30,7 @@ from .utils import normalize_species_code
 SUPPORTED_VARIANTS = {
     'SN': {'name': 'Southern', 'config_dir': '', 'species_count': 90},
     'LS': {'name': 'Lake States', 'config_dir': 'ls', 'species_count': 67},
+    'PN': {'name': 'Pacific Northwest Coast', 'config_dir': 'pn', 'species_count': 39},
     # Future variants:
     # 'CS': {'name': 'Central States', 'config_dir': 'cs', 'species_count': 96},
     # 'NE': {'name': 'Northeast', 'config_dir': 'ne', 'species_count': 117},

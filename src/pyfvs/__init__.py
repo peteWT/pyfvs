@@ -198,6 +198,11 @@ from .ls_diameter_growth import (
     calculate_ls_diameter_growth,
 )
 
+from .pn_diameter_growth import (
+    PNDiameterGrowthModel,
+    create_pn_diameter_growth_model,
+)
+
 # =============================================================================
 # Entry Point
 # =============================================================================
@@ -311,6 +316,8 @@ __all__ = [
     "LSDiameterGrowthModel",
     "get_ls_diameter_growth_model",
     "calculate_ls_diameter_growth",
+    "PNDiameterGrowthModel",
+    "create_pn_diameter_growth_model",
     # Entry Point
     "main",
 ]

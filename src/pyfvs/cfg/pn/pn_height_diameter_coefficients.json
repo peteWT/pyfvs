@@ -1,0 +1,366 @@
+{
+  "metadata": {
+    "variant": "PN",
+    "variant_name": "Pacific Northwest Coast",
+    "description": "Height-diameter coefficients for the Pacific Northwest Coast (PN) variant of FVS",
+    "source": "FVS Pacific Northwest Coast Variant htdbh.f, USDA Forest Service",
+    "model": "curtis_arney",
+    "equation": "HT = 4.5 + P2 * exp(-P3 * DBH^P4)",
+    "notes": "Uses OLYMPC (Olympic Forest) coefficients as default. Other regional sets available: SIUSLW, MTHOOD, WILLAM"
+  },
+  "coefficients": {
+    "SF": {
+      "species_index": 1,
+      "common_name": "Pacific Silver Fir",
+      "fia_code": 11,
+      "P2": 697.63,
+      "P3": 6.68,
+      "P4": -0.42,
+      "Dbw": 0.1
+    },
+    "WF": {
+      "species_index": 2,
+      "common_name": "White Fir",
+      "fia_code": 15,
+      "P2": 604.85,
+      "P3": 5.98,
+      "P4": -0.38,
+      "Dbw": 0.1
+    },
+    "GF": {
+      "species_index": 3,
+      "common_name": "Grand Fir",
+      "fia_code": 17,
+      "P2": 356.11,
+      "P3": 6.41,
+      "P4": -0.56,
+      "Dbw": 0.1
+    },
+    "AF": {
+      "species_index": 4,
+      "common_name": "Subalpine Fir",
+      "fia_code": 19,
+      "P2": 89.03,
+      "P3": 6.95,
+      "P4": -0.99,
+      "Dbw": 0.1
+    },
+    "RF": {
+      "species_index": 5,
+      "common_name": "Red Fir",
+      "fia_code": 20,
+      "P2": 202.89,
+      "P3": 8.75,
+      "P4": -0.83,
+      "Dbw": 0.1
+    },
+    "SS": {
+      "species_index": 6,
+      "common_name": "Sitka Spruce",
+      "fia_code": 98,
+      "P2": 3844.39,
+      "P3": 7.07,
+      "P4": -0.21,
+      "Dbw": 0.1,
+      "notes": "Special handling for DBH >= 100 inches"
+    },
+    "NF": {
+      "species_index": 7,
+      "common_name": "Noble Fir",
+      "fia_code": 22,
+      "P2": 483.38,
+      "P3": 7.24,
+      "P4": -0.51,
+      "Dbw": 0.1
+    },
+    "YC": {
+      "species_index": 8,
+      "common_name": "Alaska Yellow Cedar",
+      "fia_code": 42,
+      "P2": 1220.10,
+      "P3": 7.30,
+      "P4": -0.32,
+      "Dbw": 0.1
+    },
+    "IC": {
+      "species_index": 9,
+      "common_name": "Incense Cedar",
+      "fia_code": 81,
+      "P2": 4691.63,
+      "P3": 7.47,
+      "P4": -0.20,
+      "Dbw": 0.1
+    },
+    "ES": {
+      "species_index": 10,
+      "common_name": "Engelmann Spruce",
+      "fia_code": 93,
+      "P2": 206.32,
+      "P3": 9.12,
+      "P4": -0.83,
+      "Dbw": 0.1
+    },
+    "LP": {
+      "species_index": 11,
+      "common_name": "Lodgepole Pine",
+      "fia_code": 108,
+      "P2": 100.0,
+      "P3": 6.0,
+      "P4": -0.86,
+      "Dbw": 0.1
+    },
+    "JP": {
+      "species_index": 12,
+      "common_name": "Jeffrey Pine",
+      "fia_code": 116,
+      "P2": 1031.52,
+      "P3": 7.66,
+      "P4": -0.36,
+      "Dbw": 0.1
+    },
+    "SP": {
+      "species_index": 13,
+      "common_name": "Sugar Pine",
+      "fia_code": 117,
+      "P2": 702.19,
+      "P3": 5.70,
+      "P4": -0.38,
+      "Dbw": 0.1
+    },
+    "WP": {
+      "species_index": 14,
+      "common_name": "Western White Pine",
+      "fia_code": 119,
+      "P2": 433.78,
+      "P3": 6.33,
+      "P4": -0.50,
+      "Dbw": 0.1
+    },
+    "PP": {
+      "species_index": 15,
+      "common_name": "Ponderosa Pine",
+      "fia_code": 122,
+      "P2": 1181.72,
+      "P3": 6.70,
+      "P4": -0.32,
+      "Dbw": 0.1
+    },
+    "DF": {
+      "species_index": 16,
+      "common_name": "Douglas-fir",
+      "fia_code": 202,
+      "P2": 1091.85,
+      "P3": 5.29,
+      "P4": -0.26,
+      "Dbw": 0.1,
+      "notes": "Most important commercial species in PNW"
+    },
+    "RW": {
+      "species_index": 17,
+      "common_name": "Redwood",
+      "fia_code": 211,
+      "P2": 595.11,
+      "P3": 5.81,
+      "P4": -0.38,
+      "Dbw": 0.1
+    },
+    "RC": {
+      "species_index": 18,
+      "common_name": "Western Red Cedar",
+      "fia_code": 242,
+      "P2": 665.09,
+      "P3": 5.50,
+      "P4": -0.32,
+      "Dbw": 0.1
+    },
+    "WH": {
+      "species_index": 19,
+      "common_name": "Western Hemlock",
+      "fia_code": 263,
+      "P2": 609.42,
+      "P3": 5.59,
+      "P4": -0.38,
+      "Dbw": 0.1
+    },
+    "MH": {
+      "species_index": 20,
+      "common_name": "Mountain Hemlock",
+      "fia_code": 264,
+      "P2": 170.27,
+      "P3": 10.07,
+      "P4": -0.88,
+      "Dbw": 0.1
+    },
+    "BM": {
+      "species_index": 21,
+      "common_name": "Bigleaf Maple",
+      "fia_code": 312,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "RA": {
+      "species_index": 22,
+      "common_name": "Red Alder",
+      "fia_code": 351,
+      "P2": 171.41,
+      "P3": 5.54,
+      "P4": -0.56,
+      "Dbw": 0.1
+    },
+    "WA": {
+      "species_index": 23,
+      "common_name": "White Alder",
+      "fia_code": 352,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "PB": {
+      "species_index": 24,
+      "common_name": "Paper Birch",
+      "fia_code": 375,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "GC": {
+      "species_index": 25,
+      "common_name": "Giant Chinkapin",
+      "fia_code": 431,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "AS": {
+      "species_index": 26,
+      "common_name": "Quaking Aspen",
+      "fia_code": 746,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "CW": {
+      "species_index": 27,
+      "common_name": "Black Cottonwood",
+      "fia_code": 747,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "WO": {
+      "species_index": 28,
+      "common_name": "Oregon White Oak",
+      "fia_code": 815,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "CH": {
+      "species_index": 29,
+      "common_name": "Cherry Species",
+      "fia_code": 760,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "WI": {
+      "species_index": 30,
+      "common_name": "Willow Species",
+      "fia_code": 920,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "WJ": {
+      "species_index": 31,
+      "common_name": "Western Juniper",
+      "fia_code": 64,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "WB": {
+      "species_index": 32,
+      "common_name": "Whitebark Pine",
+      "fia_code": 101,
+      "P2": 100.0,
+      "P3": 6.0,
+      "P4": -0.86,
+      "Dbw": 0.1
+    },
+    "KP": {
+      "species_index": 33,
+      "common_name": "Knobcone Pine",
+      "fia_code": 103,
+      "P2": 100.0,
+      "P3": 6.0,
+      "P4": -0.86,
+      "Dbw": 0.1
+    },
+    "PY": {
+      "species_index": 34,
+      "common_name": "Pacific Yew",
+      "fia_code": 231,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "DG": {
+      "species_index": 35,
+      "common_name": "Pacific Dogwood",
+      "fia_code": 492,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "HT": {
+      "species_index": 36,
+      "common_name": "Hawthorn Species",
+      "fia_code": 500,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    },
+    "LL": {
+      "species_index": 37,
+      "common_name": "Subalpine Larch",
+      "fia_code": 72,
+      "P2": 100.0,
+      "P3": 6.0,
+      "P4": -0.86,
+      "Dbw": 0.1
+    },
+    "OS": {
+      "species_index": 38,
+      "common_name": "Other Softwood",
+      "fia_code": 298,
+      "P2": 100.0,
+      "P3": 6.0,
+      "P4": -0.86,
+      "Dbw": 0.1
+    },
+    "OT": {
+      "species_index": 39,
+      "common_name": "Other Species",
+      "fia_code": 999,
+      "P2": 91.38,
+      "P3": 3.30,
+      "P4": -0.54,
+      "Dbw": 0.1
+    }
+  }
+}
