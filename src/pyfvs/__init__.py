@@ -203,6 +203,11 @@ from .pn_diameter_growth import (
     create_pn_diameter_growth_model,
 )
 
+from .wc_diameter_growth import (
+    WCDiameterGrowthModel,
+    create_wc_diameter_growth_model,
+)
+
 # =============================================================================
 # Entry Point
 # =============================================================================
@@ -318,6 +323,8 @@ __all__ = [
     "calculate_ls_diameter_growth",
     "PNDiameterGrowthModel",
     "create_pn_diameter_growth_model",
+    "WCDiameterGrowthModel",
+    "create_wc_diameter_growth_model",
     # Entry Point
     "main",
 ]

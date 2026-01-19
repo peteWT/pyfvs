@@ -1,0 +1,57 @@
+# Western Hemlock (WH) - West Cascades Variant
+# FIA Code: 263
+# Scientific Name: Tsuga heterophylla
+
+metadata:
+  species_code: WH
+  common_name: Western Hemlock
+  scientific_name: Tsuga heterophylla
+  fia_code: 263
+  variant: WC
+  coefficient_group: 9
+
+# Height-Diameter relationship (Curtis-Arney)
+height_diameter:
+  model: curtis_arney
+  source: "FVS wc/htdbh.f - Willamette NF"
+  curtis_arney:
+    p2: 395.4976
+    p3: 6.4222
+    p4: -0.5320
+    dbw: 0.1
+
+# Diameter growth coefficients
+diameter_growth:
+  source: "FVS wc/dgf.f"
+  coefficient_group: 9
+  DGLD: 0.722462
+  DGCR: 2.160348
+  DGCRSQ: -0.834196
+  DGSITE: 0.380416
+  DGDBAL: -0.004065
+  DGLBA: 0.0
+  DGBA: 0.0
+  DGBAL: 0.0
+  DGPCCF: 0.0
+  DGHAH: -0.000358
+  DGDS: -0.0001546
+  DGEL: -0.040067
+  DGEL2: 0.000395
+  DGCASP: 0.0
+  DGSASP: 0.0
+  DGSLOP: 0.421486
+  DGSLSQ: -0.693610
+
+# Site index
+site_index:
+  base_age: 50
+  typical_range: [80, 160]
+  default: 110
+
+# Growth characteristics
+growth:
+  shade_tolerance: tolerant
+  typical_rotation: 50-70
+  max_age: 500
+  max_dbh: 72
+  max_height: 260

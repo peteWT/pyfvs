@@ -1,0 +1,57 @@
+# Douglas-fir (DF) - West Cascades Variant
+# FIA Code: 202
+# Scientific Name: Pseudotsuga menziesii
+
+metadata:
+  species_code: DF
+  common_name: Douglas-fir
+  scientific_name: Pseudotsuga menziesii
+  fia_code: 202
+  variant: WC
+  coefficient_group: 7
+
+# Height-Diameter relationship (Curtis-Arney)
+height_diameter:
+  model: curtis_arney
+  source: "FVS wc/htdbh.f - Willamette NF"
+  curtis_arney:
+    p2: 439.1195
+    p3: 5.8176
+    p4: -0.4854
+    dbw: 0.1
+
+# Diameter growth coefficients
+diameter_growth:
+  source: "FVS wc/dgf.f"
+  coefficient_group: 7
+  DGLD: 0.534138
+  DGCR: 1.636854
+  DGCRSQ: -0.045578
+  DGSITE: 1.020863
+  DGDBAL: -0.009363
+  DGLBA: 0.0
+  DGBA: -0.000215
+  DGBAL: 0.0
+  DGPCCF: 0.0
+  DGHAH: 0.0
+  DGDS: -0.0001039
+  DGEL: -0.037591
+  DGEL2: 0.000549
+  DGCASP: -0.080943
+  DGSASP: -0.038992
+  DGSLOP: 0.077787
+  DGSLSQ: -0.215778
+
+# Site index
+site_index:
+  base_age: 50
+  typical_range: [80, 180]
+  default: 120
+
+# Growth characteristics
+growth:
+  shade_tolerance: intermediate
+  typical_rotation: 50-80
+  max_age: 750
+  max_dbh: 100
+  max_height: 330

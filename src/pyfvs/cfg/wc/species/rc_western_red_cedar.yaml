@@ -1,0 +1,57 @@
+# Western Red Cedar (RC) - West Cascades Variant
+# FIA Code: 242
+# Scientific Name: Thuja plicata
+
+metadata:
+  species_code: RC
+  common_name: Western Red Cedar
+  scientific_name: Thuja plicata
+  fia_code: 242
+  variant: WC
+  coefficient_group: 8
+
+# Height-Diameter relationship (Curtis-Arney)
+height_diameter:
+  model: curtis_arney
+  source: "FVS wc/htdbh.f - Willamette NF"
+  curtis_arney:
+    p2: 1012.1267
+    p3: 6.0957
+    p4: -0.3083
+    dbw: 0.1
+
+# Diameter growth coefficients
+diameter_growth:
+  source: "FVS wc/dgf.f"
+  coefficient_group: 8
+  DGLD: 0.843013
+  DGCR: 2.878032
+  DGCRSQ: -1.631418
+  DGSITE: 0.139734
+  DGDBAL: -0.003923
+  DGLBA: 0.0
+  DGBA: 0.0
+  DGBAL: 0.0
+  DGPCCF: -0.000552
+  DGHAH: 0.0
+  DGDS: -0.0000644
+  DGEL: -0.050081
+  DGEL2: 0.000660
+  DGCASP: 0.0
+  DGSASP: 0.0
+  DGSLOP: 0.0
+  DGSLSQ: 0.0
+
+# Site index
+site_index:
+  base_age: 50
+  typical_range: [60, 140]
+  default: 100
+
+# Growth characteristics
+growth:
+  shade_tolerance: tolerant
+  typical_rotation: 60-100
+  max_age: 1000
+  max_dbh: 180
+  max_height: 230

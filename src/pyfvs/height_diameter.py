@@ -38,6 +38,7 @@ class HeightDiameterModel(ParameterizedModel):
         'SN': 'sn_height_diameter_coefficients.json',
         'LS': 'ls/ls_height_diameter_coefficients.json',
         'PN': 'pn/pn_height_diameter_coefficients.json',
+        'WC': 'wc/wc_height_diameter_coefficients.json',
     }
 
     # Class attributes for ParameterizedModel base class

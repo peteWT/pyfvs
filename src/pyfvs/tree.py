@@ -395,6 +395,10 @@ class Tree:
             self._grow_large_tree_pn(site_index, ba, pbal, slope, aspect, time_step)
             return
 
+        if variant == 'WC':
+            self._grow_large_tree_wc(site_index, ba, pbal, slope, aspect, time_step)
+            return
+
         # SN variant (default) - uses ln(DDS) formulation
         self._grow_large_tree_sn(site_index, competition_factor, ba, pbal, slope, aspect, time_step)
 
@@ -529,6 +533,78 @@ class Tree:
 
         # Get height-diameter model for this species
         hd_model = create_height_diameter_model(self.species, variant='PN')
+
+        # Calculate expected height for current DBH using Curtis-Arney model
+        expected_height = hd_model.predict_height(self.dbh)
+
+        # Apply smooth transition to new height (avoid abrupt changes)
+        # Weight current height 30%, predicted height 70%
+        self.height = 0.3 * self.height + 0.7 * expected_height
+
+    def _grow_large_tree_wc(self, site_index, ba, pbal, slope=0.0, aspect=0.0, time_step=10):
+        """Implement large tree diameter growth model for WC (West Cascades) variant.
+
+        Uses the WC variant ln(DDS) equation (same structure as PN):
+        ln(DDS) = CONSPP + DGLD*ln(D) + CR*(DGCR + CR*DGCRSQ) + DGDS*D²
+                  + DGDBAL*BAL/ln(D+1) + DGPCCF*PCCF + DGHAH*RELHT
+                  + DGLBA*ln(BA) + DGBAL*BAL + DGBA*BA + DGSITE*ln(SI)
+                  + elevation/slope/aspect terms
+
+        Args:
+            site_index: Site index (base age 50) in feet
+            ba: Stand basal area (sq ft/acre)
+            pbal: Basal area in larger trees (sq ft/acre)
+            slope: Ground slope as proportion (0-1, default 0)
+            aspect: Aspect in radians (0=N, π/2=E, default 0)
+            time_step: Number of years to grow (default: 10 for WC)
+        """
+        from .wc_diameter_growth import create_wc_diameter_growth_model
+        from .bark_ratio import create_bark_ratio_model
+
+        # Get the WC diameter growth model for this species
+        dg_model = create_wc_diameter_growth_model(self.species)
+
+        # Get bark ratio for diameter conversion
+        bark_model = create_bark_ratio_model(self.species)
+        bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
+
+        # Calculate RELHT (relative height) - tree height / average stand height
+        relht = getattr(self, '_relht', 1.0)
+
+        # Calculate diameter growth using WC model
+        diameter_increment = dg_model.calculate_diameter_growth(
+            dbh=self.dbh,
+            crown_ratio=self.crown_ratio,
+            site_index=site_index,
+            ba=ba,
+            bal=pbal,
+            pccf=100.0,  # Default PCCF
+            relht=relht,
+            elevation=20.0,  # Default 2000 ft for WC region
+            slope=slope,
+            aspect=aspect,
+            time_step=time_step
+        )
+
+        # Apply increment to DBH
+        self.dbh = self.dbh + diameter_increment
+
+        # Update height using height-diameter relationship for WC
+        self._update_height_large_tree_wc(site_index)
+
+    def _update_height_large_tree_wc(self, site_index):
+        """Update height for WC variant large trees using height-diameter relationship.
+
+        The WC variant uses the Curtis-Arney height-diameter model to update height
+        based on the new diameter after growth.
+
+        Args:
+            site_index: Site index in feet - stored for potential future use
+        """
+        from .height_diameter import create_height_diameter_model
+
+        # Get height-diameter model for this species
+        hd_model = create_height_diameter_model(self.species, variant='WC')
 
         # Calculate expected height for current DBH using Curtis-Arney model
         expected_height = hd_model.predict_height(self.dbh)

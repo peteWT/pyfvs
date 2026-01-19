@@ -10,6 +10,7 @@ Forest Vegetation Simulator (FVS) - Python implementation supporting multiple FV
 - **SN (Southern)** - 90 species including southern yellow pines (Loblolly, Shortleaf, Longleaf, Slash) and hardwoods
 - **LS (Lake States)** - 67 species for Great Lakes region (MI, WI, MN) including Red Pine, Jack Pine, and northern hardwoods
 - **PN (Pacific Northwest Coast)** - 39 species for WA, OR, and northern CA coast including Douglas-fir, Western Hemlock, and Sitka Spruce
+- **WC (West Cascades)** - 37 species for western Oregon and Washington Cascades including Douglas-fir, Western Hemlock, and Western Red Cedar
 
 ## Key Development Commands
 
@@ -41,6 +42,9 @@ uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(500, 65,
 
 # Run simulation with PN (Pacific Northwest Coast) variant
 uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(400, 120, 'DF', variant='PN'); s.grow(50); print(s.get_metrics())"
+
+# Run simulation with WC (West Cascades) variant
+uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(400, 120, 'DF', variant='WC'); s.grow(50); print(s.get_metrics())"
 
 # Run example simulation
 uv run python -m pyfvs.main
@@ -82,6 +86,7 @@ tree.py
   ├── large_tree_height_growth.py (FVS Section 4.7.2 equations, SN variant)
   ├── ls_diameter_growth.py (12-coef linear DDS, LS variant)
   ├── pn_diameter_growth.py (18-coef ln(DDS) with topographic effects, PN variant)
+  ├── wc_diameter_growth.py (19-coef ln(DDS) with topographic effects, WC variant)
   ├── height_diameter.py (Curtis-Arney/Wykoff equations, variant-aware)
   ├── crown_ratio.py (Weibull-based crown ratio)
   ├── bark_ratio.py (Clark 1991 DIB/DOB)
@@ -122,6 +127,11 @@ src/pyfvs/cfg/
 │   ├── pn_height_diameter_coefficients.json  # Curtis-Arney P2,P3,P4
 │   ├── pn_species_config.yaml
 │   └── species/*.yaml                # PN species configs (39 species)
+├── wc/                               # WC (West Cascades) variant
+│   ├── wc_diameter_growth_coefficients.json  # 19 coefficient sets
+│   ├── wc_height_diameter_coefficients.json  # Curtis-Arney P2,P3,P4
+│   ├── wc_species_config.yaml
+│   └── species/*.yaml                # WC species configs (37 species)
 └── functional_forms.yaml             # Equation specifications (shared)
 ```
 - All JSON loading uses `ConfigLoader.load_coefficient_file()` with centralized caching
@@ -183,15 +193,17 @@ src/pyfvs/cfg/
 25. **String Normalization Utilities** - Added `utils/string_utils.py` with `normalize_code()`, `normalize_species_code()`, and `normalize_ecounit()` functions for consistent string handling throughout the codebase.
 26. **Test Fixtures Consolidation** - Created `tests/conftest.py` with 30+ shared pytest fixtures for trees (seedling, small, transition, large, mature), tree lists (sample, mixed species, density levels), and stands (young, mature, high/low site, ecounits).
 27. **VolumeCalculator Caching** - Added module-level cache for VolumeCalculator instances in `volume_library.py`, keyed by species code. The `get_volume_library()` function returns cached instances for performance.
-28. **Multi-Variant Architecture** - Added support for multiple FVS regional variants. Implemented Lake States (LS) and Pacific Northwest Coast (PN) variants alongside existing Southern (SN) variant. Key changes:
+28. **Multi-Variant Architecture** - Added support for multiple FVS regional variants. Implemented Lake States (LS), Pacific Northwest Coast (PN), and West Cascades (WC) variants alongside existing Southern (SN) variant. Key changes:
     - `config_loader.py`: Added `SUPPORTED_VARIANTS` dict, `set_default_variant()`, `get_default_variant()` functions
     - `ls_diameter_growth.py`: New module implementing LS 12-coefficient linear DDS equation
     - `pn_diameter_growth.py`: New module implementing PN 18-coefficient ln(DDS) equation with topographic effects
-    - `tree.py`: Added variant parameter, variant-specific `_grow_large_tree_ls()` and `_grow_large_tree_pn()` methods
+    - `wc_diameter_growth.py`: New module implementing WC 19-coefficient ln(DDS) equation (same structure as PN)
+    - `tree.py`: Added variant parameter, variant-specific growth methods (`_grow_large_tree_ls()`, `_grow_large_tree_pn()`, `_grow_large_tree_wc()`)
     - `stand.py`: Added variant parameter, `_calculate_qmd_ge5()` for RELDBH computation
     - `height_diameter.py`: Added `VARIANT_COEFFICIENT_FILES` mapping for variant-aware coefficient loading
     - Created `cfg/ls/` with 71 configuration files (LS: 67 species)
     - Created `cfg/pn/` with coefficient files and species configs (PN: 39 species)
+    - Created `cfg/wc/` with coefficient files and species configs (WC: 37 species)
 
 ## Recent Refactoring (2025)
 
@@ -205,6 +217,7 @@ All growth model classes now inherit from `ParameterizedModel` (`model_base.py`)
 - **LargeTreeHeightGrowthModel** (`large_tree_height_growth.py`)
 - **LSDiameterGrowthModel** (`ls_diameter_growth.py`) - Lake States variant
 - **PNDiameterGrowthModel** (`pn_diameter_growth.py`) - Pacific Northwest Coast variant
+- **WCDiameterGrowthModel** (`wc_diameter_growth.py`) - West Cascades variant
 
 Benefits:
 - Standardized coefficient loading from JSON files via `ConfigLoader`
@@ -273,6 +286,7 @@ PyFVS supports multiple FVS regional variants with variant-specific growth equat
 | **SN** | Southern US | 90 | LP (Loblolly Pine) | 5 years | ln(DDS) = f(D, CR, RELHT, SI, BA, ecounit) |
 | **LS** | Lake States (MI, WI, MN) | 67 | RN (Red Pine) | 10 years | DDS = f(D, CR, RELDBH, SI, BA, BAL) |
 | **PN** | Pacific Northwest Coast (WA, OR, CA coast) | 39 | DF (Douglas-fir) | 10 years | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, elev, slope, aspect) |
+| **WC** | West Cascades (OR, WA interior) | 37 | DF (Douglas-fir) | 10 years | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, elev, slope, aspect) |
 
 ### Key Model Differences
 
@@ -295,6 +309,15 @@ PyFVS supports multiple FVS regional variants with variant-specific growth equat
 - Major species: Douglas-fir (DF), Western Hemlock (WH), Western Red Cedar (RC), Sitka Spruce (SS)
 - Very high productivity region (SI 100-200 feet common)
 - Species-specific site index curves for height growth
+
+**WC (West Cascades) Variant:**
+- Uses same ln(DDS) equation structure as PN (shares code)
+- 19 coefficient sets for 37 species
+- Competition via RELHT (relative height, capped at 1.5)
+- Forest-location-specific intercepts (6 forest regions)
+- Major species: Douglas-fir (DF), Western Hemlock (WH), Western Red Cedar (RC)
+- High productivity interior Cascades region (SI 80-150 feet common)
+- Special equations for Red Alder and Redwood (not yet implemented)
 
 ### Variant Usage
 
@@ -330,6 +353,16 @@ stand_pn = Stand.initialize_planted(
 )
 stand_pn.grow(years=50)
 # Produces ~480 sq ft BA, ~15" QMD, ~18,000 cu ft/acre
+
+# WC variant (West Cascades)
+stand_wc = Stand.initialize_planted(
+    trees_per_acre=400,
+    site_index=120,     # Cascades sites SI 80-150
+    species='DF',       # Douglas-fir (WC default)
+    variant='WC'        # West Cascades variant
+)
+stand_wc.grow(years=50)
+# Produces ~296 sq ft BA, ~13" QMD, ~11,500 cu ft/acre
 ```
 
 ### Adding New Variants
