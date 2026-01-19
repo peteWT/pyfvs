@@ -120,7 +120,14 @@ ln(DDS) = CONSPP + b1*ln(DBH) + b2*DBH² + b3*CR + b4*CR² + b5*RELHT
         + b12*SIN(ASPECT) + b13*SLOPE*COS(ASPECT)
 ```
 
-**Type 4: NE/CS Eastern Hardwood (planned)**
+**Type 4: NE-TWIGS Basal Area Growth (NE)**
+```
+POTBAG = B1 * SI * (1 - exp(-B2 * DBH))
+Adjusted Growth = POTBAG * 0.7 * BAGMOD * CR_MODIFIER
+Iterates annually (10x for 10-year cycle)
+```
+
+**Type 5: CS Eastern Hardwood (planned)**
 ```
 ln(DDS) = CONSPP + b1*ln(DBH) + b2*CR + b3*SI + b4*BA + b5*BAL
         + FOREST_TYPE_MODIFIER
@@ -134,7 +141,7 @@ ln(DDS) = CONSPP + b1*ln(DBH) + b2*CR + b3*SI + b4*BA + b5*BAL
 | LS | Curtis-Arney | P2, P3, P4 with CCF adjustment |
 | PN | Curtis-Arney | P2, P3, P4 species-specific |
 | WC | Curtis-Arney | P2, P3, P4 species-specific |
-| NE | Curtis-Arney | P2, P3, P4 (to be implemented) |
+| NE | Curtis-Arney | P2, P3, P4 species-specific |
 | CS | Curtis-Arney | P2, P3, P4 (to be implemented) |
 
 ### Crown Ratio Models
@@ -224,4 +231,4 @@ src/pyfvs/cfg/{variant}/
 - ORGANON variants (OC, OP) use a different underlying model architecture
 - Canadian variants (BC, ON) are maintained externally and not included
 
-Last updated: 2025-01-19
+Last updated: 2026-01-19
