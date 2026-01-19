@@ -298,8 +298,14 @@ class Tree:
         current_age = self.age - time_step
         future_age = self.age  # This is current_age + time_step
 
-        # Site index base age for southern pines
-        base_age = 25
+        # Site index base age varies by variant
+        # SN (Southern): base age 25
+        # LS (Lake States), PN (Pacific NW), WC (West Cascades): base age 50
+        variant = getattr(self, '_variant', 'SN')
+        if variant in ('LS', 'PN', 'WC'):
+            base_age = 50
+        else:
+            base_age = 25
 
         def _raw_chapman_richards(age):
             """Calculate unscaled Chapman-Richards height."""

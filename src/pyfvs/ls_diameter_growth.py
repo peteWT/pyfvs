@@ -5,8 +5,10 @@ Implements the DDS (diameter squared increment) equation for the FVS Lake States
 The LS variant uses a different functional form than the Southern (SN) variant:
 
 LS equation:
-    DDS = CONSPP + INTERC + VDBHC/D + DBHC*D + DBH2C*D² + RDBHC*RELDBH
-          + RDBHSQC*RELDBH² + CRWNC*CR + CRSQC*CR² + SBAC*BA + BALC*BAL + SITEC*SI
+    ln(DDS) = CONSPP + INTERC + VDBHC/D + DBHC*D + DBH2C*D² + RDBHC*RELDBH
+              + RDBHSQC*RELDBH² + CRWNC*CR + CRSQC*CR² + SBAC*BA + BALC*BAL + SITEC*SI
+
+    DDS = exp(ln(DDS))
 
 where:
     - CONSPP is typically 0 (no site-specific terms in LS variant dgf.f)
@@ -17,7 +19,6 @@ where:
     - SI = site index
 
 Key differences from SN variant:
-    - Uses DDS directly (not ln(DDS))
     - Uses linear/quadratic DBH terms instead of ln(DBH)
     - Uses RELDBH instead of RELHT
     - Uses linear/quadratic CR instead of ln(CR)
@@ -36,11 +37,13 @@ class LSDiameterGrowthModel(ParameterizedModel):
     """Lake States variant diameter growth model.
 
     Calculates diameter squared increment (DDS) using the LS variant equation.
-    This model is significantly different from the SN variant which uses ln(DDS).
+    Like other FVS variants, this uses ln(DDS) transformation:
+        ln(DDS) = f(DBH, CR, SI, BA, BAL, RELDBH)
+        DDS = exp(ln(DDS))
 
     Attributes:
         species_code: Species code (e.g., 'JP', 'RN', 'WP')
-        coefficients: Species-specific coefficients for the DDS equation
+        coefficients: Species-specific coefficients for the ln(DDS) equation
     """
 
     COEFFICIENT_FILE = 'ls/ls_diameter_growth_coefficients.json'
@@ -125,7 +128,7 @@ class LSDiameterGrowthModel(ParameterizedModel):
         """Calculate diameter squared increment (DDS).
 
         The LS variant uses a 10-year base period (vs 5-year for SN).
-        The equation directly calculates DDS (not ln(DDS) like SN).
+        Like other FVS variants, this calculates ln(DDS), then exponentiates.
 
         Args:
             dbh: Diameter at breast height (inches)
@@ -173,10 +176,10 @@ class LSDiameterGrowthModel(ParameterizedModel):
         # Prevent division by zero for small trees
         dbh_safe = max(0.1, dbh)
 
-        # Calculate DDS using LS equation
-        # DDS = INTERC + VDBHC/D + DBHC*D + DBH2C*D² + RDBHC*RELDBH
-        #       + RDBHSQC*RELDBH² + CRWNC*CR + CRSQC*CR² + SBAC*BA + BALC*BAL + SITEC*SI
-        dds = (
+        # Calculate ln(DDS) using LS equation
+        # ln(DDS) = INTERC + VDBHC/D + DBHC*D + DBH2C*D² + RDBHC*RELDBH
+        #           + RDBHSQC*RELDBH² + CRWNC*CR + CRSQC*CR² + SBAC*BA + BALC*BAL + SITEC*SI
+        ln_dds = (
             interc +
             vdbhc / dbh_safe +
             dbhc * dbh +
@@ -190,8 +193,12 @@ class LSDiameterGrowthModel(ParameterizedModel):
             sitec * site_index
         )
 
-        # Apply minimum bound (DDS cannot be negative)
-        dds = max(0.0, dds)
+        # Apply minimum bound on ln(DDS) to prevent very small/negative values
+        # ln(DDS) = -5 corresponds to DDS = 0.007 sq in (minimal growth)
+        ln_dds = max(-5.0, ln_dds)
+
+        # Convert from ln(DDS) to DDS
+        dds = math.exp(ln_dds)
 
         # Scale for time step (LS is calibrated for 10-year periods)
         dds_scaled = dds * (time_step / 10.0)

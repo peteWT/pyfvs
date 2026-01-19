@@ -4,7 +4,7 @@
     "variant_name": "Lake States",
     "description": "Diameter growth coefficients for the Lake States (LS) variant of FVS",
     "source": "FVS Lake States Variant dgf.f, USDA Forest Service",
-    "equation": "DDS = CONSPP + INTERC + VDBHC/D + DBHC*D + DBH2C*D^2 + RDBHC*RELDBH + RDBHSQC*RELDBH^2 + CRWNC*CR + CRSQC*CR^2 + SBAC*BA + BALC*BAL + SITEC*SI",
+    "equation": "ln(DDS) = CONSPP + INTERC + VDBHC/D + DBHC*D + DBH2C*D^2 + RDBHC*RELDBH + RDBHSQC*RELDBH^2 + CRWNC*CR + CRSQC*CR^2 + SBAC*BA + BALC*BAL + SITEC*SI; DDS = exp(ln(DDS))",
     "notes": "12 coefficients per species; RELDBH = D/QMDGE5"
   },
   "coefficients": {
