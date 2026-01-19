@@ -256,8 +256,8 @@ class LSDiameterGrowthModel(ParameterizedModel):
 _model_cache: Dict[str, LSDiameterGrowthModel] = {}
 
 
-def get_ls_diameter_growth_model(species_code: str = 'RN') -> LSDiameterGrowthModel:
-    """Get a cached LSDiameterGrowthModel instance for the given species.
+def create_ls_diameter_growth_model(species_code: str = 'RN') -> LSDiameterGrowthModel:
+    """Factory function to create a cached LS diameter growth model.
 
     Args:
         species_code: Species code (e.g., 'JP', 'RN', 'WP')
@@ -265,9 +265,14 @@ def get_ls_diameter_growth_model(species_code: str = 'RN') -> LSDiameterGrowthMo
     Returns:
         Cached LSDiameterGrowthModel instance
     """
-    if species_code not in _model_cache:
-        _model_cache[species_code] = LSDiameterGrowthModel(species_code)
-    return _model_cache[species_code]
+    species_upper = species_code.upper()
+    if species_upper not in _model_cache:
+        _model_cache[species_upper] = LSDiameterGrowthModel(species_upper)
+    return _model_cache[species_upper]
+
+
+# Backwards compatibility alias
+get_ls_diameter_growth_model = create_ls_diameter_growth_model
 
 
 def calculate_ls_diameter_growth(

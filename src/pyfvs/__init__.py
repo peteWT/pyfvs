@@ -192,9 +192,15 @@ from .model_base import ParameterizedModel
 # =============================================================================
 # Variant-Specific Growth Models
 # =============================================================================
+from .sn_diameter_growth import (
+    SNDiameterGrowthModel,
+    create_sn_diameter_growth_model,
+)
+
 from .ls_diameter_growth import (
     LSDiameterGrowthModel,
-    get_ls_diameter_growth_model,
+    create_ls_diameter_growth_model,
+    get_ls_diameter_growth_model,  # Backwards compatibility alias
     calculate_ls_diameter_growth,
 )
 
@@ -318,7 +324,10 @@ __all__ = [
     # Base Classes
     "ParameterizedModel",
     # Variant-Specific Growth Models
+    "SNDiameterGrowthModel",
+    "create_sn_diameter_growth_model",
     "LSDiameterGrowthModel",
+    "create_ls_diameter_growth_model",
     "get_ls_diameter_growth_model",
     "calculate_ls_diameter_growth",
     "PNDiameterGrowthModel",

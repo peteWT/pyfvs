@@ -289,13 +289,20 @@ class WCDiameterGrowthModel(ParameterizedModel):
         return 0.0
 
 
+# Module-level cache for model instances
+_model_cache: Dict[str, WCDiameterGrowthModel] = {}
+
+
 def create_wc_diameter_growth_model(species_code: str = "DF") -> WCDiameterGrowthModel:
-    """Factory function to create a WC diameter growth model.
+    """Factory function to create a cached WC diameter growth model.
 
     Args:
         species_code: FVS species code (e.g., 'DF', 'WH', 'RC')
 
     Returns:
-        WCDiameterGrowthModel instance
+        Cached WCDiameterGrowthModel instance
     """
-    return WCDiameterGrowthModel(species_code)
+    species_upper = species_code.upper()
+    if species_upper not in _model_cache:
+        _model_cache[species_upper] = WCDiameterGrowthModel(species_upper)
+    return _model_cache[species_upper]

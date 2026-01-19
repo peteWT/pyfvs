@@ -385,13 +385,20 @@ class PNDiameterGrowthModel(ParameterizedModel):
         return max(0.0, dg)
 
 
+# Module-level cache for model instances
+_model_cache: Dict[str, PNDiameterGrowthModel] = {}
+
+
 def create_pn_diameter_growth_model(species_code: str = "DF") -> PNDiameterGrowthModel:
-    """Factory function to create a PN diameter growth model.
+    """Factory function to create a cached PN diameter growth model.
 
     Args:
         species_code: FVS species code (default 'DF' for Douglas-fir)
 
     Returns:
-        Configured PNDiameterGrowthModel instance
+        Cached PNDiameterGrowthModel instance
     """
-    return PNDiameterGrowthModel(species_code)
+    species_upper = species_code.upper()
+    if species_upper not in _model_cache:
+        _model_cache[species_upper] = PNDiameterGrowthModel(species_upper)
+    return _model_cache[species_upper]

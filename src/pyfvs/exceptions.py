@@ -70,12 +70,19 @@ class DataError(FVSError):
     pass
 
 
-class FileNotFoundError(DataError):
-    """Raised when a required file is not found."""
+class FVSFileNotFoundError(DataError):
+    """Raised when a required FVS configuration file is not found.
+
+    Note: Named FVSFileNotFoundError to avoid shadowing Python's builtin FileNotFoundError.
+    """
     def __init__(self, file_path: str, file_type: str = "file"):
         self.file_path = file_path
         self.file_type = file_type
         super().__init__(f"Required {file_type} not found: {file_path}")
+
+
+# Backwards compatibility alias (deprecated)
+FileNotFoundError = FVSFileNotFoundError
 
 
 class InvalidDataError(DataError):

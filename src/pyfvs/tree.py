@@ -614,171 +614,89 @@ class Tree:
         self.height = 0.3 * self.height + 0.7 * expected_height
 
     def _grow_large_tree_sn(self, site_index, competition_factor, ba, pbal, slope, aspect, time_step=5):
-        """Implement large tree diameter growth model using official FVS-SN equations.
+        """Implement large tree diameter growth model for SN (Southern) variant.
 
-        Based on USDA Forest Service FVS Southern Variant (SN) from dgf.f:
+        Uses the SN variant ln(DDS) equation:
         ln(DDS) = CONSPP + INTERC + LDBH*ln(D) + DBH2*D^2 + LCRWN*ln(CR)
                   + HREL*RELHT + PLTB*BA + PNTBL*PBAL
-                  + [forest_type_terms] + [eco_unit_terms] + [plant_effect]
-
-        Where CONSPP = ISIO*SI + TANS*SLOPE + FCOS*SLOPE*cos(ASPECT) + FSIN*SLOPE*sin(ASPECT)
+                  + [forest_type_effect] + [ecounit_effect] + [plant_effect]
 
         Args:
-            site_index: Site index (base age 50) in feet
+            site_index: Site index (base age 25) in feet
             competition_factor: Competition factor (0-1)
-            ba: Stand basal area (sq ft/acre), minimum 25.0
-            pbal: Plot basal area in larger trees (sq ft/acre)
+            ba: Stand basal area (sq ft/acre)
+            pbal: Basal area in larger trees (sq ft/acre)
             slope: Ground slope as tangent (rise/run)
             aspect: Aspect in radians
             time_step: Number of years to grow (default: 5)
         """
-        # Get diameter growth coefficients from species config
-        dg_config = self.species_params.get('diameter_growth', {})
-        p = dg_config.get('coefficients', {})
+        from .sn_diameter_growth import create_sn_diameter_growth_model
+        from .bark_ratio import create_bark_ratio_model
 
-        # Apply FVS bounds
-        # BA minimum is 25.0 in FVS
-        ba_bounded = max(25.0, ba)
+        # Get the SN diameter growth model for this species
+        dg_model = create_sn_diameter_growth_model(self.species)
 
-        # Crown ratio for FVS must be integer percentage (0-100), minimum 25
-        # Our crown_ratio is stored as proportion (0-1), convert to percentage
-        cr_pct = max(25.0, self.crown_ratio * 100.0)
+        # Get bark ratio for diameter conversion
+        bark_model = create_bark_ratio_model(self.species)
+        bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
 
-        # Relative height (RELHT) = HT/AVH, capped at 1.5 in FVS
-        # AVH is the average height of the 40 largest trees (top height)
-        # For individual tree growth without stand context, assume codominant (relht = 1.0)
-        # This is appropriate for:
-        # - Plantation trees that are uniformly managed
-        # - Dominant/codominant trees in natural stands
-        # When called from Stand.grow(), the Stand should pass actual top height
-        # via the _top_height attribute if competition-based height reduction is needed
+        # Calculate RELHT (relative height)
         if hasattr(self, '_top_height') and self._top_height is not None and self._top_height > 0:
-            # Use actual stand top height (passed from Stand)
             relht = min(1.5, self.height / self._top_height)
         else:
-            # Default: assume codominant tree (no height suppression)
-            # This is appropriate for plantations and dominant trees
             relht = 1.0
 
-        # Get forest type effect - use passed forest_type or fall back to species config
+        # Get forest type effect
         fortype_config = self.species_params.get('fortype', {})
         if self._forest_type is not None:
-            # Use passed forest type from Stand
             from .forest_type import get_forest_type_effect
             fortype_effect = get_forest_type_effect(self.species, self._forest_type)
         else:
-            # Fall back to species config base forest type
             fortype_effect = fortype_config.get('coefficients', {}).get(
                 fortype_config.get('base_fortype', 'FTYLPN'), 0.0
             )
 
-        # Get ecological unit effect - use passed ecounit or fall back to species config
+        # Get ecological unit effect
         if self._ecounit is not None:
-            # Use passed ecounit from Stand
             from .ecological_unit import get_ecounit_effect
             ecounit_effect = get_ecounit_effect(self.species, self._ecounit)
         else:
-            # Fall back to species config base ecounit (typically 0.0)
             ecounit_config = self.species_params.get('ecounit', {}).get('table_4_7_1_5', {})
             ecounit_effect = ecounit_config.get('coefficients', {}).get(
                 ecounit_config.get('base_ecounit', '232'), 0.0
             )
 
-        # Get plant effect from species config
+        # Get plant effect
         plant_config = self.species_params.get('plant', {})
         plant_effect = plant_config.get('value', 0.0)
-
-        # Also check growth_params for managed plantation setting
         planting_effects = self.growth_params.get('large_tree_modifiers', {}).get('planting_effect', {})
         if self.species in planting_effects:
             plant_effect = planting_effects[self.species]
 
-        # Build the diameter growth equation following official FVS structure
-        # Coefficient mapping from config (b1-b11) to FVS variables:
-        # b1 = INTERC (intercept)
-        # b2 = LDBH (ln(DBH) coefficient)
-        # b3 = DBH2 (DBH^2 coefficient)
-        # b4 = LCRWN (ln(CR) coefficient)
-        # b5 = HREL (relative height coefficient)
-        # b6 = ISIO (site index coefficient)
-        # b7 = PLTB (basal area coefficient) - NOTE: config may have wrong value
-        # b8 = PNTBL (point basal area larger coefficient)
-        # b9 = TANS (slope tangent coefficient)
-        # b10 = FCOS (slope*cos(aspect) coefficient)
-        # b11 = FSIN (slope*sin(aspect) coefficient)
-
-        # Check for new-style coefficient names first, fall back to b1-b11
-        interc = p.get('INTERC', p.get('b1', 0.0))
-        ldbh = p.get('LDBH', p.get('b2', 0.0))
-        dbh2 = p.get('DBH2', p.get('b3', 0.0))
-        lcrwn = p.get('LCRWN', p.get('b4', 0.0))
-        hrel = p.get('HREL', p.get('b5', 0.0))
-        isio = p.get('ISIO', p.get('b6', 0.0))
-        pltb = p.get('PLTB', p.get('b7', 0.0))
-        pntbl = p.get('PNTBL', p.get('b8', 0.0))
-        tans = p.get('TANS', p.get('b9', 0.0))
-        fcos = p.get('FCOS', p.get('b10', 0.0))
-        fsin = p.get('FSIN', p.get('b11', 0.0))
-
-        # Calculate CONSPP (site and topographic terms)
-        # CONSPP = ISIO*SI + TANS*SLOPE + FCOS*SLOPE*cos(ASPECT) + FSIN*SLOPE*sin(ASPECT)
-        conspp = (
-            isio * site_index +
-            tans * slope +
-            fcos * slope * math.cos(aspect) +
-            fsin * slope * math.sin(aspect)
+        # Calculate diameter growth using SN model
+        diameter_increment = dg_model.calculate_diameter_growth(
+            dbh=self.dbh,
+            crown_ratio=self.crown_ratio,
+            site_index=site_index,
+            ba=ba,
+            pbal=pbal,
+            bark_ratio=bark_ratio,
+            relht=relht,
+            slope=slope,
+            aspect=aspect,
+            ecounit_effect=ecounit_effect,
+            fortype_effect=fortype_effect,
+            plant_effect=plant_effect,
+            time_step=time_step
         )
 
-        # Calculate ln(DDS) - change in squared diameter (inside bark)
-        # Main equation: ln(DDS) = CONSPP + INTERC + LDBH*ln(D) + DBH2*D^2
-        #                         + LCRWN*ln(CR) + HREL*RELHT + PLTB*BA + PNTBL*PBAL
-        #                         + [forest_type] + [eco_unit] + [plant_effect]
-        ln_dds = (
-            conspp +
-            interc +
-            ldbh * math.log(self.dbh) +
-            dbh2 * self.dbh**2 +
-            lcrwn * math.log(cr_pct) +
-            hrel * relht +
-            pltb * ba_bounded +
-            pntbl * pbal +
-            fortype_effect +
-            ecounit_effect +
-            plant_effect
-        )
-
-        # Apply FVS minimum bound for ln(DDS)
-        ln_dds = max(-9.21, ln_dds)
-
-        # Convert ln(DDS) to diameter growth
-        # DDS is change in squared diameter (inside bark) over growth period
-        # Scale growth based on time_step (model is calibrated for 5-year growth)
-        dds = math.exp(ln_dds) * (time_step / 5.0)
-
-        # FVS applies DDS to inside-bark diameter, then converts back to outside-bark
-        # From dgdriv.f: D=DBH(I)*BRATIO(...); DG=(SQRT(DSQ+DDS)-D)
-        # We must convert DBH to inside-bark, apply DDS, then convert back
-        from .bark_ratio import create_bark_ratio_model
-        bark_model = create_bark_ratio_model(self.species)
-
-        # Get bark ratio (DIB/DOB) for current tree
-        bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
-
-        # Convert to inside-bark diameter
-        dib_old = self.dbh * bark_ratio
-        dib_old_sq = dib_old * dib_old
-
-        # Apply DDS to inside-bark diameter
-        dib_new = math.sqrt(dib_old_sq + dds)
-
-        # Convert back to outside-bark (DBH)
-        self.dbh = dib_new / bark_ratio
+        # Apply increment to DBH
+        self.dbh = self.dbh + diameter_increment
 
         # Update height using FVS large-tree height growth model (Section 4.7.2)
-        # HTG = POTHTG * (0.25 * HGMDCR + 0.75 * HGMDRH)
         self._update_height_large_tree(
             site_index=site_index,
-            ba=ba_bounded,
+            ba=max(25.0, ba),
             pbal=pbal,
             slope=slope,
             aspect=aspect,
