@@ -1,0 +1,35 @@
+metadata:
+  code: YP
+  fia_code: 621
+  scientific_name: Liriodendron tulipifera
+  common_name: tuliptree
+  valid_site_species: true
+  fvs_index: 41
+site_index:
+  min: 50
+  max: 120
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 625.770
+    p3: 3.873
+    p4: -0.233
+    dbw: 0.1
+diameter_growth:
+  model: cs_linear_dds
+  coefficients:
+    INTERC: 3.4264
+    VDBHC: -7.8659
+    DBHC: 0.057705
+    DBH2C: 0.0
+    RDBHC: 0.0
+    RDBHSQC: -0.019995
+    CRWNC: 0.04625
+    CRSQC: -0.000227
+    SBAC: 0.0
+    BALC: -0.0052144
+    SITEC: -0.00431
+mortality:
+  shade_tolerance: 0.3

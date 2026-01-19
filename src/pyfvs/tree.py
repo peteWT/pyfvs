@@ -409,6 +409,10 @@ class Tree:
             self._grow_large_tree_ne(site_index, ba, pbal, time_step)
             return
 
+        if variant == 'CS':
+            self._grow_large_tree_cs(site_index, ba, pbal, time_step, qmd_ge5)
+            return
+
         # SN variant (default) - uses ln(DDS) formulation
         self._grow_large_tree_sn(site_index, competition_factor, ba, pbal, slope, aspect, time_step)
 
@@ -614,6 +618,52 @@ class Tree:
     def _update_height_large_tree_ne(self, site_index):
         """Update height for NE variant large trees. Delegates to generic method."""
         self._update_height_large_tree_variant('NE', site_index)
+
+    def _grow_large_tree_cs(self, site_index, ba, pbal, time_step=10, qmd_ge5=None):
+        """Implement large tree diameter growth model for CS (Central States) variant.
+
+        Uses the CS variant DDS equation (same form as LS):
+        ln(DDS) = INTERC + VDBHC/D + DBHC*D + DBH2C*D² + RDBHC*RELDBH
+                  + RDBHSQC*RELDBH² + CRWNC*CR + CRSQC*CR² + SBAC*BA + BALC*BAL + SITEC*SI
+
+        Args:
+            site_index: Site index (base age 50) in feet
+            ba: Stand basal area (sq ft/acre)
+            pbal: Basal area in larger trees (sq ft/acre)
+            time_step: Number of years to grow (default: 10 for CS)
+            qmd_ge5: QMD of trees >= 5" DBH (for RELDBH calculation)
+        """
+        from .cs_diameter_growth import get_cs_diameter_growth_model
+        from .bark_ratio import create_bark_ratio_model
+
+        # Get the CS diameter growth model for this species
+        dg_model = get_cs_diameter_growth_model(self.species)
+
+        # Get bark ratio for diameter conversion
+        bark_model = create_bark_ratio_model(self.species)
+        bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
+
+        # Calculate diameter growth using CS model
+        diameter_increment = dg_model.calculate_diameter_growth(
+            dbh=self.dbh,
+            crown_ratio=self.crown_ratio,
+            site_index=site_index,
+            ba=ba,
+            bal=pbal,
+            bark_ratio=bark_ratio,
+            qmd_ge5=qmd_ge5,
+            time_step=time_step
+        )
+
+        # Apply increment to DBH
+        self.dbh = self.dbh + diameter_increment
+
+        # Update height using height-diameter relationship for CS
+        self._update_height_large_tree_cs(site_index)
+
+    def _update_height_large_tree_cs(self, site_index):
+        """Update height for CS variant large trees. Delegates to generic method."""
+        self._update_height_large_tree_variant('CS', site_index)
 
     def _grow_large_tree_sn(self, site_index, competition_factor, ba, pbal, slope, aspect, time_step=5):
         """Implement large tree diameter growth model for SN (Southern) variant.

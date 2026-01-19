@@ -1,0 +1,35 @@
+metadata:
+  code: WO
+  fia_code: 802
+  scientific_name: Quercus alba
+  common_name: white oak
+  valid_site_species: true
+  fvs_index: 47
+site_index:
+  min: 40
+  max: 100
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 170.133
+    p3: 3.278
+    p4: -0.487
+    dbw: 0.1
+diameter_growth:
+  model: cs_linear_dds
+  coefficients:
+    INTERC: 1.09010
+    VDBHC: -3.68390
+    DBHC: 0.11623
+    DBH2C: 0.0
+    RDBHC: 0.70038
+    RDBHSQC: -0.04289
+    CRWNC: 0.02757
+    CRSQC: -0.00021
+    SBAC: 0.0
+    BALC: -0.00302
+    SITEC: 0.00351
+mortality:
+  shade_tolerance: 0.5

@@ -1,0 +1,542 @@
+# Central States Variant Species Configuration
+# Main configuration file listing all species and their config file paths
+
+metadata:
+  variant: CS
+  variant_name: Central States
+  description: "Parameters for the Central States (CS) variant of FVS covering IL, IN, IA, KS, KY, MO, NE, TN"
+  source: "FVS Central States Variant Overview, USDA Forest Service"
+  default_site_species: WO
+  default_site_index: 70
+  species_count: 96
+
+# Path to coefficient files
+coefficient_files:
+  diameter_growth: "cs_diameter_growth_coefficients.json"
+  height_diameter: "cs_height_diameter_coefficients.json"
+
+# Species configurations (96 species)
+species:
+  # Conifers - Cedars and Junipers
+  RC:
+    name: "eastern redcedar"
+    file: "species/rc_eastern_redcedar.yaml"
+    fvs_index: 1
+    fia_code: 68
+  JU:
+    name: "juniper"
+    file: "species/ju_juniper.yaml"
+    fvs_index: 2
+    fia_code: 57
+
+  # Conifers - Pines
+  SP:
+    name: "shortleaf pine"
+    file: "species/sp_shortleaf_pine.yaml"
+    fvs_index: 3
+    fia_code: 110
+  VP:
+    name: "virginia pine"
+    file: "species/vp_virginia_pine.yaml"
+    fvs_index: 4
+    fia_code: 132
+  LP:
+    name: "loblolly pine"
+    file: "species/lp_loblolly_pine.yaml"
+    fvs_index: 5
+    fia_code: 131
+
+  # Other Softwoods
+  OS:
+    name: "other softwoods"
+    file: "species/os_other_softwoods.yaml"
+    fvs_index: 6
+    fia_code: 299
+  WP:
+    name: "eastern white pine"
+    file: "species/wp_eastern_white_pine.yaml"
+    fvs_index: 7
+    fia_code: 129
+
+  # Hardwoods - Walnuts
+  WN:
+    name: "black walnut"
+    file: "species/wn_black_walnut.yaml"
+    fvs_index: 8
+    fia_code: 602
+  BN:
+    name: "butternut"
+    file: "species/bn_butternut.yaml"
+    fvs_index: 9
+    fia_code: 601
+
+  # Hardwoods - Tupelos
+  TL:
+    name: "tupelo"
+    file: "species/tl_tupelo.yaml"
+    fvs_index: 10
+    fia_code: 693
+  TS:
+    name: "swamp tupelo"
+    file: "species/ts_swamp_tupelo.yaml"
+    fvs_index: 11
+    fia_code: 691
+  WT:
+    name: "water tupelo"
+    file: "species/wt_water_tupelo.yaml"
+    fvs_index: 12
+    fia_code: 694
+  BG:
+    name: "blackgum"
+    file: "species/bg_blackgum.yaml"
+    fvs_index: 13
+    fia_code: 693
+
+  # Hardwoods - Hickories (Select Hickory Group)
+  HS:
+    name: "hickory species"
+    file: "species/hs_hickory_species.yaml"
+    fvs_index: 14
+    fia_code: 400
+  SH:
+    name: "shagbark hickory"
+    file: "species/sh_shagbark_hickory.yaml"
+    fvs_index: 15
+    fia_code: 407
+  SL:
+    name: "shellbark hickory"
+    file: "species/sl_shellbark_hickory.yaml"
+    fvs_index: 16
+    fia_code: 405
+  MH:
+    name: "mockernut hickory"
+    file: "species/mh_mockernut_hickory.yaml"
+    fvs_index: 17
+    fia_code: 409
+
+  # Hardwoods - Hickories (Other Hickory Group)
+  PH:
+    name: "pignut hickory"
+    file: "species/ph_pignut_hickory.yaml"
+    fvs_index: 18
+    fia_code: 403
+  HI:
+    name: "hickory"
+    file: "species/hi_hickory.yaml"
+    fvs_index: 19
+    fia_code: 400
+  WH:
+    name: "water hickory"
+    file: "species/wh_water_hickory.yaml"
+    fvs_index: 20
+    fia_code: 404
+  BH:
+    name: "bitternut hickory"
+    file: "species/bh_bitternut_hickory.yaml"
+    fvs_index: 21
+    fia_code: 402
+  PE:
+    name: "pecan"
+    file: "species/pe_pecan.yaml"
+    fvs_index: 22
+    fia_code: 409
+  BI:
+    name: "black hickory"
+    file: "species/bi_black_hickory.yaml"
+    fvs_index: 23
+    fia_code: 401
+
+  # Hardwoods - Beech
+  AB:
+    name: "american beech"
+    file: "species/ab_american_beech.yaml"
+    fvs_index: 24
+    fia_code: 531
+
+  # Hardwoods - Ashes
+  BA:
+    name: "black ash"
+    file: "species/ba_black_ash.yaml"
+    fvs_index: 25
+    fia_code: 543
+  PA:
+    name: "pumpkin ash"
+    file: "species/pa_pumpkin_ash.yaml"
+    fvs_index: 26
+    fia_code: 545
+  UA:
+    name: "blue ash"
+    file: "species/ua_blue_ash.yaml"
+    fvs_index: 27
+    fia_code: 547
+
+  # Hardwoods - Cottonwood
+  EC:
+    name: "eastern cottonwood"
+    file: "species/ec_eastern_cottonwood.yaml"
+    fvs_index: 28
+    fia_code: 742
+
+  # Hardwoods - Maples
+  RM:
+    name: "red maple"
+    file: "species/rm_red_maple.yaml"
+    fvs_index: 29
+    fia_code: 316
+  BE:
+    name: "boxelder"
+    file: "species/be_boxelder.yaml"
+    fvs_index: 30
+    fia_code: 313
+  SV:
+    name: "silver maple"
+    file: "species/sv_silver_maple.yaml"
+    fvs_index: 31
+    fia_code: 317
+
+  # Hardwoods - Cherry
+  BC:
+    name: "black cherry"
+    file: "species/bc_black_cherry.yaml"
+    fvs_index: 32
+    fia_code: 762
+
+  # Hardwoods - Elms
+  AE:
+    name: "american elm"
+    file: "species/ae_american_elm.yaml"
+    fvs_index: 33
+    fia_code: 972
+  SG:
+    name: "sugarberry"
+    file: "species/sg_sugarberry.yaml"
+    fvs_index: 34
+    fia_code: 461
+  HK:
+    name: "common hackberry"
+    file: "species/hk_common_hackberry.yaml"
+    fvs_index: 35
+    fia_code: 462
+  WE:
+    name: "winged elm"
+    file: "species/we_winged_elm.yaml"
+    fvs_index: 36
+    fia_code: 971
+  EL:
+    name: "elm"
+    file: "species/el_elm.yaml"
+    fvs_index: 37
+    fia_code: 970
+  SI:
+    name: "siberian elm"
+    file: "species/si_siberian_elm.yaml"
+    fvs_index: 38
+    fia_code: 975
+  RL:
+    name: "slippery elm"
+    file: "species/rl_slippery_elm.yaml"
+    fvs_index: 39
+    fia_code: 977
+  RE:
+    name: "rock elm"
+    file: "species/re_rock_elm.yaml"
+    fvs_index: 40
+    fia_code: 975
+
+  # Hardwoods - Tuliptree
+  YP:
+    name: "tuliptree"
+    file: "species/yp_tuliptree.yaml"
+    fvs_index: 41
+    fia_code: 621
+
+  # Hardwoods - Basswood
+  BW:
+    name: "american basswood"
+    file: "species/bw_american_basswood.yaml"
+    fvs_index: 42
+    fia_code: 951
+
+  # Hardwoods - Sugar Maple
+  SM:
+    name: "sugar maple"
+    file: "species/sm_sugar_maple.yaml"
+    fvs_index: 43
+    fia_code: 318
+
+  # Hardwoods - Ashes (continued)
+  AS:
+    name: "ash"
+    file: "species/as_ash.yaml"
+    fvs_index: 44
+    fia_code: 540
+  WA:
+    name: "white ash"
+    file: "species/wa_white_ash.yaml"
+    fvs_index: 45
+    fia_code: 541
+  GA:
+    name: "green ash"
+    file: "species/ga_green_ash.yaml"
+    fvs_index: 46
+    fia_code: 544
+
+  # Hardwoods - Oaks (White Oak Group)
+  WO:
+    name: "white oak"
+    file: "species/wo_white_oak.yaml"
+    fvs_index: 47
+    fia_code: 802
+
+  # Hardwoods - Oaks (Red Oak Group)
+  RO:
+    name: "northern red oak"
+    file: "species/ro_northern_red_oak.yaml"
+    fvs_index: 48
+    fia_code: 833
+  SK:
+    name: "southern red oak"
+    file: "species/sk_southern_red_oak.yaml"
+    fvs_index: 49
+    fia_code: 812
+  BO:
+    name: "black oak"
+    file: "species/bo_black_oak.yaml"
+    fvs_index: 50
+    fia_code: 837
+  SO:
+    name: "scarlet oak"
+    file: "species/so_scarlet_oak.yaml"
+    fvs_index: 51
+    fia_code: 806
+  BJ:
+    name: "blackjack oak"
+    file: "species/bj_blackjack_oak.yaml"
+    fvs_index: 52
+    fia_code: 824
+
+  # Hardwoods - Oaks (continued)
+  CK:
+    name: "chinkapin oak"
+    file: "species/ck_chinkapin_oak.yaml"
+    fvs_index: 53
+    fia_code: 826
+  SW:
+    name: "swamp white oak"
+    file: "species/sw_swamp_white_oak.yaml"
+    fvs_index: 54
+    fia_code: 804
+  BR:
+    name: "bur oak"
+    file: "species/br_bur_oak.yaml"
+    fvs_index: 55
+    fia_code: 823
+  SN:
+    name: "swamp chestnut oak"
+    file: "species/sn_swamp_chestnut_oak.yaml"
+    fvs_index: 56
+    fia_code: 825
+  PO:
+    name: "post oak"
+    file: "species/po_post_oak.yaml"
+    fvs_index: 57
+    fia_code: 835
+  DO:
+    name: "bottomland post oak"
+    file: "species/do_bottomland_post_oak.yaml"
+    fvs_index: 58
+    fia_code: 835
+  CO:
+    name: "chestnut oak"
+    file: "species/co_chestnut_oak.yaml"
+    fvs_index: 59
+    fia_code: 832
+  PN:
+    name: "pin oak"
+    file: "species/pn_pin_oak.yaml"
+    fvs_index: 60
+    fia_code: 830
+  CB:
+    name: "cherrybark oak"
+    file: "species/cb_cherrybark_oak.yaml"
+    fvs_index: 61
+    fia_code: 813
+  QI:
+    name: "shingle oak"
+    file: "species/qi_shingle_oak.yaml"
+    fvs_index: 62
+    fia_code: 815
+  OV:
+    name: "overcup oak"
+    file: "species/ov_overcup_oak.yaml"
+    fvs_index: 63
+    fia_code: 822
+  WK:
+    name: "water oak"
+    file: "species/wk_water_oak.yaml"
+    fvs_index: 64
+    fia_code: 827
+  NK:
+    name: "nuttall oak"
+    file: "species/nk_nuttall_oak.yaml"
+    fvs_index: 65
+    fia_code: 828
+  WL:
+    name: "willow oak"
+    file: "species/wl_willow_oak.yaml"
+    fvs_index: 66
+    fia_code: 831
+  QS:
+    name: "shumard oak"
+    file: "species/qs_shumard_oak.yaml"
+    fvs_index: 67
+    fia_code: 838
+
+  # Other Hardwoods
+  UH:
+    name: "unknown hardwood"
+    file: "species/uh_unknown_hardwood.yaml"
+    fvs_index: 68
+    fia_code: 998
+  SS:
+    name: "sassafras"
+    file: "species/ss_sassafras.yaml"
+    fvs_index: 69
+    fia_code: 931
+  OB:
+    name: "ohio buckeye"
+    file: "species/ob_ohio_buckeye.yaml"
+    fvs_index: 70
+    fia_code: 330
+  CA:
+    name: "catalpa"
+    file: "species/ca_catalpa.yaml"
+    fvs_index: 71
+    fia_code: 452
+  PS:
+    name: "common persimmon"
+    file: "species/ps_common_persimmon.yaml"
+    fvs_index: 72
+    fia_code: 523
+  HL:
+    name: "honeylocust"
+    file: "species/hl_honeylocust.yaml"
+    fvs_index: 73
+    fia_code: 552
+  BP:
+    name: "balsam poplar"
+    file: "species/bp_balsam_poplar.yaml"
+    fvs_index: 74
+    fia_code: 741
+  BT:
+    name: "bigtooth aspen"
+    file: "species/bt_bigtooth_aspen.yaml"
+    fvs_index: 75
+    fia_code: 743
+  QA:
+    name: "quaking aspen"
+    file: "species/qa_quaking_aspen.yaml"
+    fvs_index: 76
+    fia_code: 746
+  BK:
+    name: "black locust"
+    file: "species/bk_black_locust.yaml"
+    fvs_index: 77
+    fia_code: 901
+  OL:
+    name: "other locust"
+    file: "species/ol_other_locust.yaml"
+    fvs_index: 78
+    fia_code: 901
+  SY:
+    name: "sycamore"
+    file: "species/sy_sycamore.yaml"
+    fvs_index: 79
+    fia_code: 731
+  BY:
+    name: "bald cypress"
+    file: "species/by_bald_cypress.yaml"
+    fvs_index: 80
+    fia_code: 221
+  RB:
+    name: "river birch"
+    file: "species/rb_river_birch.yaml"
+    fvs_index: 81
+    fia_code: 373
+  SU:
+    name: "sweetgum"
+    file: "species/su_sweetgum.yaml"
+    fvs_index: 82
+    fia_code: 611
+  WI:
+    name: "willow"
+    file: "species/wi_willow.yaml"
+    fvs_index: 83
+    fia_code: 920
+  BL:
+    name: "black willow"
+    file: "species/bl_black_willow.yaml"
+    fvs_index: 84
+    fia_code: 951
+
+  # Non-commercial Hardwoods
+  NC:
+    name: "non-commercial species"
+    file: "species/nc_non_commercial.yaml"
+    fvs_index: 85
+    fia_code: 998
+  AH:
+    name: "american hornbeam"
+    file: "species/ah_american_hornbeam.yaml"
+    fvs_index: 86
+    fia_code: 391
+  RD:
+    name: "eastern redbud"
+    file: "species/rd_eastern_redbud.yaml"
+    fvs_index: 87
+    fia_code: 471
+  DW:
+    name: "flowering dogwood"
+    file: "species/dw_flowering_dogwood.yaml"
+    fvs_index: 88
+    fia_code: 491
+  HT:
+    name: "hawthorn"
+    file: "species/ht_hawthorn.yaml"
+    fvs_index: 89
+    fia_code: 500
+  KC:
+    name: "kentucky coffeetree"
+    file: "species/kc_kentucky_coffeetree.yaml"
+    fvs_index: 90
+    fia_code: 571
+  OO:
+    name: "osage-orange"
+    file: "species/oo_osage_orange.yaml"
+    fvs_index: 91
+    fia_code: 660
+  CT:
+    name: "cucumber tree"
+    file: "species/ct_cucumber_tree.yaml"
+    fvs_index: 92
+    fia_code: 651
+  MV:
+    name: "sweetbay"
+    file: "species/mv_sweetbay.yaml"
+    fvs_index: 93
+    fia_code: 653
+  MB:
+    name: "mulberry"
+    file: "species/mb_mulberry.yaml"
+    fvs_index: 94
+    fia_code: 681
+  HH:
+    name: "hophornbeam"
+    file: "species/hh_hophornbeam.yaml"
+    fvs_index: 95
+    fia_code: 701
+  SD:
+    name: "sourwood"
+    file: "species/sd_sourwood.yaml"
+    fvs_index: 96
+    fia_code: 711

@@ -1,0 +1,35 @@
+metadata:
+  code: WN
+  fia_code: 602
+  scientific_name: Juglans nigra
+  common_name: black walnut
+  valid_site_species: true
+  fvs_index: 8
+site_index:
+  min: 40
+  max: 90
+density:
+  sdi_max: 350
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 93.710
+    p3: 3.658
+    p4: -0.882
+    dbw: 0.1
+diameter_growth:
+  model: cs_linear_dds
+  coefficients:
+    INTERC: 2.95910
+    VDBHC: -9.51990
+    DBHC: 0.0
+    DBH2C: 0.0
+    RDBHC: 0.0
+    RDBHSQC: 0.0
+    CRWNC: 0.03012
+    CRSQC: 0.0
+    SBAC: 0.0
+    BALC: -0.00169
+    SITEC: 0.00356
+mortality:
+  shade_tolerance: 0.3

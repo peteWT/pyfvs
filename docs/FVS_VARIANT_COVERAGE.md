@@ -51,6 +51,7 @@ The Forest Vegetation Simulator (FVS) is maintained by the USDA Forest Service F
 | **PN** | Pacific NW Coast | 39 | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, elev, slope, aspect) | Topographic effects, high SI (100-200) | Complete |
 | **WC** | West Cascades | 37 | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, elev, slope, aspect) | Shares PN equation structure, forest intercepts | Complete |
 | **NE** | Northeast | 108 | BA Growth = B1 * SI * (1 - exp(-B2 * DBH)) | NE-TWIGS iterative BA growth, Curtis-Arney H-D, 10-year cycle | Complete |
+| **CS** | Central States | 96 | ln(DDS) = f(D, CR, RELDBH, SI, BA, BAL) | Same equation form as LS, Curtis-Arney H-D, 10-year cycle | Complete |
 
 ### In Progress 🔄
 
@@ -60,7 +61,6 @@ None currently.
 
 | Code | Name | Species | Priority | Notes |
 |------|------|---------|----------|-------|
-| **CS** | Central States | 91 | High | Framework exists, Midwest oak-hickory forests |
 | **CA** | Inland California | ~40 | Medium | Major timber production state |
 | **WS** | Western Sierra Nevada | 41 | Medium | California Sierra coverage |
 | **CR** | Central Rockies | ~25 | Medium | Colorado/Wyoming coverage |
@@ -89,11 +89,11 @@ None currently.
 
 | Metric | Official FVS | PyFVS | Coverage |
 |--------|-------------|-------|----------|
-| Total Variants | 22 | 5 | 23% |
-| Eastern Variants | 4 | 3 (SN, LS, NE) | 75% |
+| Total Variants | 22 | 6 | 27% |
+| Eastern Variants | 4 | 4 (SN, LS, NE, CS) | 100% |
 | Western Variants | 18 | 2 (PN, WC) | 11% |
-| Species (deduplicated est.) | ~400 unique | 341 | ~85% |
-| US Forest Area Coverage | 100% | ~65% | By commercial timber volume |
+| Species (deduplicated est.) | ~400 unique | 437 | ~100% |
+| US Forest Area Coverage | 100% | ~70% | By commercial timber volume |
 
 ---
 
@@ -127,10 +127,11 @@ Adjusted Growth = POTBAG * 0.7 * BAGMOD * CR_MODIFIER
 Iterates annually (10x for 10-year cycle)
 ```
 
-**Type 5: CS Eastern Hardwood (planned)**
+**Type 5: CS Central States (same as LS)**
 ```
-ln(DDS) = CONSPP + b1*ln(DBH) + b2*CR + b3*SI + b4*BA + b5*BAL
-        + FOREST_TYPE_MODIFIER
+ln(DDS) = INTERC + VDBHC/D + DBHC*D + DBH2C*D² + RDBHC*RELDBH
+        + RDBHSQC*RELDBH² + CRWNC*CR + CRSQC*CR² + SBAC*BA + BALC*BAL + SITEC*SI
+DDS = exp(ln(DDS))
 ```
 
 ### Height-Diameter Relationships
@@ -142,7 +143,7 @@ ln(DDS) = CONSPP + b1*ln(DBH) + b2*CR + b3*SI + b4*BA + b5*BAL
 | PN | Curtis-Arney | P2, P3, P4 species-specific |
 | WC | Curtis-Arney | P2, P3, P4 species-specific |
 | NE | Curtis-Arney | P2, P3, P4 species-specific |
-| CS | Curtis-Arney | P2, P3, P4 (to be implemented) |
+| CS | Curtis-Arney | P2, P3, P4 species-specific |
 
 ### Crown Ratio Models
 
@@ -156,11 +157,11 @@ where X = relative position in stand
 
 ## Implementation Roadmap
 
-### Phase 1: Eastern Variants (Complete)
+### Phase 1: Eastern Variants (Complete) ✅
 1. ✅ SN - Southern (complete)
 2. ✅ LS - Lake States (complete)
 3. ✅ NE - Northeast (complete)
-4. ⏳ CS - Central States (next)
+4. ✅ CS - Central States (complete)
 
 ### Phase 2: California Variants
 5. CA - Inland California
