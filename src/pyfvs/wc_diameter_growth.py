@@ -137,29 +137,26 @@ class WCDiameterGrowthModel(ParameterizedModel):
         """
         super().__init__(species_code)
 
-    def _get_coefficient_group(self, species_code: str) -> str:
-        """Get the coefficient group for a species."""
-        return self.SPECIES_TO_GROUP.get(species_code.upper(), '7')  # Default to DF
+    def _load_parameters(self) -> None:
+        """Load species-specific parameters using species-to-group mapping.
 
-    def _load_coefficients(self) -> Dict[str, Any]:
-        """Load species-specific coefficients from JSON file."""
-        try:
-            data = load_coefficient_file(self.COEFFICIENT_FILE)
-            if self.COEFFICIENT_KEY in data:
-                coeffs = data[self.COEFFICIENT_KEY]
-                coef_group = self._get_coefficient_group(self.species_code)
-                if coef_group in coeffs:
-                    return coeffs[coef_group]
-            return {}
-        except (FileNotFoundError, KeyError):
-            return {}
+        WC variant uses numeric group indices in the coefficient file, so we need
+        to map species codes to coefficient groups before loading.
+        """
+        self.raw_data = self._get_coefficient_data()
 
-    def _get_fallback_parameters(self) -> Dict[str, Any]:
-        """Get fallback parameters for the species."""
-        species_upper = self.species_code.upper()
-        if species_upper in self.FALLBACK_PARAMETERS:
-            return self.FALLBACK_PARAMETERS[species_upper]
-        return self.FALLBACK_PARAMETERS['DF']
+        if self.raw_data:
+            coeffs = self.raw_data.get(self.COEFFICIENT_KEY, {})
+
+            # Get coefficient group for this species (e.g., 'DF' -> '7')
+            coef_group = self.SPECIES_TO_GROUP.get(self.species_code.upper(), '7')
+
+            if coef_group in coeffs:
+                self.coefficients = coeffs[coef_group]
+            else:
+                self._load_fallback_parameters()
+        else:
+            self._load_fallback_parameters()
 
     def calculate_dds(
         self,

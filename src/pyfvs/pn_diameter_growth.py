@@ -146,54 +146,39 @@ class PNDiameterGrowthModel(ParameterizedModel):
         """
         super().__init__(species_code)
 
-    def _get_coefficient_index(self, species_code: str) -> str:
-        """Get the coefficient index for a species.
+    # Species mapping from MAPSPC array in dgf.f
+    # Maps 39 species to 20 coefficient sets
+    SPECIES_TO_INDEX = {
+        'SF': '1', 'WF': '2', 'GF': '2', 'AF': '3', 'RF': '4',
+        'SS': '17', 'NF': '4', 'YC': '15', 'IC': '11', 'ES': '18',
+        'LP': '16', 'JP': '6', 'SP': '5', 'WP': '5', 'PP': '6',
+        'DF': '7', 'RW': '20', 'RC': '8', 'WH': '9', 'MH': '10',
+        'BM': '12', 'RA': '13', 'WA': '14', 'PB': '14', 'GC': '14',
+        'AS': '14', 'CW': '14', 'WO': '19', 'CH': '14', 'WI': '14',
+        'WJ': '14', 'WB': '14', 'KP': '14', 'PY': '14', 'DG': '14',
+        'HT': '14', 'LL': '14', 'OS': '14', 'OT': '14'
+    }
 
-        The PN variant maps 39 species to 20 coefficient sets.
+    def _load_parameters(self) -> None:
+        """Load species-specific parameters using species-to-index mapping.
+
+        PN variant uses numeric indices in the coefficient file, so we need
+        to map species codes to coefficient indices before loading.
         """
-        # Species mapping from MAPSPC array in dgf.f
-        species_map = {
-            'SF': '1', 'WF': '2', 'GF': '2', 'AF': '3', 'RF': '4',
-            'SS': '17', 'NF': '4', 'YC': '15', 'IC': '11', 'ES': '18',
-            'LP': '16', 'JP': '6', 'SP': '5', 'WP': '5', 'PP': '6',
-            'DF': '7', 'RW': '20', 'RC': '8', 'WH': '9', 'MH': '10',
-            'BM': '12', 'RA': '13', 'WA': '14', 'PB': '14', 'GC': '14',
-            'AS': '14', 'CW': '14', 'WO': '19', 'CH': '14', 'WI': '14',
-            'WJ': '14', 'WB': '14', 'KP': '14', 'PY': '14', 'DG': '14',
-            'HT': '14', 'LL': '14', 'OS': '14', 'OT': '14'
-        }
-        return species_map.get(species_code.upper(), '7')  # Default to DF
+        self.raw_data = self._get_coefficient_data()
 
-    def _load_coefficients(self) -> Dict[str, Any]:
-        """Load species-specific coefficients from JSON file."""
-        try:
-            data = load_coefficient_file(self.COEFFICIENT_FILE)
-            if self.COEFFICIENT_KEY in data:
-                coeffs = data[self.COEFFICIENT_KEY]
+        if self.raw_data:
+            coeffs = self.raw_data.get(self.COEFFICIENT_KEY, {})
 
-                # Get the coefficient index for this species
-                coef_idx = self._get_coefficient_index(self.species_code)
+            # Get coefficient index for this species (e.g., 'DF' -> '7')
+            coef_idx = self.SPECIES_TO_INDEX.get(self.species_code.upper(), '7')
 
-                # Try to find coefficients by index
-                if coef_idx in coeffs:
-                    return coeffs[coef_idx]
-
-                # Try by species code
-                species_upper = self.species_code.upper()
-                if species_upper in coeffs:
-                    return coeffs[species_upper]
-
-            return {}
-        except (FileNotFoundError, KeyError):
-            return {}
-
-    def _get_fallback_parameters(self) -> Dict[str, Any]:
-        """Get fallback parameters for the species."""
-        species_upper = self.species_code.upper()
-        if species_upper in self.FALLBACK_PARAMETERS:
-            return self.FALLBACK_PARAMETERS[species_upper]
-        # Default to Douglas-fir parameters
-        return self.FALLBACK_PARAMETERS['DF']
+            if coef_idx in coeffs:
+                self.coefficients = coeffs[coef_idx]
+            else:
+                self._load_fallback_parameters()
+        else:
+            self._load_fallback_parameters()
 
     def calculate_dds(
         self,
