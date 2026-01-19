@@ -1,0 +1,642 @@
+{
+  "metadata": {
+    "variant": "CA",
+    "variant_name": "Inland California and Southern Cascades",
+    "source": "FVS ca/dgf.f - Inland California variant",
+    "description": "Diameter growth coefficients for 50 species mapped to 13 equation sets",
+    "equation": "ln(DDS) = CONSPP + DGLD*ln(D) + CR*(DGCR + CR*DGCRSQ) + DGDSQ*D^2 + DGDBAL*BAL/ln(D+1) + DGPCCF*PCCF + DGHAH*RELHT + DGLBA*ln(BA) + DGBAL*BAL + DGSITE*ln(SI) + elevation/slope/aspect terms",
+    "base_cycle": 10,
+    "notes": [
+      "Species are mapped via MAPSPC array to coefficient indices 1-13",
+      "Equation 12 (RW, GS) uses special form: ln(DDS) = -3.502444 + 0.415435*ln(SI)",
+      "Equation 13 (TO) uses 5-year estimates scaled to 10-year via DDS = ln(exp(DDS)*2)",
+      "DGFOR provides location-specific intercepts; location class 1 is default"
+    ]
+  },
+  "species_equation_map": {
+    "PC": 1, "IC": 1, "RC": 1, "WF": 2, "RF": 3, "SH": 3, "DF": 4, "WH": 7, "MH": 7, "WB": 6,
+    "KP": 5, "LP": 6, "CP": 5, "LM": 5, "JP": 9, "SP": 7, "WP": 8, "PP": 9, "MP": 9, "GP": 5,
+    "WJ": 5, "BR": 2, "GS": 12, "PY": 5, "OS": 9, "LO": 10, "CY": 10, "BL": 10, "EO": 10, "WO": 10,
+    "BO": 10, "VO": 10, "IO": 10, "BM": 10, "BU": 10, "RA": 10, "MA": 11, "GC": 11, "DG": 11, "FL": 10,
+    "WN": 10, "TO": 13, "SY": 10, "AS": 10, "CW": 10, "WI": 10, "CN": 5, "CL": 10, "OH": 10, "RW": 12
+  },
+  "equations": {
+    "1": {
+      "description": "Port Orford Cedar, Incense Cedar, Western Redcedar group",
+      "primary_species": "PC",
+      "DGLD": 0.950418,
+      "DGCR": 1.815305,
+      "DGCRSQ": 0.0,
+      "DGDSQ": -0.0002385,
+      "DGSITE": 0.820451,
+      "DGDBAL": -0.005433,
+      "DGLBA": -0.000016,
+      "DGBAL": 0.0,
+      "DGPCCF": -0.000779,
+      "DGHAH": 0.0,
+      "DGCASP": 0.0,
+      "DGSASP": 0.0,
+      "DGSLOP": 0.0,
+      "DGEL": 0.0,
+      "DGELSQ": 0.0,
+      "DGFOR": [-3.428338, -3.966547, 0.0, 0.0, 0.0]
+    },
+    "2": {
+      "description": "White Fir, Brewer Spruce group",
+      "primary_species": "WF",
+      "DGLD": 1.182104,
+      "DGCR": 2.856578,
+      "DGCRSQ": -1.093354,
+      "DGDSQ": -0.0006362,
+      "DGSITE": 0.365679,
+      "DGDBAL": -0.005992,
+      "DGLBA": -0.058039,
+      "DGBAL": 0.0,
+      "DGPCCF": -0.001014,
+      "DGHAH": 0.0,
+      "DGCASP": -0.315227,
+      "DGSASP": 0.097350,
+      "DGSLOP": -0.206267,
+      "DGEL": 0.0301,
+      "DGELSQ": -0.00030732,
+      "DGFOR": [-2.108357, 0.0, 0.0, 0.0, 0.0]
+    },
+    "3": {
+      "description": "Red Fir, Shasta Red Fir group",
+      "primary_species": "RF",
+      "DGLD": 1.186676,
+      "DGCR": 2.763519,
+      "DGCRSQ": -0.871061,
+      "DGDSQ": -0.0004572,
+      "DGSITE": 0.492695,
+      "DGDBAL": -0.003728,
+      "DGLBA": -0.122905,
+      "DGBAL": 0.0,
+      "DGPCCF": 0.0,
+      "DGHAH": 0.0,
+      "DGCASP": -0.444594,
+      "DGSASP": 0.139180,
+      "DGSLOP": 0.0,
+      "DGEL": 0.0248,
+      "DGELSQ": -0.00033429,
+      "DGFOR": [-2.073942, -1.943608, 0.0, 0.0, 0.0]
+    },
+    "4": {
+      "description": "Douglas-fir",
+      "primary_species": "DF",
+      "DGLD": 0.716226,
+      "DGCR": 3.272451,
+      "DGCRSQ": -1.642904,
+      "DGDSQ": -0.0002723,
+      "DGSITE": 0.759305,
+      "DGDBAL": -0.008787,
+      "DGLBA": -0.028564,
+      "DGBAL": 0.0,
+      "DGPCCF": -0.000224,
+      "DGHAH": 0.0,
+      "DGCASP": -0.151727,
+      "DGSASP": 0.018681,
+      "DGSLOP": -0.339369,
+      "DGEL": -0.0141,
+      "DGELSQ": 0.00024083,
+      "DGFOR": [-1.877695, -2.099646, -2.211587, -1.955301, -2.078432]
+    },
+    "5": {
+      "description": "Knobcone Pine, Coulter Pine, Limber Pine, Foothill Pine, Western Juniper, Pacific Yew, California Nutmeg group",
+      "primary_species": "KP",
+      "DGLD": 1.077154,
+      "DGCR": -0.276387,
+      "DGCRSQ": 1.063732,
+      "DGDSQ": 0.0,
+      "DGSITE": 0.0,
+      "DGDBAL": 0.0,
+      "DGLBA": 0.0,
+      "DGBAL": -0.000893,
+      "DGPCCF": 0.0,
+      "DGHAH": 0.0,
+      "DGCASP": 0.649870,
+      "DGSASP": 0.951834,
+      "DGSLOP": 0.0,
+      "DGEL": 0.0,
+      "DGELSQ": 0.0,
+      "DGFOR": [0.564402, 0.0, 0.0, 0.0, 0.0]
+    },
+    "6": {
+      "description": "Whitebark Pine, Lodgepole Pine group",
+      "primary_species": "LP",
+      "DGLD": 1.218279,
+      "DGCR": 3.167164,
+      "DGCRSQ": -1.568333,
+      "DGDSQ": -0.0014178,
+      "DGSITE": 0.566946,
+      "DGDBAL": 0.0,
+      "DGLBA": -0.267873,
+      "DGBAL": 0.0,
+      "DGPCCF": -0.000338,
+      "DGHAH": 0.0,
+      "DGCASP": 0.0,
+      "DGSASP": 0.0,
+      "DGSLOP": 0.0,
+      "DGEL": 0.0,
+      "DGELSQ": 0.0,
+      "DGFOR": [-2.058828, -1.596998, 0.0, 0.0, 0.0]
+    },
+    "7": {
+      "description": "Western Hemlock, Mountain Hemlock, Sugar Pine group",
+      "primary_species": "WH",
+      "DGLD": 0.886150,
+      "DGCR": 1.478650,
+      "DGCRSQ": 0.0,
+      "DGDSQ": -0.0002528,
+      "DGSITE": 0.963375,
+      "DGDBAL": -0.006263,
+      "DGLBA": -0.129146,
+      "DGBAL": 0.0,
+      "DGPCCF": 0.0,
+      "DGHAH": 0.0,
+      "DGCASP": -0.280294,
+      "DGSASP": -0.014463,
+      "DGSLOP": -0.581722,
+      "DGEL": 0.0,
+      "DGELSQ": 0.0,
+      "DGFOR": [-2.397678, 0.0, 0.0, 0.0, 0.0]
+    },
+    "8": {
+      "description": "Western White Pine",
+      "primary_species": "WP",
+      "DGLD": 0.825682,
+      "DGCR": 1.675208,
+      "DGCRSQ": 0.0,
+      "DGDSQ": -0.0000731,
+      "DGSITE": 0.724300,
+      "DGDBAL": -0.002133,
+      "DGLBA": -0.203636,
+      "DGBAL": 0.0,
+      "DGPCCF": 0.0,
+      "DGHAH": 0.0,
+      "DGCASP": -0.179510,
+      "DGSASP": -0.562259,
+      "DGSLOP": -0.544867,
+      "DGEL": 0.0,
+      "DGELSQ": 0.0,
+      "DGFOR": [-1.626879, 0.0, 0.0, 0.0, 0.0]
+    },
+    "9": {
+      "description": "Jeffrey Pine, Ponderosa Pine, Monterey Pine, Other Softwood group",
+      "primary_species": "JP",
+      "DGLD": 0.738750,
+      "DGCR": 3.454857,
+      "DGCRSQ": -1.773805,
+      "DGDSQ": -0.0004708,
+      "DGSITE": 1.011504,
+      "DGDBAL": -0.013091,
+      "DGLBA": -0.131185,
+      "DGBAL": 0.0,
+      "DGPCCF": -0.000593,
+      "DGHAH": 0.0,
+      "DGCASP": 0.0,
+      "DGSASP": 0.0,
+      "DGSLOP": 0.0,
+      "DGEL": -0.003784,
+      "DGELSQ": 0.0000666,
+      "DGFOR": [-2.922255, 0.0, 0.0, 0.0, 0.0]
+    },
+    "10": {
+      "description": "Hardwood group (Oaks, Maple, Alder, Ash, Aspen, Cottonwood, etc.)",
+      "primary_species": "BO",
+      "DGLD": 1.310111,
+      "DGCR": 0.271183,
+      "DGCRSQ": 0.0,
+      "DGDSQ": -0.0003048,
+      "DGSITE": 0.213526,
+      "DGDBAL": 0.0,
+      "DGLBA": 0.0,
+      "DGBAL": 0.0,
+      "DGPCCF": -0.000473,
+      "DGHAH": 0.0,
+      "DGCASP": 0.0,
+      "DGSASP": 0.0,
+      "DGSLOP": 0.0,
+      "DGEL": 0.0049,
+      "DGELSQ": -0.00008781,
+      "DGFOR": [-1.958189, 0.0, 0.0, 0.0, 0.0]
+    },
+    "11": {
+      "description": "Pacific Madrone, Giant Chinquapin, Pacific Dogwood group",
+      "primary_species": "MA",
+      "DGLD": 0.955569,
+      "DGCR": 0.0,
+      "DGCRSQ": 0.0,
+      "DGDSQ": 0.0,
+      "DGSITE": 1.334008,
+      "DGDBAL": -0.005893,
+      "DGLBA": -0.408462,
+      "DGBAL": 0.0,
+      "DGPCCF": 0.0,
+      "DGHAH": 0.0,
+      "DGCASP": 0.0,
+      "DGSASP": 0.0,
+      "DGSLOP": 0.0,
+      "DGEL": 0.0,
+      "DGELSQ": 0.0,
+      "DGFOR": [-3.344700, 0.0, 0.0, 0.0, 0.0]
+    },
+    "12": {
+      "description": "Giant Sequoia, Redwood - Special site index model",
+      "primary_species": "GS",
+      "DGLD": 0.0,
+      "DGCR": 0.0,
+      "DGCRSQ": 0.0,
+      "DGDSQ": 0.0,
+      "DGSITE": 0.0,
+      "DGDBAL": 0.0,
+      "DGLBA": 0.0,
+      "DGBAL": 0.0,
+      "DGPCCF": 0.0,
+      "DGHAH": 0.0,
+      "DGCASP": 0.0,
+      "DGSASP": 0.0,
+      "DGSLOP": 0.0,
+      "DGEL": 0.0,
+      "DGELSQ": 0.0,
+      "DGFOR": [0.0, 0.0, 0.0, 0.0, 0.0],
+      "special_equation": true,
+      "special_form": "ln(DDS) = -3.502444 + 0.415435*ln(SI)",
+      "DGCON_special": -3.502444,
+      "DGSITE_special": 0.415435
+    },
+    "13": {
+      "description": "Tanoak - 5-year model scaled to 10-year",
+      "primary_species": "TO",
+      "DGLD": 0.99531,
+      "DGCR": 2.08524,
+      "DGCRSQ": -0.98396,
+      "DGDSQ": -0.000373,
+      "DGSITE": 0.00659,
+      "DGDBAL": -0.00147,
+      "DGLBA": 0.0,
+      "DGBAL": 0.0,
+      "DGPCCF": -0.00018,
+      "DGHAH": 0.50155,
+      "DGCASP": -0.19935,
+      "DGSASP": -0.03587,
+      "DGSLOP": 0.73530,
+      "DGEL": 0.0,
+      "DGELSQ": 0.0,
+      "DGFOR": [-0.94563, 0.0, 0.0, 0.0, 0.0],
+      "notes": "5-year estimates scaled to 10-year via DDS = ln(exp(DDS)*2)"
+    }
+  },
+  "species": {
+    "PC": {
+      "species_index": 1,
+      "common_name": "Port Orford Cedar",
+      "scientific_name": "Chamaecyparis lawsoniana",
+      "fia_code": 41,
+      "equation": 1
+    },
+    "IC": {
+      "species_index": 2,
+      "common_name": "Incense Cedar",
+      "scientific_name": "Libocedrus decurrens",
+      "fia_code": 81,
+      "equation": 1
+    },
+    "RC": {
+      "species_index": 3,
+      "common_name": "Western Redcedar",
+      "scientific_name": "Thuja plicata",
+      "fia_code": 242,
+      "equation": 1
+    },
+    "WF": {
+      "species_index": 4,
+      "common_name": "White Fir",
+      "scientific_name": "Abies concolor",
+      "fia_code": 15,
+      "equation": 2
+    },
+    "RF": {
+      "species_index": 5,
+      "common_name": "California Red Fir",
+      "scientific_name": "Abies magnifica",
+      "fia_code": 20,
+      "equation": 3
+    },
+    "SH": {
+      "species_index": 6,
+      "common_name": "Shasta Red Fir",
+      "scientific_name": "Abies xshastensis",
+      "fia_code": 21,
+      "equation": 3
+    },
+    "DF": {
+      "species_index": 7,
+      "common_name": "Douglas-fir",
+      "scientific_name": "Pseudotsuga menziesii",
+      "fia_code": 202,
+      "equation": 4
+    },
+    "WH": {
+      "species_index": 8,
+      "common_name": "Western Hemlock",
+      "scientific_name": "Tsuga heterophylla",
+      "fia_code": 263,
+      "equation": 7
+    },
+    "MH": {
+      "species_index": 9,
+      "common_name": "Mountain Hemlock",
+      "scientific_name": "Tsuga mertensiana",
+      "fia_code": 264,
+      "equation": 7
+    },
+    "WB": {
+      "species_index": 10,
+      "common_name": "Whitebark Pine",
+      "scientific_name": "Pinus albicaulis",
+      "fia_code": 101,
+      "equation": 6
+    },
+    "KP": {
+      "species_index": 11,
+      "common_name": "Knobcone Pine",
+      "scientific_name": "Pinus attenuata",
+      "fia_code": 103,
+      "equation": 5
+    },
+    "LP": {
+      "species_index": 12,
+      "common_name": "Lodgepole Pine",
+      "scientific_name": "Pinus contorta",
+      "fia_code": 108,
+      "equation": 6
+    },
+    "CP": {
+      "species_index": 13,
+      "common_name": "Coulter Pine",
+      "scientific_name": "Pinus coulteri",
+      "fia_code": 109,
+      "equation": 5
+    },
+    "LM": {
+      "species_index": 14,
+      "common_name": "Limber Pine",
+      "scientific_name": "Pinus flexilis",
+      "fia_code": 113,
+      "equation": 5
+    },
+    "JP": {
+      "species_index": 15,
+      "common_name": "Jeffrey Pine",
+      "scientific_name": "Pinus jeffreyi",
+      "fia_code": 116,
+      "equation": 9
+    },
+    "SP": {
+      "species_index": 16,
+      "common_name": "Sugar Pine",
+      "scientific_name": "Pinus lambertiana",
+      "fia_code": 117,
+      "equation": 7
+    },
+    "WP": {
+      "species_index": 17,
+      "common_name": "Western White Pine",
+      "scientific_name": "Pinus monticola",
+      "fia_code": 119,
+      "equation": 8
+    },
+    "PP": {
+      "species_index": 18,
+      "common_name": "Ponderosa Pine",
+      "scientific_name": "Pinus ponderosa",
+      "fia_code": 122,
+      "equation": 9
+    },
+    "MP": {
+      "species_index": 19,
+      "common_name": "Monterey Pine",
+      "scientific_name": "Pinus radiata",
+      "fia_code": 124,
+      "equation": 9
+    },
+    "GP": {
+      "species_index": 20,
+      "common_name": "California Foothill Pine",
+      "scientific_name": "Pinus sabiniana",
+      "fia_code": 127,
+      "equation": 5
+    },
+    "WJ": {
+      "species_index": 21,
+      "common_name": "Western Juniper",
+      "scientific_name": "Juniperus occidentalis",
+      "fia_code": 64,
+      "equation": 5
+    },
+    "BR": {
+      "species_index": 22,
+      "common_name": "Brewer Spruce",
+      "scientific_name": "Picea breweriana",
+      "fia_code": 92,
+      "equation": 2
+    },
+    "GS": {
+      "species_index": 23,
+      "common_name": "Giant Sequoia",
+      "scientific_name": "Sequoiadendron giganteum",
+      "fia_code": 212,
+      "equation": 12
+    },
+    "PY": {
+      "species_index": 24,
+      "common_name": "Pacific Yew",
+      "scientific_name": "Taxus brevifolia",
+      "fia_code": 231,
+      "equation": 5
+    },
+    "OS": {
+      "species_index": 25,
+      "common_name": "Other Softwood",
+      "scientific_name": null,
+      "fia_code": 299,
+      "equation": 9
+    },
+    "LO": {
+      "species_index": 26,
+      "common_name": "California Live Oak",
+      "scientific_name": "Quercus agrifolia",
+      "fia_code": 801,
+      "equation": 10
+    },
+    "CY": {
+      "species_index": 27,
+      "common_name": "Canyon Live Oak",
+      "scientific_name": "Quercus chrysolepis",
+      "fia_code": 805,
+      "equation": 10
+    },
+    "BL": {
+      "species_index": 28,
+      "common_name": "Blue Oak",
+      "scientific_name": "Quercus douglasii",
+      "fia_code": 807,
+      "equation": 10
+    },
+    "EO": {
+      "species_index": 29,
+      "common_name": "Engelmann Oak",
+      "scientific_name": "Quercus engelmannii",
+      "fia_code": 811,
+      "equation": 10
+    },
+    "WO": {
+      "species_index": 30,
+      "common_name": "Oregon White Oak",
+      "scientific_name": "Quercus garryana",
+      "fia_code": 815,
+      "equation": 10
+    },
+    "BO": {
+      "species_index": 31,
+      "common_name": "California Black Oak",
+      "scientific_name": "Quercus kelloggii",
+      "fia_code": 818,
+      "equation": 10
+    },
+    "VO": {
+      "species_index": 32,
+      "common_name": "Valley Oak",
+      "scientific_name": "Quercus lobata",
+      "fia_code": 821,
+      "equation": 10
+    },
+    "IO": {
+      "species_index": 33,
+      "common_name": "Interior Live Oak",
+      "scientific_name": "Quercus wislizenii",
+      "fia_code": 839,
+      "equation": 10
+    },
+    "BM": {
+      "species_index": 34,
+      "common_name": "Bigleaf Maple",
+      "scientific_name": "Acer macrophyllum",
+      "fia_code": 312,
+      "equation": 10
+    },
+    "BU": {
+      "species_index": 35,
+      "common_name": "California Buckeye",
+      "scientific_name": "Aesculus californica",
+      "fia_code": 333,
+      "equation": 10
+    },
+    "RA": {
+      "species_index": 36,
+      "common_name": "Red Alder",
+      "scientific_name": "Alnus rubra",
+      "fia_code": 351,
+      "equation": 10
+    },
+    "MA": {
+      "species_index": 37,
+      "common_name": "Pacific Madrone",
+      "scientific_name": "Arbutus menziesii",
+      "fia_code": 361,
+      "equation": 11
+    },
+    "GC": {
+      "species_index": 38,
+      "common_name": "Giant Chinquapin",
+      "scientific_name": "Chrysolepis chrysophylla",
+      "fia_code": 431,
+      "equation": 11
+    },
+    "DG": {
+      "species_index": 39,
+      "common_name": "Pacific Dogwood",
+      "scientific_name": "Cornus nuttallii",
+      "fia_code": 492,
+      "equation": 11
+    },
+    "FL": {
+      "species_index": 40,
+      "common_name": "Oregon Ash",
+      "scientific_name": "Fraxinus latifolia",
+      "fia_code": 542,
+      "equation": 10
+    },
+    "WN": {
+      "species_index": 41,
+      "common_name": "Walnut",
+      "scientific_name": "Juglans sp.",
+      "fia_code": 600,
+      "equation": 10
+    },
+    "TO": {
+      "species_index": 42,
+      "common_name": "Tanoak",
+      "scientific_name": "Lithocarpus densiflorus",
+      "fia_code": 631,
+      "equation": 13
+    },
+    "SY": {
+      "species_index": 43,
+      "common_name": "California Sycamore",
+      "scientific_name": "Platanus racemosa",
+      "fia_code": 730,
+      "equation": 10
+    },
+    "AS": {
+      "species_index": 44,
+      "common_name": "Quaking Aspen",
+      "scientific_name": "Populus tremuloides",
+      "fia_code": 746,
+      "equation": 10
+    },
+    "CW": {
+      "species_index": 45,
+      "common_name": "Black Cottonwood",
+      "scientific_name": "Populus balsamifera",
+      "fia_code": 747,
+      "equation": 10
+    },
+    "WI": {
+      "species_index": 46,
+      "common_name": "Willow",
+      "scientific_name": "Salix sp.",
+      "fia_code": 920,
+      "equation": 10
+    },
+    "CN": {
+      "species_index": 47,
+      "common_name": "California Nutmeg",
+      "scientific_name": "Torreya californica",
+      "fia_code": 251,
+      "equation": 5
+    },
+    "CL": {
+      "species_index": 48,
+      "common_name": "California Laurel",
+      "scientific_name": "Umbellularia californica",
+      "fia_code": 981,
+      "equation": 10
+    },
+    "OH": {
+      "species_index": 49,
+      "common_name": "Other Hardwood",
+      "scientific_name": null,
+      "fia_code": 998,
+      "equation": 10
+    },
+    "RW": {
+      "species_index": 50,
+      "common_name": "Redwood",
+      "scientific_name": "Sequoia sempervirens",
+      "fia_code": 211,
+      "equation": 12
+    }
+  }
+}

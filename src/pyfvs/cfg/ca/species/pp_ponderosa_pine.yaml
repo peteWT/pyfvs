@@ -1,0 +1,63 @@
+# Ponderosa Pine (Pinus ponderosa) - CA Variant
+# Major commercial species in inland California
+
+species_code: PP
+common_name: Ponderosa Pine
+scientific_name: Pinus ponderosa
+fia_code: "122"
+plants_code: PIPO
+variant: CA
+
+# Tree size characteristics
+max_dbh: 60.0  # inches
+max_height: 180.0  # feet
+max_age: 600  # years
+
+# Growth transition thresholds (small tree to large tree model)
+growth_model:
+  xmin: 1.0  # inches - minimum DBH for transition zone
+  xmax: 3.0  # inches - maximum DBH for transition zone
+  coefficient_index: 9
+
+# Site index
+site_index:
+  base_age: 50
+  typical_range: [60, 110]  # feet at base age
+  max_si: 130
+
+# Shade tolerance
+shade_tolerance: intolerant
+tolerance_class: 1  # 1=very intolerant, 5=very tolerant
+
+# Crown characteristics
+crown:
+  form: pyramidal-irregular
+  typical_ratio: 0.30
+  seedling_ratio: 0.75
+
+# Bark characteristics
+bark:
+  young_color: dark brown to black
+  mature_color: yellow-orange, platy
+  thickness_factor: 0.88  # inside bark / outside bark ratio
+
+# Wood properties
+wood:
+  specific_gravity: 0.40
+  uses: ["lumber", "millwork", "poles", "posts"]
+
+# Ecological notes
+ecology:
+  fire_regime: low severity, frequent
+  succession: early seral
+  preferred_sites: well-drained, warm sites
+  elevation_range: [2000, 8000]  # feet
+  precipitation_range: [15, 35]  # inches/year
+
+# Small tree height growth (Chapman-Richards)
+small_tree_height_growth:
+  c1: 1.1421
+  c2: 1.0042
+  c3: -0.0374
+  c4: 0.7632
+  c5: 0.0358

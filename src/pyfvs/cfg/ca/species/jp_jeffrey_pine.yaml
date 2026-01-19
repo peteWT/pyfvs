@@ -1,0 +1,63 @@
+# Jeffrey Pine (Pinus jeffreyi) - CA Variant
+# Important high-elevation pine in California
+
+species_code: JP
+common_name: Jeffrey Pine
+scientific_name: Pinus jeffreyi
+fia_code: "116"
+plants_code: PIJE
+variant: CA
+
+# Tree size characteristics
+max_dbh: 60.0  # inches
+max_height: 170.0  # feet
+max_age: 500  # years
+
+# Growth transition thresholds
+growth_model:
+  xmin: 1.0
+  xmax: 3.0
+  coefficient_index: 9
+
+# Site index
+site_index:
+  base_age: 50
+  typical_range: [50, 100]
+  max_si: 120
+
+# Shade tolerance
+shade_tolerance: intolerant
+tolerance_class: 1
+
+# Crown characteristics
+crown:
+  form: pyramidal
+  typical_ratio: 0.35
+  seedling_ratio: 0.75
+
+# Bark characteristics
+bark:
+  young_color: brown-gray
+  mature_color: reddish-brown, platy
+  thickness_factor: 0.88
+
+# Wood properties
+wood:
+  specific_gravity: 0.38
+  uses: ["lumber", "posts", "fuel"]
+
+# Ecological notes
+ecology:
+  fire_regime: low severity
+  succession: early seral
+  preferred_sites: dry, rocky slopes
+  elevation_range: [4000, 9000]
+  precipitation_range: [15, 40]
+
+# Small tree height growth (Chapman-Richards)
+small_tree_height_growth:
+  c1: 1.1421
+  c2: 1.0042
+  c3: -0.0374
+  c4: 0.7632
+  c5: 0.0358

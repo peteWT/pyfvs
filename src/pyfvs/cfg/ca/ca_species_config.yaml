@@ -1,0 +1,189 @@
+# Inland California (CA) Variant - Species Configuration
+# Source: FVS Inland California variant blkdat.f
+# 50 species total
+
+metadata:
+  variant: CA
+  variant_name: Inland California and Southern Cascades
+  description: "Parameters for the Inland California (CA) variant of FVS covering interior California and southern Cascades"
+  source: "FVS Inland California Variant Overview"
+
+# Path to functional form definitions
+functional_forms_file: "functional_forms.yaml"
+
+species:
+  # Cedars
+  PC:
+    name: "Port Orford Cedar"
+    file: "species/pc_port_orford_cedar.yaml"
+  IC:
+    name: "Incense Cedar"
+    file: "species/ic_incense_cedar.yaml"
+  RC:
+    name: "Western Redcedar"
+    file: "species/rc_western_redcedar.yaml"
+
+  # Firs
+  WF:
+    name: "White Fir"
+    file: "species/wf_white_fir.yaml"
+  RF:
+    name: "California Red Fir"
+    file: "species/rf_california_red_fir.yaml"
+  SH:
+    name: "Shasta Red Fir"
+    file: "species/sh_shasta_red_fir.yaml"
+
+  # Douglas-fir
+  DF:
+    name: "Douglas-fir"
+    file: "species/df_douglas_fir.yaml"
+
+  # Hemlocks
+  WH:
+    name: "Western Hemlock"
+    file: "species/wh_western_hemlock.yaml"
+  MH:
+    name: "Mountain Hemlock"
+    file: "species/mh_mountain_hemlock.yaml"
+
+  # Pines
+  WB:
+    name: "Whitebark Pine"
+    file: "species/wb_whitebark_pine.yaml"
+  KP:
+    name: "Knobcone Pine"
+    file: "species/kp_knobcone_pine.yaml"
+  LP:
+    name: "Lodgepole Pine"
+    file: "species/lp_lodgepole_pine.yaml"
+  CP:
+    name: "Coulter Pine"
+    file: "species/cp_coulter_pine.yaml"
+  LM:
+    name: "Limber Pine"
+    file: "species/lm_limber_pine.yaml"
+  JP:
+    name: "Jeffrey Pine"
+    file: "species/jp_jeffrey_pine.yaml"
+  SP:
+    name: "Sugar Pine"
+    file: "species/sp_sugar_pine.yaml"
+  WP:
+    name: "Western White Pine"
+    file: "species/wp_western_white_pine.yaml"
+  PP:
+    name: "Ponderosa Pine"
+    file: "species/pp_ponderosa_pine.yaml"
+  MP:
+    name: "Monterey Pine"
+    file: "species/mp_monterey_pine.yaml"
+  GP:
+    name: "California Foothill Pine"
+    file: "species/gp_foothill_pine.yaml"
+
+  # Juniper
+  WJ:
+    name: "Western Juniper"
+    file: "species/wj_western_juniper.yaml"
+
+  # Spruces
+  BR:
+    name: "Brewer Spruce"
+    file: "species/br_brewer_spruce.yaml"
+
+  # Giant Sequoia and Redwood
+  GS:
+    name: "Giant Sequoia"
+    file: "species/gs_giant_sequoia.yaml"
+  RW:
+    name: "Redwood"
+    file: "species/rw_redwood.yaml"
+
+  # Yew and Nutmeg
+  PY:
+    name: "Pacific Yew"
+    file: "species/py_pacific_yew.yaml"
+  CN:
+    name: "California Nutmeg"
+    file: "species/cn_california_nutmeg.yaml"
+
+  # Other Softwood
+  OS:
+    name: "Other Softwood"
+    file: "species/os_other_softwood.yaml"
+
+  # Oaks
+  LO:
+    name: "California Live Oak"
+    file: "species/lo_california_live_oak.yaml"
+  CY:
+    name: "Canyon Live Oak"
+    file: "species/cy_canyon_live_oak.yaml"
+  BL:
+    name: "Blue Oak"
+    file: "species/bl_blue_oak.yaml"
+  EO:
+    name: "Engelmann Oak"
+    file: "species/eo_engelmann_oak.yaml"
+  WO:
+    name: "Oregon White Oak"
+    file: "species/wo_oregon_white_oak.yaml"
+  BO:
+    name: "California Black Oak"
+    file: "species/bo_california_black_oak.yaml"
+  VO:
+    name: "Valley Oak"
+    file: "species/vo_valley_oak.yaml"
+  IO:
+    name: "Interior Live Oak"
+    file: "species/io_interior_live_oak.yaml"
+
+  # Maples and Other Broadleaves
+  BM:
+    name: "Bigleaf Maple"
+    file: "species/bm_bigleaf_maple.yaml"
+  BU:
+    name: "California Buckeye"
+    file: "species/bu_california_buckeye.yaml"
+  RA:
+    name: "Red Alder"
+    file: "species/ra_red_alder.yaml"
+  MA:
+    name: "Pacific Madrone"
+    file: "species/ma_pacific_madrone.yaml"
+  GC:
+    name: "Giant Chinquapin"
+    file: "species/gc_giant_chinquapin.yaml"
+  DG:
+    name: "Pacific Dogwood"
+    file: "species/dg_pacific_dogwood.yaml"
+  FL:
+    name: "Oregon Ash"
+    file: "species/fl_oregon_ash.yaml"
+  WN:
+    name: "Walnut"
+    file: "species/wn_walnut.yaml"
+  TO:
+    name: "Tanoak"
+    file: "species/to_tanoak.yaml"
+  SY:
+    name: "California Sycamore"
+    file: "species/sy_california_sycamore.yaml"
+  AS:
+    name: "Quaking Aspen"
+    file: "species/as_quaking_aspen.yaml"
+  CW:
+    name: "Black Cottonwood"
+    file: "species/cw_black_cottonwood.yaml"
+  WI:
+    name: "Willow"
+    file: "species/wi_willow.yaml"
+  CL:
+    name: "California Laurel"
+    file: "species/cl_california_laurel.yaml"
+
+  # Other Hardwood
+  OH:
+    name: "Other Hardwood"
+    file: "species/oh_other_hardwood.yaml"

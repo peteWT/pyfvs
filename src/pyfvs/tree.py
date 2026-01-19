@@ -300,9 +300,9 @@ class Tree:
 
         # Site index base age varies by variant
         # SN (Southern): base age 25
-        # LS (Lake States), PN (Pacific NW), WC (West Cascades): base age 50
+        # LS (Lake States), PN (Pacific NW), WC (West Cascades), NE, CS, CA: base age 50
         variant = getattr(self, '_variant', 'SN')
-        if variant in ('LS', 'PN', 'WC'):
+        if variant in ('LS', 'PN', 'WC', 'NE', 'CS', 'CA'):
             base_age = 50
         else:
             base_age = 25
@@ -411,6 +411,10 @@ class Tree:
 
         if variant == 'CS':
             self._grow_large_tree_cs(site_index, ba, pbal, time_step, qmd_ge5)
+            return
+
+        if variant == 'CA':
+            self._grow_large_tree_ca(site_index, ba, pbal, slope, aspect, time_step)
             return
 
         # SN variant (default) - uses ln(DDS) formulation
@@ -664,6 +668,72 @@ class Tree:
     def _update_height_large_tree_cs(self, site_index):
         """Update height for CS variant large trees. Delegates to generic method."""
         self._update_height_large_tree_variant('CS', site_index)
+
+    def _grow_large_tree_ca(self, site_index, ba, pbal, slope=0.0, aspect=0.0, time_step=10, elevation=None):
+        """Implement large tree diameter growth model for CA (Inland California) variant.
+
+        Uses the CA variant ln(DDS) equation:
+        ln(DDS) = CONSPP + DGLD*ln(D) + CR*(DGCR + CR*DGCRSQ) + DGDSQ*D²
+                  + DGDBAL*BAL/ln(D+1) + DGPCCF*PCCF + DGHAH*RELHT
+                  + DGLBA*ln(BA) + DGBAL*BAL + DGSITE*ln(SI)
+                  + topographic corrections (elevation, slope, aspect)
+
+        Special equations for Giant Sequoia/Redwood (eq 12) and Tanoak (eq 13).
+
+        Args:
+            site_index: Site index (base age 50) in feet
+            ba: Stand basal area (sq ft/acre)
+            pbal: Basal area in larger trees (sq ft/acre)
+            slope: Ground slope as proportion (0-1)
+            aspect: Aspect in radians
+            time_step: Number of years to grow (default: 10 for CA)
+            elevation: Elevation in feet (default: 3000 ft typical for inland CA)
+        """
+        from .ca_diameter_growth import get_ca_diameter_growth_model
+        from .bark_ratio import create_bark_ratio_model
+
+        # Get the CA diameter growth model for this species
+        dg_model = get_ca_diameter_growth_model(self.species)
+
+        # Get bark ratio for diameter conversion
+        bark_model = create_bark_ratio_model(self.species)
+        bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
+
+        # Default elevation for inland California (3000 ft typical)
+        elev = elevation if elevation is not None else 3000.0
+
+        # Calculate RELHT (relative height) - tree height / average stand height
+        relht = getattr(self, '_relht', 1.0)
+
+        # Estimate PCCF from BA (rough approximation)
+        pccf = ba * 1.5
+
+        # Calculate diameter growth using CA model
+        diameter_increment = dg_model.calculate_diameter_growth(
+            dbh=self.dbh,
+            crown_ratio=self.crown_ratio,
+            site_index=site_index,
+            ba=ba,
+            bal=pbal,
+            bark_ratio=bark_ratio,
+            pccf=pccf,
+            relht=relht,
+            elevation=elev,
+            slope=slope,
+            aspect=aspect,
+            forest_class=1,  # Default forest class; could be passed from Stand
+            time_step=time_step
+        )
+
+        # Apply increment to DBH
+        self.dbh = self.dbh + diameter_increment
+
+        # Update height using height-diameter relationship for CA
+        self._update_height_large_tree_ca(site_index)
+
+    def _update_height_large_tree_ca(self, site_index):
+        """Update height for CA variant large trees. Delegates to generic method."""
+        self._update_height_large_tree_variant('CA', site_index)
 
     def _grow_large_tree_sn(self, site_index, competition_factor, ba, pbal, slope, aspect, time_step=5):
         """Implement large tree diameter growth model for SN (Southern) variant.

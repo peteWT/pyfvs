@@ -34,6 +34,7 @@ SUPPORTED_VARIANTS = {
     'WC': {'name': 'West Cascades', 'config_dir': 'wc', 'species_count': 37},
     'NE': {'name': 'Northeast', 'config_dir': 'ne', 'species_count': 108},
     'CS': {'name': 'Central States', 'config_dir': 'cs', 'species_count': 96},
+    'CA': {'name': 'Inland California', 'config_dir': 'ca', 'species_count': 50},
 }
 
 DEFAULT_VARIANT = 'SN'

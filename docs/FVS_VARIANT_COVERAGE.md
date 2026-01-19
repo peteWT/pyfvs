@@ -52,6 +52,7 @@ The Forest Vegetation Simulator (FVS) is maintained by the USDA Forest Service F
 | **WC** | West Cascades | 37 | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, elev, slope, aspect) | Shares PN equation structure, forest intercepts | Complete |
 | **NE** | Northeast | 108 | BA Growth = B1 * SI * (1 - exp(-B2 * DBH)) | NE-TWIGS iterative BA growth, Curtis-Arney H-D, 10-year cycle | Complete |
 | **CS** | Central States | 96 | ln(DDS) = f(D, CR, RELDBH, SI, BA, BAL) | Same equation form as LS, Curtis-Arney H-D, 10-year cycle | Complete |
+| **CA** | Inland California | 50 | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, PCCF, elev, slope, aspect) | 13 equation sets, special RW/GS equation, topographic effects | Complete |
 
 ### In Progress 🔄
 
@@ -61,7 +62,6 @@ None currently.
 
 | Code | Name | Species | Priority | Notes |
 |------|------|---------|----------|-------|
-| **CA** | Inland California | ~40 | Medium | Major timber production state |
 | **WS** | Western Sierra Nevada | 41 | Medium | California Sierra coverage |
 | **CR** | Central Rockies | ~25 | Medium | Colorado/Wyoming coverage |
 
@@ -89,11 +89,11 @@ None currently.
 
 | Metric | Official FVS | PyFVS | Coverage |
 |--------|-------------|-------|----------|
-| Total Variants | 22 | 6 | 27% |
+| Total Variants | 22 | 7 | 32% |
 | Eastern Variants | 4 | 4 (SN, LS, NE, CS) | 100% |
-| Western Variants | 18 | 2 (PN, WC) | 11% |
-| Species (deduplicated est.) | ~400 unique | 437 | ~100% |
-| US Forest Area Coverage | 100% | ~70% | By commercial timber volume |
+| Western Variants | 18 | 3 (PN, WC, CA) | 17% |
+| Species (deduplicated est.) | ~400 unique | 487 | ~100% |
+| US Forest Area Coverage | 100% | ~75% | By commercial timber volume |
 
 ---
 
@@ -134,6 +134,16 @@ ln(DDS) = INTERC + VDBHC/D + DBHC*D + DBH2C*D² + RDBHC*RELDBH
 DDS = exp(ln(DDS))
 ```
 
+**Type 6: CA Inland California (13 equation sets)**
+```
+ln(DDS) = CONSPP + DGLD*ln(D) + CR*(DGCR + CR*DGCRSQ) + DGDSQ*D²
+        + DGDBAL*BAL/ln(D+1) + DGPCCF*PCCF + DGHAH*RELHT + DGLBA*ln(BA)
+        + DGBAL*BAL + DGSITE*ln(SI) + DGEL*ELEV + DGELSQ*ELEV²
+        + DGSLOP*SLOPE + DGCASP*SLOPE*COS(ASP) + DGSASP*SLOPE*SIN(ASP)
+Special: Giant Sequoia/Redwood use ln(DDS) = -3.502444 + 0.415435*ln(SI)
+Special: Tanoak uses 5-year model scaled to 10-year
+```
+
 ### Height-Diameter Relationships
 
 | Variant | Equation Type | Key Parameters |
@@ -144,6 +154,7 @@ DDS = exp(ln(DDS))
 | WC | Curtis-Arney | P2, P3, P4 species-specific |
 | NE | Curtis-Arney | P2, P3, P4 species-specific |
 | CS | Curtis-Arney | P2, P3, P4 species-specific |
+| CA | Curtis-Arney | P2, P3, P4, Z (breakpoint) species-specific |
 
 ### Crown Ratio Models
 
@@ -163,8 +174,8 @@ where X = relative position in stand
 3. ✅ NE - Northeast (complete)
 4. ✅ CS - Central States (complete)
 
-### Phase 2: California Variants
-5. CA - Inland California
+### Phase 2: California Variants (In Progress)
+5. ✅ CA - Inland California (complete)
 6. WS - Western Sierra Nevada
 7. NC - Klamath Mountains (if needed)
 

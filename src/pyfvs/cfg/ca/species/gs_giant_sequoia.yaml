@@ -1,0 +1,63 @@
+# Giant Sequoia (Sequoiadendron giganteum) - CA Variant
+# World's largest tree by volume, endemic to western Sierra Nevada
+
+species_code: GS
+common_name: Giant Sequoia
+scientific_name: Sequoiadendron giganteum
+fia_code: "212"
+plants_code: SEGI2
+variant: CA
+
+# Tree size characteristics
+max_dbh: 300.0  # inches, can exceed 30 feet diameter
+max_height: 280.0  # feet
+max_age: 3200  # years, among oldest trees on Earth
+
+# Growth transition thresholds
+growth_model:
+  xmin: 1.0
+  xmax: 3.0
+  coefficient_index: 12  # Special equation: ln(DDS) = -3.502444 + 0.415435*ln(SI)
+
+# Site index
+site_index:
+  base_age: 50
+  typical_range: [100, 180]
+  max_si: 200
+
+# Shade tolerance
+shade_tolerance: intermediate
+tolerance_class: 3
+
+# Crown characteristics
+crown:
+  form: conical-irregular
+  typical_ratio: 0.30
+  seedling_ratio: 0.75
+
+# Bark characteristics
+bark:
+  young_color: reddish-brown
+  mature_color: cinnamon-red, deeply furrowed, fibrous
+  thickness_factor: 0.85  # Very thick bark
+
+# Wood properties
+wood:
+  specific_gravity: 0.34
+  uses: ["limited commercial use", "protected species"]
+
+# Ecological notes
+ecology:
+  fire_regime: mixed severity, fire-adapted
+  succession: late seral
+  preferred_sites: moist, well-drained slopes
+  elevation_range: [4500, 8000]
+  precipitation_range: [40, 60]
+
+# Small tree height growth (Chapman-Richards)
+small_tree_height_growth:
+  c1: 1.1421
+  c2: 1.0042
+  c3: -0.0374
+  c4: 0.7632
+  c5: 0.0358

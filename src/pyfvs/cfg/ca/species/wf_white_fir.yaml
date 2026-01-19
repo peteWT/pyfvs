@@ -1,0 +1,63 @@
+# White Fir (Abies concolor) - CA Variant
+# Common species in California's mixed-conifer forests
+
+species_code: WF
+common_name: White Fir
+scientific_name: Abies concolor
+fia_code: "15"
+plants_code: ABCO
+variant: CA
+
+# Tree size characteristics
+max_dbh: 60.0  # inches
+max_height: 200.0  # feet
+max_age: 400  # years
+
+# Growth transition thresholds
+growth_model:
+  xmin: 1.0
+  xmax: 3.0
+  coefficient_index: 2
+
+# Site index
+site_index:
+  base_age: 50
+  typical_range: [50, 110]
+  max_si: 130
+
+# Shade tolerance
+shade_tolerance: tolerant
+tolerance_class: 4
+
+# Crown characteristics
+crown:
+  form: conical
+  typical_ratio: 0.40
+  seedling_ratio: 0.85
+
+# Bark characteristics
+bark:
+  young_color: gray, smooth
+  mature_color: gray-brown, furrowed
+  thickness_factor: 0.92
+
+# Wood properties
+wood:
+  specific_gravity: 0.39
+  uses: ["lumber", "plywood", "pulp"]
+
+# Ecological notes
+ecology:
+  fire_regime: mixed severity
+  succession: late seral
+  preferred_sites: moist, shaded sites
+  elevation_range: [3000, 9000]
+  precipitation_range: [25, 60]
+
+# Small tree height growth (Chapman-Richards)
+small_tree_height_growth:
+  c1: 1.1421
+  c2: 1.0042
+  c3: -0.0374
+  c4: 0.7632
+  c5: 0.0358

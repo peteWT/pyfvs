@@ -1,0 +1,63 @@
+# Redwood (Sequoia sempervirens) - CA Variant
+# World's tallest tree species
+
+species_code: RW
+common_name: Redwood
+scientific_name: Sequoia sempervirens
+fia_code: "211"
+plants_code: SESE3
+variant: CA
+
+# Tree size characteristics
+max_dbh: 220.0  # inches
+max_height: 380.0  # feet, tallest trees on Earth
+max_age: 2200  # years
+
+# Growth transition thresholds
+growth_model:
+  xmin: 1.0
+  xmax: 3.0
+  coefficient_index: 12  # Special equation: ln(DDS) = -3.502444 + 0.415435*ln(SI)
+
+# Site index
+site_index:
+  base_age: 50
+  typical_range: [120, 200]
+  max_si: 240
+
+# Shade tolerance
+shade_tolerance: tolerant
+tolerance_class: 4
+
+# Crown characteristics
+crown:
+  form: conical-irregular
+  typical_ratio: 0.25
+  seedling_ratio: 0.70
+
+# Bark characteristics
+bark:
+  young_color: reddish-brown
+  mature_color: dark red-brown, deeply furrowed
+  thickness_factor: 0.86
+
+# Wood properties
+wood:
+  specific_gravity: 0.40
+  uses: ["lumber", "siding", "decking", "outdoor furniture"]
+
+# Ecological notes
+ecology:
+  fire_regime: infrequent, low severity
+  succession: climax
+  preferred_sites: coastal fog belt, alluvial flats
+  elevation_range: [0, 3000]
+  precipitation_range: [40, 120]
+
+# Small tree height growth (Chapman-Richards)
+small_tree_height_growth:
+  c1: 1.1421
+  c2: 1.0042
+  c3: -0.0374
+  c4: 0.7632
+  c5: 0.0358
