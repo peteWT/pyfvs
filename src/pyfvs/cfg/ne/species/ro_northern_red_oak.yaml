@@ -1,0 +1,26 @@
+metadata:
+  code: RO
+  fia_code: 833
+  scientific_name: Quercus rubra
+  common_name: northern red oak
+  valid_site_species: true
+  fvs_index: 67
+site_index:
+  min: 40
+  max: 90
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 700.064
+    p3: 4.106
+    p4: -0.214
+    dbw: 0.1
+diameter_growth:
+  model: ne_twigs
+  coefficients:
+    B1: 0.0008920
+    B2: 0.0979702
+mortality:
+  shade_tolerance: 0.4

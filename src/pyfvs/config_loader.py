@@ -32,9 +32,9 @@ SUPPORTED_VARIANTS = {
     'LS': {'name': 'Lake States', 'config_dir': 'ls', 'species_count': 67},
     'PN': {'name': 'Pacific Northwest Coast', 'config_dir': 'pn', 'species_count': 39},
     'WC': {'name': 'West Cascades', 'config_dir': 'wc', 'species_count': 37},
+    'NE': {'name': 'Northeast', 'config_dir': 'ne', 'species_count': 108},
     # Future variants:
     # 'CS': {'name': 'Central States', 'config_dir': 'cs', 'species_count': 96},
-    # 'NE': {'name': 'Northeast', 'config_dir': 'ne', 'species_count': 117},
 }
 
 DEFAULT_VARIANT = 'SN'

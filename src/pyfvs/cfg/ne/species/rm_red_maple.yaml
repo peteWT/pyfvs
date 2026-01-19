@@ -1,0 +1,26 @@
+metadata:
+  code: RM
+  fia_code: 316
+  scientific_name: Acer rubrum
+  common_name: red maple
+  valid_site_species: true
+  fvs_index: 26
+site_index:
+  min: 30
+  max: 90
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 268.556
+    p3: 3.114
+    p4: -0.294
+    dbw: 0.1
+diameter_growth:
+  model: ne_twigs
+  coefficients:
+    B1: 0.0007906
+    B2: 0.0651982
+mortality:
+  shade_tolerance: 0.6

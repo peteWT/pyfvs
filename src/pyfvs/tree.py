@@ -405,6 +405,10 @@ class Tree:
             self._grow_large_tree_wc(site_index, ba, pbal, slope, aspect, time_step)
             return
 
+        if variant == 'NE':
+            self._grow_large_tree_ne(site_index, ba, pbal, time_step)
+            return
+
         # SN variant (default) - uses ln(DDS) formulation
         self._grow_large_tree_sn(site_index, competition_factor, ba, pbal, slope, aspect, time_step)
 
@@ -566,6 +570,50 @@ class Tree:
     def _update_height_large_tree_wc(self, site_index):
         """Update height for WC variant large trees. Delegates to generic method."""
         self._update_height_large_tree_variant('WC', site_index)
+
+    def _grow_large_tree_ne(self, site_index, ba, pbal, time_step=10):
+        """Implement large tree diameter growth model for NE (Northeast) variant.
+
+        Uses the NE-TWIGS basal area growth equation:
+            Potential BA Growth = B1 * SI * (1 - exp(-B2 * DBH))
+            Adjusted Growth = POTBAG * 0.7 * BAGMOD
+
+        Args:
+            site_index: Site index (base age 50) in feet
+            ba: Stand basal area (sq ft/acre)
+            pbal: Basal area in larger trees (sq ft/acre)
+            time_step: Number of years to grow (default: 10 for NE)
+        """
+        from .ne_diameter_growth import get_ne_diameter_growth_model
+        from .bark_ratio import create_bark_ratio_model
+
+        # Get bark ratio for diameter conversion
+        bark_model = create_bark_ratio_model(self.species)
+        bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
+
+        # Calculate diameter growth using NE model
+        model = get_ne_diameter_growth_model(self.species)
+
+        # Calculate diameter increment
+        diameter_increment = model.calculate_diameter_growth(
+            dbh=self.dbh,
+            crown_ratio=self.crown_ratio,
+            site_index=site_index,
+            ba=ba,
+            bal=pbal,
+            bark_ratio=bark_ratio,
+            time_step=time_step
+        )
+
+        # Apply increment
+        self.dbh = max(self.dbh + diameter_increment, self.dbh)
+
+        # Update height using variant-specific method
+        self._update_height_large_tree_variant('NE', site_index)
+
+    def _update_height_large_tree_ne(self, site_index):
+        """Update height for NE variant large trees. Delegates to generic method."""
+        self._update_height_large_tree_variant('NE', site_index)
 
     def _grow_large_tree_sn(self, site_index, competition_factor, ba, pbal, slope, aspect, time_step=5):
         """Implement large tree diameter growth model for SN (Southern) variant.

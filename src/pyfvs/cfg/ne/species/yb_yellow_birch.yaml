@@ -1,0 +1,26 @@
+metadata:
+  code: YB
+  fia_code: 371
+  scientific_name: Betula alleghaniensis
+  common_name: yellow birch
+  valid_site_species: true
+  fvs_index: 30
+site_index:
+  min: 30
+  max: 80
+density:
+  sdi_max: 380
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 170.525
+    p3: 2.688
+    p4: -0.401
+    dbw: 0.1
+diameter_growth:
+  model: ne_twigs
+  coefficients:
+    B1: 0.0006668
+    B2: 0.0768212
+mortality:
+  shade_tolerance: 0.5

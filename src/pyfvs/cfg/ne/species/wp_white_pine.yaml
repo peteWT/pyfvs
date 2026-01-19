@@ -1,0 +1,26 @@
+metadata:
+  code: WP
+  fia_code: 129
+  scientific_name: Pinus strobus
+  common_name: eastern white pine
+  valid_site_species: true
+  fvs_index: 9
+site_index:
+  min: 40
+  max: 100
+density:
+  sdi_max: 500
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 2108.844
+    p3: 5.659
+    p4: -0.186
+    dbw: 0.1
+diameter_growth:
+  model: ne_twigs
+  coefficients:
+    B1: 0.0011303
+    B2: 0.0934796
+mortality:
+  shade_tolerance: 0.4

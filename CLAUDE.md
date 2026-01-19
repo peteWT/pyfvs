@@ -11,6 +11,7 @@ Forest Vegetation Simulator (FVS) - Python implementation supporting multiple FV
 - **LS (Lake States)** - 67 species for Great Lakes region (MI, WI, MN) including Red Pine, Jack Pine, and northern hardwoods
 - **PN (Pacific Northwest Coast)** - 39 species for WA, OR, and northern CA coast including Douglas-fir, Western Hemlock, and Sitka Spruce
 - **WC (West Cascades)** - 37 species for western Oregon and Washington Cascades including Douglas-fir, Western Hemlock, and Western Red Cedar
+- **NE (Northeast)** - 108 species for New England and Mid-Atlantic (CT, DE, MA, MD, ME, NH, NJ, NY, OH, PA, RI, VT, WV) including Red Maple, Sugar Maple, Northern Red Oak, Eastern White Pine
 
 ## Key Development Commands
 
@@ -45,6 +46,9 @@ uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(400, 120
 
 # Run simulation with WC (West Cascades) variant
 uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(400, 120, 'DF', variant='WC'); s.grow(50); print(s.get_metrics())"
+
+# Run simulation with NE (Northeast) variant
+uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(400, 60, 'RM', variant='NE'); s.grow(50); print(s.get_metrics())"
 
 # Run example simulation
 uv run python -m pyfvs.main
