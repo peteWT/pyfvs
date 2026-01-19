@@ -193,9 +193,12 @@ class LSDiameterGrowthModel(ParameterizedModel):
             sitec * site_index
         )
 
-        # Apply minimum bound on ln(DDS) to prevent very small/negative values
+        # Apply bounds on ln(DDS) to prevent extreme values
         # ln(DDS) = -5 corresponds to DDS = 0.007 sq in (minimal growth)
-        ln_dds = max(-5.0, ln_dds)
+        # ln(DDS) = 5 corresponds to DDS = 148 sq in (~2.2" growth per decade for 10" tree)
+        # This is necessary because some species (e.g., Jack Pine) have positive DBH² coefficients
+        # that can cause runaway growth without bounds
+        ln_dds = max(-5.0, min(5.0, ln_dds))
 
         # Convert from ln(DDS) to DDS
         dds = math.exp(ln_dds)
