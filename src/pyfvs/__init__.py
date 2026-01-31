@@ -214,6 +214,47 @@ from .wc_diameter_growth import (
     create_wc_diameter_growth_model,
 )
 
+from .ne_diameter_growth import (
+    NEDiameterGrowthModel,
+    create_ne_diameter_growth_model,
+    get_ne_diameter_growth_model,
+    calculate_ne_diameter_growth,
+)
+
+from .cs_diameter_growth import (
+    CSDiameterGrowthModel,
+    create_cs_diameter_growth_model,
+    get_cs_diameter_growth_model,
+    calculate_cs_diameter_growth,
+)
+
+from .ca_diameter_growth import (
+    CADiameterGrowthModel,
+    create_ca_diameter_growth_model,
+    get_ca_diameter_growth_model,
+    calculate_ca_diameter_growth,
+)
+
+from .op_diameter_growth import (
+    OPDiameterGrowthModel,
+    get_op_diameter_growth_model,
+    create_op_diameter_growth_model,
+)
+
+from .oc_diameter_growth import (
+    OCDiameterGrowthModel,
+    get_oc_diameter_growth_model,
+    create_oc_diameter_growth_model,
+    calculate_oc_dds,
+)
+
+from .ws_diameter_growth import (
+    WSDiameterGrowthModel,
+    get_ws_diameter_growth_model,
+    create_ws_diameter_growth_model,
+    calculate_ws_dds,
+)
+
 # =============================================================================
 # Entry Point
 # =============================================================================
@@ -334,6 +375,35 @@ __all__ = [
     "create_pn_diameter_growth_model",
     "WCDiameterGrowthModel",
     "create_wc_diameter_growth_model",
+    # NE (Northeast) Variant
+    "NEDiameterGrowthModel",
+    "create_ne_diameter_growth_model",
+    "get_ne_diameter_growth_model",
+    "calculate_ne_diameter_growth",
+    # CS (Central States) Variant
+    "CSDiameterGrowthModel",
+    "create_cs_diameter_growth_model",
+    "get_cs_diameter_growth_model",
+    "calculate_cs_diameter_growth",
+    # CA (Inland California) Variant
+    "CADiameterGrowthModel",
+    "create_ca_diameter_growth_model",
+    "get_ca_diameter_growth_model",
+    "calculate_ca_diameter_growth",
+    # OP (ORGANON Pacific Northwest) Variant
+    "OPDiameterGrowthModel",
+    "get_op_diameter_growth_model",
+    "create_op_diameter_growth_model",
+    # OC (ORGANON Southwest Oregon) Variant
+    "OCDiameterGrowthModel",
+    "get_oc_diameter_growth_model",
+    "create_oc_diameter_growth_model",
+    "calculate_oc_dds",
+    # WS (Western Sierra Nevada) Variant
+    "WSDiameterGrowthModel",
+    "get_ws_diameter_growth_model",
+    "create_ws_diameter_growth_model",
+    "calculate_ws_dds",
     # Entry Point
     "main",
 ]

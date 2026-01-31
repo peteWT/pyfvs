@@ -372,13 +372,40 @@ class Tree:
             dbh_increment = self.dbh - original_dbh
             adjusted_increment = dbh_increment * ecounit_multiplier
             self.dbh = original_dbh + adjusted_increment
-    
+
+    def _apply_dds_to_dbh(self, dds: float, use_bark_ratio: bool = True) -> float:
+        """Apply DDS (diameter squared increment) to DBH with optional bark ratio conversion.
+
+        FVS applies DDS to inside-bark diameter, then converts back to outside-bark.
+        This helper eliminates duplicate bark ratio conversion code across variant
+        growth methods.
+
+        Args:
+            dds: Diameter squared increment (sq inches inside bark)
+            use_bark_ratio: If True, apply bark ratio conversion (default True).
+                           If False, apply DDS directly to DBH².
+
+        Returns:
+            New DBH (outside bark) in inches
+        """
+        if use_bark_ratio:
+            from .bark_ratio import create_bark_ratio_model
+            bark_model = create_bark_ratio_model(self.species)
+            bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
+            dib_old = self.dbh * bark_ratio
+            dib_new = math.sqrt(dib_old * dib_old + dds)
+            return dib_new / bark_ratio
+        else:
+            return math.sqrt(self.dbh * self.dbh + dds)
+
     def _grow_large_tree(self, site_index, competition_factor, ba, pbal, slope, aspect, time_step=5, qmd_ge5=None):
         """Implement large tree diameter growth model using variant-specific equations.
 
-        Dispatches to the appropriate growth model based on the tree's variant:
-        - SN (Southern): Uses ln(DDS) formulation from dgf.f
-        - LS (Lake States): Uses linear DDS formulation from ls_diameter_growth.py
+        Dispatches to the appropriate growth method based on the tree's variant:
+        - SN (Southern): Uses ln(DDS) formulation with ecounit/forest type effects
+        - OP (ORGANON PNW): Predicts diameter growth directly (not DDS)
+        - Topographic variants (PN, WC, CA, OC, WS): ln(DDS) with elevation/slope/aspect
+        - Standard variants (LS, NE, CS): DDS without topographic effects
 
         Args:
             site_index: Site index in feet (base age varies by variant)
@@ -388,80 +415,105 @@ class Tree:
             slope: Ground slope as tangent (rise/run)
             aspect: Aspect in radians
             time_step: Number of years to grow (default: 5)
-            qmd_ge5: QMD of trees >= 5" DBH (for LS variant RELDBH calculation)
+            qmd_ge5: QMD of trees >= 5" DBH (for LS/CS RELDBH calculation)
         """
-        # Dispatch to variant-specific growth model
         variant = getattr(self, '_variant', 'SN')
 
-        if variant == 'LS':
-            self._grow_large_tree_ls(site_index, ba, pbal, time_step, qmd_ge5)
-            return
+        # SN variant (default) - special handling for ecounit/forest type effects
+        if variant == 'SN':
+            self._grow_large_tree_sn(site_index, competition_factor, ba, pbal, slope, aspect, time_step)
 
-        if variant == 'PN':
-            self._grow_large_tree_pn(site_index, ba, pbal, slope, aspect, time_step)
-            return
+        # OP variant - predicts diameter growth directly (not DDS)
+        elif variant == 'OP':
+            self._grow_large_tree_op(site_index, ba, pbal, time_step)
 
-        if variant == 'WC':
-            self._grow_large_tree_wc(site_index, ba, pbal, slope, aspect, time_step)
-            return
+        # Topographic variants - use elevation/slope/aspect effects
+        elif variant in ('PN', 'WC', 'CA', 'OC', 'WS'):
+            self._grow_large_tree_topographic(variant, site_index, ba, pbal, slope, aspect, time_step)
 
-        if variant == 'NE':
-            self._grow_large_tree_ne(site_index, ba, pbal, time_step)
-            return
+        # Standard variants - DDS without topographic effects
+        elif variant in ('LS', 'NE', 'CS'):
+            self._grow_large_tree_standard(variant, site_index, ba, pbal, time_step, qmd_ge5)
 
-        if variant == 'CS':
-            self._grow_large_tree_cs(site_index, ba, pbal, time_step, qmd_ge5)
-            return
+        else:
+            # Unknown variant - fall back to SN
+            self._grow_large_tree_sn(site_index, competition_factor, ba, pbal, slope, aspect, time_step)
 
-        if variant == 'CA':
-            self._grow_large_tree_ca(site_index, ba, pbal, slope, aspect, time_step)
-            return
+    def _grow_large_tree_standard(
+        self,
+        variant: str,
+        site_index: float,
+        ba: float,
+        pbal: float,
+        time_step: float = 10.0,
+        qmd_ge5: float = None
+    ) -> None:
+        """Generic large tree growth for non-topographic variants (LS, NE, CS).
 
-        # SN variant (default) - uses ln(DDS) formulation
-        self._grow_large_tree_sn(site_index, competition_factor, ba, pbal, slope, aspect, time_step)
-
-    def _grow_large_tree_ls(self, site_index, ba, pbal, time_step=10, qmd_ge5=None):
-        """Implement large tree diameter growth model for LS (Lake States) variant.
-
-        Uses the LS variant DDS equation:
-        DDS = INTERC + VDBHC/D + DBHC*D + DBH2C*D² + RDBHC*RELDBH
-              + RDBHSQC*RELDBH² + CRWNC*CR + CRSQC*CR² + SBAC*BA + BALC*BAL + SITEC*SI
+        These variants use DDS-based equations without topographic effects.
+        All use bark ratio conversion and 10-year base cycle.
 
         Args:
+            variant: FVS variant code ('LS', 'NE', 'CS')
             site_index: Site index (base age 50) in feet
             ba: Stand basal area (sq ft/acre)
             pbal: Basal area in larger trees (sq ft/acre)
-            time_step: Number of years to grow (default: 10 for LS)
-            qmd_ge5: QMD of trees >= 5" DBH (for RELDBH calculation)
+            time_step: Number of years to grow (default: 10)
+            qmd_ge5: QMD of trees >= 5" DBH (for RELDBH calculation in LS/CS)
         """
-        from .ls_diameter_growth import get_ls_diameter_growth_model
         from .bark_ratio import create_bark_ratio_model
-
-        # Get the LS diameter growth model for this species
-        dg_model = get_ls_diameter_growth_model(self.species)
 
         # Get bark ratio for diameter conversion
         bark_model = create_bark_ratio_model(self.species)
         bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
 
-        # Calculate diameter growth using LS model
-        diameter_increment = dg_model.calculate_diameter_growth(
-            dbh=self.dbh,
-            crown_ratio=self.crown_ratio,
-            site_index=site_index,
-            ba=ba,
-            bal=pbal,
-            bark_ratio=bark_ratio,
-            qmd_ge5=qmd_ge5,
-            time_step=time_step
-        )
+        # Get appropriate diameter growth model based on variant
+        if variant == 'LS':
+            from .ls_diameter_growth import get_ls_diameter_growth_model
+            dg_model = get_ls_diameter_growth_model(self.species)
+            diameter_increment = dg_model.calculate_diameter_growth(
+                dbh=self.dbh,
+                crown_ratio=self.crown_ratio,
+                site_index=site_index,
+                ba=ba,
+                bal=pbal,
+                bark_ratio=bark_ratio,
+                qmd_ge5=qmd_ge5,
+                time_step=time_step
+            )
+        elif variant == 'NE':
+            from .ne_diameter_growth import get_ne_diameter_growth_model
+            dg_model = get_ne_diameter_growth_model(self.species)
+            diameter_increment = dg_model.calculate_diameter_growth(
+                dbh=self.dbh,
+                crown_ratio=self.crown_ratio,
+                site_index=site_index,
+                ba=ba,
+                bal=pbal,
+                bark_ratio=bark_ratio,
+                time_step=time_step
+            )
+        elif variant == 'CS':
+            from .cs_diameter_growth import get_cs_diameter_growth_model
+            dg_model = get_cs_diameter_growth_model(self.species)
+            diameter_increment = dg_model.calculate_diameter_growth(
+                dbh=self.dbh,
+                crown_ratio=self.crown_ratio,
+                site_index=site_index,
+                ba=ba,
+                bal=pbal,
+                bark_ratio=bark_ratio,
+                qmd_ge5=qmd_ge5,
+                time_step=time_step
+            )
+        else:
+            raise ValueError(f"Unsupported variant for standard growth: {variant}")
 
-        # Apply increment to DBH
-        self.dbh = self.dbh + diameter_increment
+        # Apply increment to DBH (ensure non-negative)
+        self.dbh = max(self.dbh, self.dbh + diameter_increment)
 
-        # Update height using height-diameter relationship for LS
-        # LS variant uses Curtis-Arney height-diameter relationship
-        self._update_height_large_tree_ls(site_index)
+        # Update height using height-diameter relationship
+        self._update_height_large_tree_variant(variant, site_index)
 
     def _update_height_large_tree_variant(self, variant: str, site_index: float) -> None:
         """Update height for variant large trees using height-diameter relationship.
@@ -485,11 +537,7 @@ class Tree:
         # Weight current height 30%, predicted height 70%
         self.height = 0.3 * self.height + 0.7 * expected_height
 
-    def _update_height_large_tree_ls(self, site_index):
-        """Update height for LS variant large trees. Delegates to generic method."""
-        self._update_height_large_tree_variant('LS', site_index)
-
-    def _grow_large_tree_pn_wc(
+    def _grow_large_tree_topographic(
         self,
         variant: str,
         site_index: float,
@@ -500,240 +548,165 @@ class Tree:
         time_step: float = 10.0,
         elevation: float = None
     ) -> None:
-        """Generic large tree diameter growth for PN/WC variants.
+        """Generic large tree growth for topographic variants (PN, WC, CA, OC, WS).
 
-        Both PN and WC variants use the same ln(DDS) equation structure:
-        ln(DDS) = CONSPP + DGLD*ln(D) + CR*(DGCR + CR*DGCRSQ) + DGDS*D²
-                  + DGDBAL*BAL/ln(D+1) + DGPCCF*PCCF + DGHAH*RELHT
-                  + DGLBA*ln(BA) + DGBAL*BAL + DGBA*BA + DGSITE*ln(SI)
-                  + elevation/slope/aspect terms
+        All these variants use ln(DDS) equations with topographic effects:
+        - Elevation, slope, aspect terms
+        - RELHT (relative height) competition
+        - PCCF (point crown competition factor)
 
         Args:
-            variant: FVS variant code ('PN' or 'WC')
+            variant: FVS variant code ('PN', 'WC', 'CA', 'OC', 'WS')
             site_index: Site index (base age 50) in feet
             ba: Stand basal area (sq ft/acre)
             pbal: Basal area in larger trees (sq ft/acre)
             slope: Ground slope as proportion (0-1, default 0)
             aspect: Aspect in radians (0=N, π/2=E, default 0)
-            time_step: Number of years to grow (default: 10)
-            elevation: Elevation in hundreds of feet (defaults: PN=10, WC=20)
+            time_step: Number of years to grow (default varies by variant)
+            elevation: Elevation - units vary by variant (see below)
         """
         from .bark_ratio import create_bark_ratio_model
 
-        # Select appropriate diameter growth model factory
+        # Default elevations vary by variant and region
+        DEFAULT_ELEVATIONS = {
+            'PN': 10.0,    # 1000 ft (100s ft) - coastal PNW
+            'WC': 20.0,    # 2000 ft (100s ft) - West Cascades
+            'CA': 3000.0,  # 3000 ft (feet) - inland California
+            'OC': 0.0,     # SW Oregon (100s ft)
+            'WS': 0.0,     # Sierra Nevada (100s ft)
+        }
+
+        # Get model factory for variant
         if variant == 'PN':
             from .pn_diameter_growth import create_pn_diameter_growth_model
             dg_model = create_pn_diameter_growth_model(self.species)
-            default_elevation = 10.0  # 1000 ft typical for coastal PNW
         elif variant == 'WC':
             from .wc_diameter_growth import create_wc_diameter_growth_model
             dg_model = create_wc_diameter_growth_model(self.species)
-            default_elevation = 20.0  # 2000 ft typical for West Cascades
+        elif variant == 'CA':
+            from .ca_diameter_growth import get_ca_diameter_growth_model
+            dg_model = get_ca_diameter_growth_model(self.species)
+        elif variant == 'OC':
+            from .oc_diameter_growth import get_oc_diameter_growth_model
+            dg_model = get_oc_diameter_growth_model(self.species)
+        elif variant == 'WS':
+            from .ws_diameter_growth import get_ws_diameter_growth_model
+            dg_model = get_ws_diameter_growth_model(self.species)
         else:
-            raise ValueError(f"Unsupported variant for PN/WC growth: {variant}")
+            raise ValueError(f"Unsupported variant for topographic growth: {variant}")
 
         # Use provided elevation or default
-        elev = elevation if elevation is not None else default_elevation
+        elev = elevation if elevation is not None else DEFAULT_ELEVATIONS.get(variant, 0.0)
 
-        # Get bark ratio for diameter conversion
+        # Get bark ratio for diameter conversion (CA needs it, others might too)
         bark_model = create_bark_ratio_model(self.species)
         bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
 
         # Calculate RELHT (relative height) - tree height / average stand height
-        relht = getattr(self, '_relht', 1.0)
+        if hasattr(self, '_top_height') and self._top_height is not None and self._top_height > 0:
+            relht = min(1.5, self.height / self._top_height)
+        else:
+            relht = getattr(self, '_relht', 1.0)
 
-        # Calculate diameter growth using variant model
-        diameter_increment = dg_model.calculate_diameter_growth(
-            dbh=self.dbh,
-            crown_ratio=self.crown_ratio,
-            site_index=site_index,
-            ba=ba,
-            bal=pbal,
-            pccf=100.0,  # Default PCCF; should be passed from Stand
-            relht=relht,
-            elevation=elev,
-            slope=slope,
-            aspect=aspect,
-            time_step=time_step
-        )
+        # Estimate PCCF from BA (rough approximation)
+        pccf = ba * 1.5 if variant == 'CA' else 100.0
+
+        # Calculate diameter growth using variant-specific parameters
+        if variant == 'CA':
+            # CA model has special interface with forest_class
+            diameter_increment = dg_model.calculate_diameter_growth(
+                dbh=self.dbh,
+                crown_ratio=self.crown_ratio,
+                site_index=site_index,
+                ba=ba,
+                bal=pbal,
+                bark_ratio=bark_ratio,
+                pccf=pccf,
+                relht=relht,
+                elevation=elev,
+                slope=slope,
+                aspect=aspect,
+                forest_class=1,
+                time_step=time_step
+            )
+        elif variant in ('OC', 'WS'):
+            # OC/WS have location_class parameter
+            diameter_increment = dg_model.calculate_diameter_growth(
+                dbh=self.dbh,
+                crown_ratio=self.crown_ratio,
+                site_index=site_index,
+                ba=ba,
+                bal=pbal,
+                pccf=pccf,
+                relht=relht,
+                elevation=elev,
+                slope=slope,
+                aspect=aspect,
+                location_class=0,
+                time_step=time_step
+            )
+        else:  # PN, WC
+            diameter_increment = dg_model.calculate_diameter_growth(
+                dbh=self.dbh,
+                crown_ratio=self.crown_ratio,
+                site_index=site_index,
+                ba=ba,
+                bal=pbal,
+                pccf=pccf,
+                relht=relht,
+                elevation=elev,
+                slope=slope,
+                aspect=aspect,
+                time_step=time_step
+            )
 
         # Apply increment to DBH
-        self.dbh = self.dbh + diameter_increment
+        self.dbh = self.dbh + max(0.0, diameter_increment)
 
         # Update height using height-diameter relationship
         self._update_height_large_tree_variant(variant, site_index)
 
-    def _grow_large_tree_pn(self, site_index, ba, pbal, slope=0.0, aspect=0.0, time_step=10):
-        """PN variant large tree growth. Delegates to generic PN/WC method."""
-        self._grow_large_tree_pn_wc('PN', site_index, ba, pbal, slope, aspect, time_step)
+    def _grow_large_tree_op(self, site_index, ba, pbal, time_step=5):
+        """Implement large tree diameter growth model for OP (ORGANON Pacific Northwest) variant.
 
-    def _update_height_large_tree_pn(self, site_index):
-        """Update height for PN variant large trees. Delegates to generic method."""
-        self._update_height_large_tree_variant('PN', site_index)
+        Uses the ORGANON diameter growth equation which predicts diameter growth
+        directly (not DDS like other variants):
 
-    def _grow_large_tree_wc(self, site_index, ba, pbal, slope=0.0, aspect=0.0, time_step=10):
-        """WC variant large tree growth. Delegates to generic PN/WC method."""
-        self._grow_large_tree_pn_wc('WC', site_index, ba, pbal, slope, aspect, time_step)
+        ln(DG) = B0 + B1*ln(DBH+K1) + B2*DBH^K2 + B3*ln((CR+0.2)/1.2)
+                 + B4*ln(SI-4.5) + B5*(BAL^K3/ln(DBH+K4)) + B6*sqrt(BA)
 
-    def _update_height_large_tree_wc(self, site_index):
-        """Update height for WC variant large trees. Delegates to generic method."""
-        self._update_height_large_tree_variant('WC', site_index)
-
-    def _grow_large_tree_ne(self, site_index, ba, pbal, time_step=10):
-        """Implement large tree diameter growth model for NE (Northeast) variant.
-
-        Uses the NE-TWIGS basal area growth equation:
-            Potential BA Growth = B1 * SI * (1 - exp(-B2 * DBH))
-            Adjusted Growth = POTBAG * 0.7 * BAGMOD
+        Key differences from other variants:
+        - Predicts diameter growth directly (not DDS)
+        - Base cycle is 5 years (like SN)
+        - Based on ORGANON model from Oregon State University
 
         Args:
-            site_index: Site index (base age 50) in feet
+            site_index: Site index (King 1966, base age 50) in feet
             ba: Stand basal area (sq ft/acre)
             pbal: Basal area in larger trees (sq ft/acre)
-            time_step: Number of years to grow (default: 10 for NE)
+            time_step: Number of years to grow (default: 5)
         """
-        from .ne_diameter_growth import get_ne_diameter_growth_model
-        from .bark_ratio import create_bark_ratio_model
+        from .op_diameter_growth import get_op_diameter_growth_model
 
-        # Get bark ratio for diameter conversion
-        bark_model = create_bark_ratio_model(self.species)
-        bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
+        # Get the OP diameter growth model for this species
+        dg_model = get_op_diameter_growth_model(self.species)
 
-        # Calculate diameter growth using NE model
-        model = get_ne_diameter_growth_model(self.species)
-
-        # Calculate diameter increment
-        diameter_increment = model.calculate_diameter_growth(
-            dbh=self.dbh,
-            crown_ratio=self.crown_ratio,
-            site_index=site_index,
-            ba=ba,
-            bal=pbal,
-            bark_ratio=bark_ratio,
-            time_step=time_step
-        )
-
-        # Apply increment
-        self.dbh = max(self.dbh + diameter_increment, self.dbh)
-
-        # Update height using variant-specific method
-        self._update_height_large_tree_variant('NE', site_index)
-
-    def _update_height_large_tree_ne(self, site_index):
-        """Update height for NE variant large trees. Delegates to generic method."""
-        self._update_height_large_tree_variant('NE', site_index)
-
-    def _grow_large_tree_cs(self, site_index, ba, pbal, time_step=10, qmd_ge5=None):
-        """Implement large tree diameter growth model for CS (Central States) variant.
-
-        Uses the CS variant DDS equation (same form as LS):
-        ln(DDS) = INTERC + VDBHC/D + DBHC*D + DBH2C*D² + RDBHC*RELDBH
-                  + RDBHSQC*RELDBH² + CRWNC*CR + CRSQC*CR² + SBAC*BA + BALC*BAL + SITEC*SI
-
-        Args:
-            site_index: Site index (base age 50) in feet
-            ba: Stand basal area (sq ft/acre)
-            pbal: Basal area in larger trees (sq ft/acre)
-            time_step: Number of years to grow (default: 10 for CS)
-            qmd_ge5: QMD of trees >= 5" DBH (for RELDBH calculation)
-        """
-        from .cs_diameter_growth import get_cs_diameter_growth_model
-        from .bark_ratio import create_bark_ratio_model
-
-        # Get the CS diameter growth model for this species
-        dg_model = get_cs_diameter_growth_model(self.species)
-
-        # Get bark ratio for diameter conversion
-        bark_model = create_bark_ratio_model(self.species)
-        bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
-
-        # Calculate diameter growth using CS model
+        # Calculate diameter growth using ORGANON model
+        # Note: ORGANON predicts diameter growth directly, not DDS
         diameter_increment = dg_model.calculate_diameter_growth(
             dbh=self.dbh,
             crown_ratio=self.crown_ratio,
             site_index=site_index,
             ba=ba,
             bal=pbal,
-            bark_ratio=bark_ratio,
-            qmd_ge5=qmd_ge5,
             time_step=time_step
         )
 
         # Apply increment to DBH
         self.dbh = self.dbh + diameter_increment
 
-        # Update height using height-diameter relationship for CS
-        self._update_height_large_tree_cs(site_index)
-
-    def _update_height_large_tree_cs(self, site_index):
-        """Update height for CS variant large trees. Delegates to generic method."""
-        self._update_height_large_tree_variant('CS', site_index)
-
-    def _grow_large_tree_ca(self, site_index, ba, pbal, slope=0.0, aspect=0.0, time_step=10, elevation=None):
-        """Implement large tree diameter growth model for CA (Inland California) variant.
-
-        Uses the CA variant ln(DDS) equation:
-        ln(DDS) = CONSPP + DGLD*ln(D) + CR*(DGCR + CR*DGCRSQ) + DGDSQ*D²
-                  + DGDBAL*BAL/ln(D+1) + DGPCCF*PCCF + DGHAH*RELHT
-                  + DGLBA*ln(BA) + DGBAL*BAL + DGSITE*ln(SI)
-                  + topographic corrections (elevation, slope, aspect)
-
-        Special equations for Giant Sequoia/Redwood (eq 12) and Tanoak (eq 13).
-
-        Args:
-            site_index: Site index (base age 50) in feet
-            ba: Stand basal area (sq ft/acre)
-            pbal: Basal area in larger trees (sq ft/acre)
-            slope: Ground slope as proportion (0-1)
-            aspect: Aspect in radians
-            time_step: Number of years to grow (default: 10 for CA)
-            elevation: Elevation in feet (default: 3000 ft typical for inland CA)
-        """
-        from .ca_diameter_growth import get_ca_diameter_growth_model
-        from .bark_ratio import create_bark_ratio_model
-
-        # Get the CA diameter growth model for this species
-        dg_model = get_ca_diameter_growth_model(self.species)
-
-        # Get bark ratio for diameter conversion
-        bark_model = create_bark_ratio_model(self.species)
-        bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
-
-        # Default elevation for inland California (3000 ft typical)
-        elev = elevation if elevation is not None else 3000.0
-
-        # Calculate RELHT (relative height) - tree height / average stand height
-        relht = getattr(self, '_relht', 1.0)
-
-        # Estimate PCCF from BA (rough approximation)
-        pccf = ba * 1.5
-
-        # Calculate diameter growth using CA model
-        diameter_increment = dg_model.calculate_diameter_growth(
-            dbh=self.dbh,
-            crown_ratio=self.crown_ratio,
-            site_index=site_index,
-            ba=ba,
-            bal=pbal,
-            bark_ratio=bark_ratio,
-            pccf=pccf,
-            relht=relht,
-            elevation=elev,
-            slope=slope,
-            aspect=aspect,
-            forest_class=1,  # Default forest class; could be passed from Stand
-            time_step=time_step
-        )
-
-        # Apply increment to DBH
-        self.dbh = self.dbh + diameter_increment
-
-        # Update height using height-diameter relationship for CA
-        self._update_height_large_tree_ca(site_index)
-
-    def _update_height_large_tree_ca(self, site_index):
-        """Update height for CA variant large trees. Delegates to generic method."""
-        self._update_height_large_tree_variant('CA', site_index)
+        # Update height using height-diameter relationship for OP
+        self._update_height_large_tree_variant('OP', site_index)
 
     def _grow_large_tree_sn(self, site_index, competition_factor, ba, pbal, slope, aspect, time_step=5):
         """Implement large tree diameter growth model for SN (Southern) variant.
