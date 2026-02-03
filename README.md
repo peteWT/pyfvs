@@ -1,30 +1,33 @@
 <div align="center">
-  <a href="https://fiatools.org"><img src="https://fiatools.org/logos/pyfvs_logo.png" alt="pyFVS" width="400"></a>
+  <h1>pyFVS</h1>
 
   <p><strong>Forest growth modeling in Python</strong></p>
 
   <p>
-    <a href="https://fiatools.org"><img src="https://img.shields.io/badge/FIAtools-Ecosystem-2E7D32" alt="FIAtools Ecosystem"></a>
-    <a href="https://pypi.org/project/pyfvs-fia/"><img src="https://img.shields.io/pypi/v/pyfvs-fia?color=006D6D&label=PyPI" alt="PyPI"></a>
+    <a href="https://pypi.org/project/pyfvs/"><img src="https://img.shields.io/pypi/v/pyfvs?color=006D6D&label=PyPI" alt="PyPI"></a>
     <a href="https://mihiarc.github.io/pyfvs/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-006D6D" alt="Documentation"></a>
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-006D6D" alt="License: MIT"></a>
     <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.9+-006D6D" alt="Python 3.9+"></a>
-  </p>
-
-  <p>
-    <strong>Part of the <a href="https://fiatools.org">FIAtools Python Ecosystem</a></strong><br>
-    <a href="https://fiatools.org/tools/pyfia/">pyFIA</a> ·
-    <a href="https://fiatools.org/tools/gridfia/">gridFIA</a> ·
-    <a href="https://fiatools.org/tools/pyfvs/">pyFVS</a> ·
-    <a href="https://fiatools.org/tools/askfia/">askFIA</a>
   </p>
 </div>
 
 ---
 
-A Python implementation of the Forest Vegetation Simulator (FVS) Southern variant. Simulate growth and yield for loblolly, shortleaf, longleaf, and slash pine from age 0 to 50 years.
+A Python implementation of the Forest Vegetation Simulator (FVS) supporting multiple regional variants. Simulate individual tree growth and yield across the United States.
 
-## Supported Species
+## Supported Variants
+
+| Variant | Region | Species Count | Key Species |
+|---------|--------|---------------|-------------|
+| **SN** | Southern US | 90 | Loblolly Pine, Shortleaf Pine, Longleaf Pine, Slash Pine |
+| **LS** | Lake States (MI, WI, MN) | 67 | Red Pine, Jack Pine, Sugar Maple |
+| **PN** | Pacific Northwest Coast | 39 | Douglas-fir, Western Hemlock, Sitka Spruce |
+| **WC** | West Cascades (OR, WA) | 37 | Douglas-fir, Western Hemlock, Western Red Cedar |
+| **NE** | Northeast (13 states) | 108 | Red Maple, Sugar Maple, Northern Red Oak |
+| **CS** | Central States (IL, IN, IA, MO) | 96 | White Oak, Black Walnut, Yellow-Poplar |
+| **OP** | ORGANON Pacific Northwest | 18 | Douglas-fir, Red Alder |
+
+## Southern Yellow Pines (SN Variant)
 
 | Code | Species | Scientific Name |
 |------|---------|-----------------|
@@ -135,35 +138,6 @@ pyFVS generates yield tables with standard forest metrics:
 | 30 | 310 | 10.4 | 68.3 | 182.5 | 5,128 |
 | ... | ... | ... | ... | ... | ... |
 
-## Integration with pyFIA
-
-```python
-from pyfia import FIA
-from pyfvs import Stand
-
-# Get current stand conditions from FIA
-with FIA("database.duckdb") as db:
-    db.clip_by_state(37)
-    stand_data = db.get_stand_summary(plot_id="123")
-
-# Initialize pyFVS with FIA data
-stand = Stand.from_fia_data(stand_data)
-stand.grow(years=30)
-```
-
-## The FIAtools Ecosystem
-
-pyFVS is part of the [FIAtools Python ecosystem](https://fiatools.org) - a unified suite of open-source tools for forest inventory analysis:
-
-| Tool | Purpose | Key Features |
-|------|---------|--------------|
-| [**pyFIA**](https://fiatools.org) | Survey & plot data | DuckDB backend, 10-100x faster than EVALIDator |
-| [**gridFIA**](https://fiatools.org) | Spatial raster analysis | 327 species at 30m resolution, Zarr storage |
-| [**pyFVS**](https://fiatools.org) | Growth simulation | Chapman-Richards curves, yield projections |
-| [**askFIA**](https://fiatools.org) | AI interface | Natural language queries for forest data |
-
-**[Explore the full ecosystem at fiatools.org](https://fiatools.org)**
-
 ## References
 
 - [FVS Southern Variant Documentation](https://www.fs.usda.gov/fmsc/fvs/)
@@ -176,19 +150,12 @@ pyFVS is part of the [FIAtools Python ecosystem](https://fiatools.org) - a unifi
   title = {pyFVS: Python Implementation of the Forest Vegetation Simulator},
   author = {Mihiar, Christopher},
   year = {2025},
-  url = {https://fiatools.org}
+  url = {https://github.com/mihiarc/pyfvs}
 }
 ```
 
 ---
 
-## Affiliation
-
-Developed in collaboration with USDA Forest Service Research & Development. pyFVS is a Python implementation of the Forest Vegetation Simulator and is part of the FIA Python Ecosystem.
-
----
-
 <div align="center">
-  <a href="https://fiatools.org"><strong>fiatools.org</strong></a> · Python Ecosystem for Forest Inventory Applications<br>
-  <sub>Built by <a href="https://github.com/mihiarc">Chris Mihiar</a> · USDA Forest Service Southern Research Station</sub>
+  <sub>Built by <a href="https://github.com/mihiarc">Chris Mihiar</a></sub>
 </div>
