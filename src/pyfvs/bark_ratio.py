@@ -1,15 +1,18 @@
 """
 Bark ratio relationship functions for FVS-Python.
-Implements bark ratio equations from Clark (1991) for converting between
-diameter outside bark (DOB) and diameter inside bark (DIB).
+
+Supports multiple FVS variants:
+- SN (Southern): Clark (1991) equation DIB = b1 + b2 * DOB
+- LS (Lake States): Constant bark ratio per species from Raile (1982)
 """
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from .model_base import ParameterizedModel
-from .config_loader import load_coefficient_file
+from .config_loader import load_coefficient_file, get_default_variant
 
 __all__ = [
     'BarkRatioModel',
+    'LSBarkRatioModel',
     'create_bark_ratio_model',
     'calculate_dib_from_dob',
     'calculate_bark_ratio',
@@ -17,6 +20,13 @@ __all__ = [
     'compare_bark_ratios',
     'validate_bark_ratio_implementation',
 ]
+
+
+# Variant-to-coefficient-file mapping
+VARIANT_BARK_RATIO_FILES = {
+    'SN': 'sn_bark_ratio_coefficients.json',
+    'LS': 'ls/ls_bark_ratio_coefficients.json',
+}
 
 
 class BarkRatioModel(ParameterizedModel):
@@ -209,16 +219,175 @@ class BarkRatioModel(ParameterizedModel):
         return self.calculate_dob_from_dib(dbh_ib)
 
 
-def create_bark_ratio_model(species_code: str = "LP") -> BarkRatioModel:
-    """Factory function to create a bark ratio model for a species.
-    
-    Args:
-        species_code: Species code (e.g., "LP", "SP", "SA", etc.)
-        
-    Returns:
-        BarkRatioModel instance
+class LSBarkRatioModel:
+    """Bark ratio model for the Lake States (LS) variant.
+
+    LS uses constant bark ratios per species from Raile (1982),
+    unlike SN which uses the Clark (1991) equation DIB = b1 + b2 * DOB.
     """
-    return BarkRatioModel(species_code)
+
+    # Fallback bark ratios for common LS species
+    FALLBACK_RATIOS = {
+        'JP': 0.899, 'SC': 0.899, 'RN': 0.916, 'RP': 0.916,
+        'WP': 0.907, 'WS': 0.924, 'NS': 0.924, 'BF': 0.926,
+        'BS': 0.924, 'TA': 0.915, 'WC': 0.916, 'EH': 0.916,
+        'SM': 0.918, 'RM': 0.918, 'QA': 0.911, 'PB': 0.920,
+        'RO': 0.914, 'WO': 0.914, 'YB': 0.920, 'AB': 0.920,
+    }
+
+    DEFAULT_SOFTWOOD = 0.916
+    DEFAULT_HARDWOOD = 0.914
+
+    # LS hardwood species codes
+    _LS_HARDWOODS = {
+        'BA', 'GA', 'EC', 'SV', 'RM', 'BC', 'AE', 'RL', 'RE', 'YB',
+        'BW', 'SM', 'BM', 'AB', 'WA', 'WO', 'SW', 'BR', 'CK', 'RO',
+        'BO', 'BH', 'PH', 'SH', 'BT', 'QA', 'BP', 'PB', 'BN', 'WN',
+        'HH', 'BK', 'OH', 'BE', 'ST', 'MM', 'AH', 'AC', 'HK', 'DW',
+        'HT', 'AP', 'BG', 'SY', 'PR', 'CC', 'PL', 'WI', 'BL', 'DM',
+        'SS', 'MA',
+    }
+
+    def __init__(self, species_code: str = "RN"):
+        """Initialize with species-specific constant bark ratio.
+
+        Args:
+            species_code: Species code (e.g., "RN", "JP", "SM", etc.)
+        """
+        self.species_code = species_code
+        self._bark_ratio = None
+        self._all_ratios = None
+        self._load_bark_ratio()
+
+    def _load_bark_ratio(self):
+        """Load constant bark ratio from LS coefficient file."""
+        try:
+            data = load_coefficient_file('ls/ls_bark_ratio_coefficients.json')
+            ratios = data.get('species_bark_ratios', {})
+            self._all_ratios = ratios
+            if self.species_code in ratios:
+                self._bark_ratio = ratios[self.species_code]
+            else:
+                # Use softwood/hardwood default
+                if self.species_code in self._LS_HARDWOODS:
+                    self._bark_ratio = data.get('defaults', {}).get('hardwood', self.DEFAULT_HARDWOOD)
+                else:
+                    self._bark_ratio = data.get('defaults', {}).get('softwood', self.DEFAULT_SOFTWOOD)
+        except FileNotFoundError:
+            self._bark_ratio = self.FALLBACK_RATIOS.get(self.species_code, self.DEFAULT_SOFTWOOD)
+
+    def calculate_bark_ratio(self, dob: float) -> float:
+        """Return constant bark ratio (independent of diameter for LS).
+
+        Args:
+            dob: Diameter outside bark (inches) - not used but kept for interface compatibility
+
+        Returns:
+            Bark ratio as proportion (0-1)
+        """
+        return self._bark_ratio
+
+    def calculate_dib_from_dob(self, dob: float) -> float:
+        """Calculate diameter inside bark from diameter outside bark.
+
+        Args:
+            dob: Diameter outside bark (inches)
+
+        Returns:
+            Diameter inside bark (inches)
+        """
+        if dob <= 0:
+            return 0.0
+        return dob * self._bark_ratio
+
+    def calculate_dob_from_dib(self, dib: float) -> float:
+        """Calculate diameter outside bark from diameter inside bark.
+
+        Args:
+            dib: Diameter inside bark (inches)
+
+        Returns:
+            Diameter outside bark (inches)
+        """
+        if dib <= 0:
+            return 0.0
+        if self._bark_ratio == 0:
+            return dib
+        return dib / self._bark_ratio
+
+    def calculate_bark_thickness(self, dob: float) -> float:
+        """Calculate bark thickness from diameter outside bark.
+
+        Args:
+            dob: Diameter outside bark (inches)
+
+        Returns:
+            Bark thickness (inches)
+        """
+        if dob <= 0:
+            return 0.0
+        dib = self.calculate_dib_from_dob(dob)
+        return max(0.0, (dob - dib) / 2.0)
+
+    def apply_bark_ratio_to_dbh(self, dbh_ob: float) -> float:
+        """Apply bark ratio to convert DBH outside bark to inside bark.
+
+        Args:
+            dbh_ob: DBH outside bark (inches)
+
+        Returns:
+            DBH inside bark (inches)
+        """
+        return self.calculate_dib_from_dob(dbh_ob)
+
+    def convert_dbh_ib_to_ob(self, dbh_ib: float) -> float:
+        """Convert DBH inside bark to outside bark.
+
+        Args:
+            dbh_ib: DBH inside bark (inches)
+
+        Returns:
+            DBH outside bark (inches)
+        """
+        return self.calculate_dob_from_dib(dbh_ib)
+
+    def get_species_coefficients(self) -> Dict[str, float]:
+        """Get the bark ratio for this species.
+
+        Returns:
+            Dictionary with bark_ratio constant
+        """
+        return {'bark_ratio': self._bark_ratio}
+
+    def validate_bark_ratio(self, bark_ratio: float) -> bool:
+        """Validate that a bark ratio is within acceptable bounds.
+
+        Args:
+            bark_ratio: Bark ratio to validate (proportion)
+
+        Returns:
+            True if bark ratio is within bounds
+        """
+        return 0.80 <= bark_ratio <= 0.99
+
+
+def create_bark_ratio_model(species_code: str = "LP", variant: Optional[str] = None):
+    """Factory function to create a bark ratio model for a species and variant.
+
+    Args:
+        species_code: Species code (e.g., "LP", "SP", "RN", etc.)
+        variant: FVS variant code (e.g., 'SN', 'LS'). If None, uses default.
+
+    Returns:
+        BarkRatioModel or LSBarkRatioModel instance
+    """
+    if variant is None:
+        variant = get_default_variant()
+
+    if variant == 'LS':
+        return LSBarkRatioModel(species_code)
+    else:
+        return BarkRatioModel(species_code)
 
 
 def calculate_dib_from_dob(species_code: str, dob: float) -> float:

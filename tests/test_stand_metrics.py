@@ -50,8 +50,8 @@ class TestStandMetricsCalculator:
     def test_init(self, calculator):
         """Test calculator initialization."""
         assert calculator.default_species == 'LP'
-        assert StandMetricsCalculator._sdi_loaded is True
-        assert StandMetricsCalculator._sdi_maximums is not None
+        assert calculator._sdi_maximums is not None
+        assert len(calculator._sdi_maximums) > 0
 
     def test_calculate_qmd(self, calculator, sample_trees):
         """Test QMD calculation."""
@@ -186,7 +186,7 @@ class TestStandMetricsCalculator:
         max_sdi = calculator.get_max_sdi(sample_trees, default_species='LP')
 
         # All LP trees should give LP's max SDI
-        lp_max = StandMetricsCalculator._sdi_maximums.get('LP', 480)
+        lp_max = calculator._sdi_maximums.get('LP', 480)
         assert abs(max_sdi - lp_max) < 0.01
 
     def test_get_max_sdi_mixed_species(self, calculator, mixed_species_trees):
@@ -199,7 +199,7 @@ class TestStandMetricsCalculator:
     def test_get_max_sdi_empty(self, calculator):
         """Test max SDI with empty tree list."""
         max_sdi = calculator.get_max_sdi([], default_species='LP')
-        lp_max = StandMetricsCalculator._sdi_maximums.get('LP', 480)
+        lp_max = calculator._sdi_maximums.get('LP', 480)
         assert abs(max_sdi - lp_max) < 0.01
 
     def test_calculate_pbal(self, calculator, sample_trees):

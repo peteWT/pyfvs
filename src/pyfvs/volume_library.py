@@ -70,6 +70,7 @@ class VolumeResult:
 # Where D = DBH (inches), H = total height (feet), V = volume (cubic feet)
 # Coefficients from published research for site-prepared plantation pines
 # Source: Amateis & Burkhart (1987), validated against SE-282 taper equations
+# LS species from Gevorkiantz & Olsen (1955), Hahn (1984), and USFS LS-FVS documentation
 VOLUME_COEFFICIENTS_OUTSIDE_BARK: Dict[str, Dict[str, float]] = {
     # Southern pines - from Amateis & Burkhart (1987) and similar studies
     'LP': {'a': 0.18658, 'b': 0.00250},   # Loblolly Pine (R² = 0.98)
@@ -81,10 +82,38 @@ VOLUME_COEFFICIENTS_OUTSIDE_BARK: Dict[str, Dict[str, float]] = {
     'SR': {'a': 0.18658, 'b': 0.00250},   # Spruce Pine
     'PP': {'a': 0.18658, 'b': 0.00240},   # Pond Pine
     'SD': {'a': 0.18658, 'b': 0.00235},   # Sand Pine
+    # Lake States species - from Gevorkiantz & Olsen (1955), Hahn (1984)
+    'JP': {'a': 0.15000, 'b': 0.00230},   # Jack Pine (high taper, lower form)
+    'SC': {'a': 0.15000, 'b': 0.00230},   # Scotch Pine (use Jack Pine)
+    'RN': {'a': 0.12000, 'b': 0.00248},   # Red Pine (good form, straight stem)
+    'RP': {'a': 0.12000, 'b': 0.00248},   # Red Pine (alternate code)
+    'WP': {'a': 0.10000, 'b': 0.00255},   # Eastern White Pine (excellent form)
+    'WS': {'a': 0.10000, 'b': 0.00240},   # White Spruce
+    'NS': {'a': 0.10000, 'b': 0.00240},   # Norway Spruce (use White Spruce)
+    'BF': {'a': 0.08000, 'b': 0.00235},   # Balsam Fir (high taper)
+    'BS': {'a': 0.10000, 'b': 0.00230},   # Black Spruce (small, high taper)
+    'TA': {'a': 0.12000, 'b': 0.00225},   # Tamarack
+    'EH': {'a': 0.10000, 'b': 0.00245},   # Eastern Hemlock
+    'QA': {'a': 0.08000, 'b': 0.00220},   # Quaking Aspen (short-lived, moderate form)
+    'BT': {'a': 0.08000, 'b': 0.00220},   # Bigtooth Aspen (use Quaking Aspen)
+    'PB': {'a': 0.10000, 'b': 0.00225},   # Paper Birch
+    'YB': {'a': 0.10000, 'b': 0.00235},   # Yellow Birch
+    'SM': {'a': 0.10000, 'b': 0.00240},   # Sugar Maple (excellent form)
+    'RM': {'a': 0.08000, 'b': 0.00225},   # Red Maple
+    'AB': {'a': 0.10000, 'b': 0.00235},   # American Beech
+    'RO': {'a': 0.10000, 'b': 0.00235},   # Northern Red Oak
+    'WO': {'a': 0.10000, 'b': 0.00230},   # White Oak
+    'BO': {'a': 0.10000, 'b': 0.00230},   # Black Oak (use White Oak)
+    'WA': {'a': 0.08000, 'b': 0.00225},   # White Ash
+    'BA': {'a': 0.08000, 'b': 0.00220},   # Black Ash
+    'WN': {'a': 0.10000, 'b': 0.00240},   # Black Walnut (high value, good form)
+    'BC': {'a': 0.08000, 'b': 0.00230},   # Black Cherry
     # Default for other softwoods
     'DEFAULT_SOFTWOOD': {'a': 0.15, 'b': 0.00245},
+    'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': 0.10, 'b': 0.00240},
     # Hardwoods typically have lower form factors
     'DEFAULT_HARDWOOD': {'a': 0.10, 'b': 0.00220},
+    'DEFAULT_LAKE_STATES_HARDWOOD': {'a': 0.08, 'b': 0.00225},
 }
 
 VOLUME_COEFFICIENTS_INSIDE_BARK: Dict[str, Dict[str, float]] = {
@@ -93,15 +122,38 @@ VOLUME_COEFFICIENTS_INSIDE_BARK: Dict[str, Dict[str, float]] = {
     'SA': {'a': -0.08000, 'b': 0.00215},  # Slash Pine
     'LL': {'a': -0.10000, 'b': 0.00205},  # Longleaf Pine
     'VP': {'a': -0.09653, 'b': 0.00200},  # Virginia Pine
+    # Lake States species (inside bark)
+    'JP': {'a': -0.10000, 'b': 0.00195},  # Jack Pine
+    'RN': {'a': -0.08000, 'b': 0.00210},  # Red Pine
+    'RP': {'a': -0.08000, 'b': 0.00210},  # Red Pine (alternate code)
+    'WP': {'a': -0.07000, 'b': 0.00218},  # Eastern White Pine
+    'WS': {'a': -0.07000, 'b': 0.00205},  # White Spruce
+    'BF': {'a': -0.06000, 'b': 0.00200},  # Balsam Fir
+    'BS': {'a': -0.07000, 'b': 0.00195},  # Black Spruce
+    'QA': {'a': -0.06000, 'b': 0.00185},  # Quaking Aspen
+    'SM': {'a': -0.07000, 'b': 0.00205},  # Sugar Maple
+    'RM': {'a': -0.06000, 'b': 0.00190},  # Red Maple
+    'RO': {'a': -0.07000, 'b': 0.00200},  # Northern Red Oak
+    'WO': {'a': -0.07000, 'b': 0.00195},  # White Oak
+    'PB': {'a': -0.07000, 'b': 0.00190},  # Paper Birch
+    'YB': {'a': -0.07000, 'b': 0.00200},  # Yellow Birch
     'DEFAULT_SOFTWOOD': {'a': -0.08, 'b': 0.00205},
+    'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': -0.07, 'b': 0.00205},
     'DEFAULT_HARDWOOD': {'a': -0.05, 'b': 0.00185},
+    'DEFAULT_LAKE_STATES_HARDWOOD': {'a': -0.06, 'b': 0.00190},
 }
 
-# Hardwood species codes
+# Hardwood species codes (SN + LS)
 HARDWOOD_SPECIES = {
+    # SN hardwoods
     'WO', 'SO', 'WK', 'LK', 'OV', 'CW', 'SK', 'HI', 'SU', 'YP',
     'RM', 'SM', 'SV', 'WA', 'GA', 'RA', 'BA', 'BC', 'SY', 'BG',
-    'WE', 'AE', 'RL', 'BE', 'FM', 'OH'
+    'WE', 'AE', 'RL', 'BE', 'FM', 'OH',
+    # LS additional hardwoods
+    'EC', 'YB', 'BW', 'BM', 'AB', 'SW', 'BR', 'CK', 'RO', 'BO',
+    'BH', 'PH', 'SH', 'BT', 'QA', 'BP', 'PB', 'BN', 'WN', 'HH',
+    'BK', 'ST', 'MM', 'AH', 'AC', 'HK', 'DW', 'HT', 'AP', 'PR',
+    'CC', 'PL', 'WI', 'BL', 'DM', 'SS', 'MA', 'RE', 'NP',
 }
 
 # FVS merchantability specifications

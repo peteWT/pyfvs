@@ -396,7 +396,8 @@ class Tree:
         """
         if use_bark_ratio:
             from .bark_ratio import create_bark_ratio_model
-            bark_model = create_bark_ratio_model(self.species)
+            variant = getattr(self, '_variant', 'SN')
+            bark_model = create_bark_ratio_model(self.species, variant=variant)
             bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
             dib_old = self.dbh * bark_ratio
             dib_new = math.sqrt(dib_old * dib_old + dds)
@@ -469,8 +470,8 @@ class Tree:
         """
         from .bark_ratio import create_bark_ratio_model
 
-        # Get bark ratio for diameter conversion
-        bark_model = create_bark_ratio_model(self.species)
+        # Get bark ratio for diameter conversion (variant-aware)
+        bark_model = create_bark_ratio_model(self.species, variant=variant)
         bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
 
         # Get appropriate diameter growth model based on variant
@@ -604,8 +605,8 @@ class Tree:
         # Use provided elevation or default
         elev = elevation if elevation is not None else DEFAULT_ELEVATIONS.get(variant, 0.0)
 
-        # Get bark ratio for diameter conversion (CA needs it, others might too)
-        bark_model = create_bark_ratio_model(self.species)
+        # Get bark ratio for diameter conversion (variant-aware)
+        bark_model = create_bark_ratio_model(self.species, variant=variant)
         bark_ratio = bark_model.calculate_bark_ratio(self.dbh)
 
         # Calculate RELHT (relative height) - tree height / average stand height

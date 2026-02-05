@@ -31,7 +31,7 @@ from .utils import normalize_code
 
 # Import component classes
 from .stand_metrics import StandMetricsCalculator
-from .mortality import MortalityModel
+from .mortality import MortalityModel, create_mortality_model
 from .harvest import HarvestManager, HarvestRecord
 from .competition import CompetitionCalculator
 from .stand_output import StandOutputGenerator, YieldRecord
@@ -108,9 +108,9 @@ class Stand:
         self.params = load_stand_config(species, variant=self.variant)
         self._load_growth_params()
 
-        # Initialize component classes
-        self._metrics = StandMetricsCalculator(default_species=species)
-        self._mortality = MortalityModel(default_species=species)
+        # Initialize component classes (variant-aware)
+        self._metrics = StandMetricsCalculator(default_species=species, variant=self.variant)
+        self._mortality = create_mortality_model(default_species=species, variant=self.variant)
         self._harvest = HarvestManager()
         self._competition = CompetitionCalculator(self._metrics, species)
         self._output = StandOutputGenerator(self._metrics, self._competition, species)

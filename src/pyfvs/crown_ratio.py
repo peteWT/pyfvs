@@ -1,16 +1,20 @@
 """
 Crown ratio relationship functions for FVS-Python.
-Implements Weibull-based crown model and other crown ratio equations from the SN variant.
+
+Supports multiple FVS variants:
+- SN (Southern): Weibull-based crown model
+- LS (Lake States): TWIGS model from Belcher et al. (1982)
 """
 import math
 import random
 from typing import Dict, Any, Optional, Tuple
 
 from .model_base import ParameterizedModel
-from .config_loader import load_coefficient_file
+from .config_loader import load_coefficient_file, get_default_variant
 
 __all__ = [
     'CrownRatioModel',
+    'LSCrownRatioModel',
     'create_crown_ratio_model',
     'calculate_average_crown_ratio',
     'predict_tree_crown_ratio',
@@ -338,34 +342,181 @@ class CrownRatioModel(ParameterizedModel):
         return max(0.05, min(0.95, new_cr))
 
 
-def create_crown_ratio_model(species_code: str = "LP") -> CrownRatioModel:
-    """Factory function to create a crown ratio model for a species.
+class LSCrownRatioModel:
+    """Crown ratio model for the Lake States (LS) variant.
+
+    Uses the TWIGS model from Belcher et al. (1982):
+        ACR = 10 * (BCR1/(1 + BCR2*BA) + BCR3*(1 - exp(BCR4*D)))
+
+    where:
+        ACR = average crown ratio (0-100 scale)
+        BA = stand basal area (sq ft/acre)
+        D = tree DBH (inches)
+        BCR1-BCR4 = species-specific coefficients
+    """
+
+    # Fallback TWIGS coefficients for common LS species
+    FALLBACK_COEFFICIENTS = {
+        'JP':  {'BCR1': 1.447, 'BCR2': 0.00328, 'BCR3': 5.302, 'BCR4': -0.05726},
+        'RN':  {'BCR1': 2.310, 'BCR2': 0.00619, 'BCR3': 4.310, 'BCR4': -0.03059},
+        'SM':  {'BCR1': 3.111, 'BCR2': 0.01534, 'BCR3': 6.251, 'BCR4': -0.01552},
+        'QA':  {'BCR1': 1.612, 'BCR2': 0.00380, 'BCR3': 4.910, 'BCR4': -0.05120},
+        'BF':  {'BCR1': 4.185, 'BCR2': 0.01710, 'BCR3': 6.162, 'BCR4': -0.01875},
+    }
+
+    DEFAULT_COEFFICIENTS = {'BCR1': 2.300, 'BCR2': 0.00700, 'BCR3': 5.800, 'BCR4': -0.02800}
+
+    def __init__(self, species_code: str = "RN"):
+        """Initialize with species-specific TWIGS coefficients.
+
+        Args:
+            species_code: Species code (e.g., "RN", "JP", "SM", etc.)
+        """
+        self.species_code = species_code
+        self.coefficients = {}
+        self._load_coefficients()
+
+    def _load_coefficients(self):
+        """Load TWIGS coefficients from LS crown ratio config."""
+        try:
+            data = load_coefficient_file('ls/ls_crown_ratio_coefficients.json')
+            species_coeffs = data.get('species_coefficients', {})
+            if self.species_code in species_coeffs:
+                self.coefficients = species_coeffs[self.species_code]
+            else:
+                self.coefficients = data.get('defaults', {}).get(
+                    'hardwood', self.DEFAULT_COEFFICIENTS
+                )
+        except FileNotFoundError:
+            self.coefficients = self.FALLBACK_COEFFICIENTS.get(
+                self.species_code, self.DEFAULT_COEFFICIENTS
+            )
+
+    def predict_crown_ratio(self, dbh: float, ba: float) -> float:
+        """Predict crown ratio using TWIGS model.
+
+        Equation: ACR = 10 * (BCR1/(1 + BCR2*BA) + BCR3*(1 - exp(BCR4*D)))
+
+        Args:
+            dbh: Diameter at breast height (inches)
+            ba: Stand basal area (sq ft/acre)
+
+        Returns:
+            Crown ratio as proportion (0.05 to 0.95)
+        """
+        bcr1 = self.coefficients['BCR1']
+        bcr2 = self.coefficients['BCR2']
+        bcr3 = self.coefficients['BCR3']
+        bcr4 = self.coefficients['BCR4']
+
+        ba = max(0.0, ba)
+        dbh = max(0.1, dbh)
+
+        acr = 10.0 * (bcr1 / (1.0 + bcr2 * ba) + bcr3 * (1.0 - math.exp(bcr4 * dbh)))
+
+        # ACR is in 0-100 scale, convert to proportion
+        cr = acr / 100.0
+
+        # Bound to [0.05, 0.95]
+        return max(0.05, min(0.95, cr))
+
+    def predict_individual_crown_ratio(self, tree_rank: float, relsdi: float,
+                                       ccf: float = 100.0, dbh: float = 5.0,
+                                       ba: float = 100.0) -> float:
+        """Predict individual tree crown ratio (LS uses TWIGS, not Weibull).
+
+        For interface compatibility with SN variant. LS uses the TWIGS
+        equation directly with DBH and BA.
+
+        Args:
+            tree_rank: Tree's rank (0-1) - not used in LS TWIGS model
+            relsdi: Relative stand density index - not used in LS TWIGS model
+            ccf: Crown competition factor - not used in LS TWIGS model
+            dbh: Diameter at breast height (inches)
+            ba: Stand basal area (sq ft/acre)
+
+        Returns:
+            Crown ratio as proportion (0.05 to 0.95)
+        """
+        return self.predict_crown_ratio(dbh, ba)
+
+    def calculate_average_crown_ratio(self, relsdi: float, ba: float = 100.0,
+                                      mean_dbh: float = 8.0) -> float:
+        """Calculate average crown ratio for the stand using TWIGS at mean DBH.
+
+        Args:
+            relsdi: Relative SDI - not directly used, but kept for interface compatibility
+            ba: Stand basal area (sq ft/acre)
+            mean_dbh: Mean stand DBH (inches)
+
+        Returns:
+            Average crown ratio as proportion (0.05 to 0.95)
+        """
+        return self.predict_crown_ratio(mean_dbh, ba)
+
+    def update_crown_ratio_change(self, current_cr: float, predicted_cr: float,
+                                  height_growth: float, cycle_length: int = 5) -> float:
+        """Calculate crown ratio change with bounds checking.
+
+        For LS, uses a simpler approach than SN: move current CR toward
+        TWIGS-predicted CR with bounded annual change rate.
+
+        Args:
+            current_cr: Current crown ratio (proportion)
+            predicted_cr: Predicted crown ratio from TWIGS (proportion)
+            height_growth: Height growth during cycle (feet)
+            cycle_length: Length of projection cycle (years)
+
+        Returns:
+            New crown ratio (proportion)
+        """
+        change = predicted_cr - current_cr
+
+        # Bound change to 1% per year
+        max_cycle_change = 0.01 * cycle_length
+        bounded_change = max(-max_cycle_change, min(max_cycle_change, change))
+
+        new_cr = current_cr + bounded_change
+        return max(0.05, min(0.95, new_cr))
+
+
+def create_crown_ratio_model(species_code: str = "LP", variant: Optional[str] = None):
+    """Factory function to create a crown ratio model for a species and variant.
 
     Args:
-        species_code: Species code (e.g., "LP", "SP", "WO", etc.)
+        species_code: Species code (e.g., "LP", "SP", "RN", etc.)
+        variant: FVS variant code (e.g., 'SN', 'LS'). If None, uses default.
 
     Returns:
-        CrownRatioModel instance
+        CrownRatioModel or LSCrownRatioModel instance
     """
-    return CrownRatioModel(species_code)
+    if variant is None:
+        variant = get_default_variant()
+
+    if variant == 'LS':
+        return LSCrownRatioModel(species_code)
+    else:
+        return CrownRatioModel(species_code)
 
 
-def calculate_average_crown_ratio(species_code: str, relsdi: float) -> float:
+def calculate_average_crown_ratio(species_code: str, relsdi: float,
+                                  variant: Optional[str] = None) -> float:
     """Standalone function to calculate average crown ratio.
 
     Args:
         species_code: Species code
         relsdi: Relative stand density index
+        variant: FVS variant code
 
     Returns:
         Average crown ratio as proportion
     """
-    model = create_crown_ratio_model(species_code)
+    model = create_crown_ratio_model(species_code, variant=variant)
     return model.calculate_average_crown_ratio(relsdi)
 
 
 def predict_tree_crown_ratio(species_code: str, tree_rank: float, relsdi: float,
-                           ccf: float = 100.0) -> float:
+                           ccf: float = 100.0, variant: Optional[str] = None) -> float:
     """Standalone function to predict individual tree crown ratio.
 
     Args:
@@ -373,11 +524,12 @@ def predict_tree_crown_ratio(species_code: str, tree_rank: float, relsdi: float,
         tree_rank: Tree's rank in diameter distribution (0-1)
         relsdi: Relative stand density index
         ccf: Crown competition factor
+        variant: FVS variant code
 
     Returns:
         Crown ratio as proportion
     """
-    model = create_crown_ratio_model(species_code)
+    model = create_crown_ratio_model(species_code, variant=variant)
     return model.predict_individual_crown_ratio(tree_rank, relsdi, ccf)
 
 
@@ -413,7 +565,7 @@ def compare_crown_ratio_models(species_codes: list, relsdi_range: list) -> Dict[
         results['species_results'][species] = {
             'average_crown_ratio': acr_values,
             'individual_crown_ratio': individual_cr_values,
-            'equation_type': model.coefficients['acr_equation']
+            'equation_type': model.coefficients.get('acr_equation', 'TWIGS')
         }
 
     return results

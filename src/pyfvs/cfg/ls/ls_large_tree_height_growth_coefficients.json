@@ -1,0 +1,39 @@
+{
+  "metadata": {
+    "variant": "LS",
+    "variant_name": "Lake States",
+    "description": "Height growth parameters for the Lake States variant",
+    "source": "FVS LS variant htgf.f; Carmean NC-128 site index curves",
+    "notes": "LS variant uses Curtis-Arney height-diameter relationship for large trees. Height growth is derived from the H-D curve (new height from new diameter). The BALMOD competition modifier reduces growth for suppressed trees. Carmean curve coefficients are stored here for potential future use."
+  },
+  "height_growth_method": "height_diameter_derived",
+  "balmod_coefficients": {
+    "_description": "BALMOD = max(0.0, 1.0 - HTBAL * (BAL/BA - 0.3)) when BAL/BA > 0.3, else 1.0",
+    "_note": "HTBAL is species-specific, ranges 0.0-0.5. Higher = more sensitive to competition.",
+    "JP": {"HTBAL": 0.40},
+    "SC": {"HTBAL": 0.40},
+    "RN": {"HTBAL": 0.35},
+    "RP": {"HTBAL": 0.35},
+    "WP": {"HTBAL": 0.30},
+    "WS": {"HTBAL": 0.25},
+    "NS": {"HTBAL": 0.25},
+    "BF": {"HTBAL": 0.20},
+    "BS": {"HTBAL": 0.30},
+    "TA": {"HTBAL": 0.45},
+    "WC": {"HTBAL": 0.15},
+    "EH": {"HTBAL": 0.15},
+    "SM": {"HTBAL": 0.10},
+    "RM": {"HTBAL": 0.20},
+    "QA": {"HTBAL": 0.50},
+    "BT": {"HTBAL": 0.50},
+    "PB": {"HTBAL": 0.40},
+    "YB": {"HTBAL": 0.25},
+    "AB": {"HTBAL": 0.15},
+    "RO": {"HTBAL": 0.25},
+    "WO": {"HTBAL": 0.25},
+    "BO": {"HTBAL": 0.30},
+    "WA": {"HTBAL": 0.30},
+    "BA": {"HTBAL": 0.30},
+    "DEFAULT": {"HTBAL": 0.30}
+  }
+}

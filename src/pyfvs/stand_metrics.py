@@ -39,38 +39,65 @@ class StandMetricsCalculator:
 
     Attributes:
         default_species: Default species code for SDI calculations
+        variant: FVS variant code ('SN', 'LS', etc.)
         _sdi_maximums: Cached SDI maximum values by species
     """
 
-    # Class-level cache for SDI maximums (shared across instances)
-    _sdi_maximums: Optional[Dict[str, int]] = None
-    _sdi_loaded: bool = False
+    # Class-level cache for SDI maximums, keyed by variant
+    _sdi_cache: Dict[str, Dict[str, int]] = {}
 
-    def __init__(self, default_species: str = 'LP'):
+    # LS SDI maximums from FVS LS variant documentation
+    LS_SDI_MAXIMUMS = {
+        'JP': 400, 'SC': 400, 'RN': 500, 'RP': 500, 'WP': 450,
+        'WS': 500, 'NS': 500, 'BF': 400, 'BS': 400, 'TA': 350,
+        'WC': 400, 'EH': 500, 'OS': 400, 'RC': 400,
+        'BA': 350, 'GA': 400, 'EC': 300, 'SV': 400, 'RM': 400,
+        'BC': 400, 'AE': 350, 'RL': 400, 'RE': 350, 'YB': 400,
+        'BW': 300, 'SM': 450, 'BM': 450, 'AB': 450, 'WA': 350,
+        'WO': 400, 'SW': 400, 'BR': 400, 'CK': 400,
+        'RO': 400, 'BO': 400, 'NP': 500, 'BH': 400, 'PH': 400,
+        'SH': 400, 'BT': 350, 'QA': 350, 'BP': 300, 'PB': 350,
+        'BN': 350, 'WN': 400, 'HH': 400, 'BK': 350, 'OH': 350,
+    }
+
+    def __init__(self, default_species: str = 'LP', variant: Optional[str] = None):
         """Initialize the metrics calculator.
 
         Args:
             default_species: Default species code for SDI lookups
+            variant: FVS variant code ('SN', 'LS', etc.). If None, uses default.
         """
         self.default_species = default_species
+        self.variant = variant or 'SN'
 
-        # Load SDI maximums if not already loaded
-        if not StandMetricsCalculator._sdi_loaded:
-            self._load_sdi_maximums()
+        # Load SDI maximums for this variant
+        self._sdi_maximums = self._get_sdi_maximums()
 
-    @classmethod
-    def _load_sdi_maximums(cls) -> None:
-        """Load SDI maximum values from configuration."""
+    def _get_sdi_maximums(self) -> Dict[str, int]:
+        """Get SDI maximum values for the current variant."""
+        if self.variant in self._sdi_cache:
+            return self._sdi_cache[self.variant]
+
+        if self.variant == 'LS':
+            self._sdi_cache['LS'] = self.LS_SDI_MAXIMUMS
+            return self.LS_SDI_MAXIMUMS
+
+        # Default: load SN SDI maximums
+        sdi_maximums = self._load_sn_sdi_maximums()
+        self._sdi_cache[self.variant] = sdi_maximums
+        return sdi_maximums
+
+    @staticmethod
+    def _load_sn_sdi_maximums() -> Dict[str, int]:
+        """Load SN SDI maximum values from configuration."""
         try:
             sdi_data = load_coefficient_file('sn_stand_density_index.json')
-            cls._sdi_maximums = {
+            return {
                 species: data['sdi_maximum']
                 for species, data in sdi_data.get('sdi_maximums', {}).items()
             }
-            cls._sdi_loaded = True
         except (FileNotFoundError, KeyError):
-            cls._sdi_maximums = {'LP': 480, 'SP': 490, 'SA': 385, 'LL': 332}
-            cls._sdi_loaded = True
+            return {'LP': 480, 'SP': 490, 'SA': 385, 'LL': 332}
 
     def calculate_all_metrics(self, trees: List['Tree'], species: str = None) -> Dict[str, float]:
         """Calculate all stand metrics in a single pass for efficiency.
