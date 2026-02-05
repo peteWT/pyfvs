@@ -72,6 +72,19 @@ class StandMetricsCalculator:
         'CH': 400, 'WI': 350, 'OT': 500,
     }
 
+    # WC SDI maximums for West Cascades variant (interior Cascades, generally
+    # lower than coastal PN due to drier conditions)
+    WC_SDI_MAXIMUMS = {
+        'SF': 900, 'WF': 650, 'GF': 650, 'AF': 500, 'RF': 650,
+        'NF': 650, 'YC': 550, 'IC': 450, 'RC': 800, 'ES': 500,
+        'LP': 400, 'JP': 400, 'SP': 500, 'WP': 500, 'PP': 400,
+        'DF': 800, 'RW': 900, 'WH': 850, 'MH': 550,
+        'BM': 450, 'RA': 650, 'WA': 450, 'PB': 350, 'GC': 450,
+        'AS': 350, 'CW': 450, 'WO': 450, 'WJ': 250, 'LL': 350,
+        'WB': 350, 'KP': 350, 'PY': 300, 'DG': 350, 'HT': 300,
+        'CH': 350, 'WI': 300, 'OT': 450,
+    }
+
     def __init__(self, default_species: str = 'LP', variant: Optional[str] = None):
         """Initialize the metrics calculator.
 
@@ -97,6 +110,10 @@ class StandMetricsCalculator:
         if self.variant == 'PN':
             self._sdi_cache['PN'] = self.PN_SDI_MAXIMUMS
             return self.PN_SDI_MAXIMUMS
+
+        if self.variant == 'WC':
+            self._sdi_cache['WC'] = self.WC_SDI_MAXIMUMS
+            return self.WC_SDI_MAXIMUMS
 
         # Default: load SN SDI maximums
         sdi_maximums = self._load_sn_sdi_maximums()

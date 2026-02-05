@@ -308,7 +308,8 @@ class PNDiameterGrowthModel(ParameterizedModel):
         elevation: float = 10.0,
         slope: float = 0.0,
         aspect: float = 0.0,
-        time_step: float = 10.0
+        time_step: float = 10.0,
+        bark_ratio: float = 0.90
     ) -> float:
         """Calculate diameter growth from DDS.
 
@@ -326,6 +327,7 @@ class PNDiameterGrowthModel(ParameterizedModel):
             slope: Slope as proportion (0-1)
             aspect: Aspect in radians
             time_step: Growth period in years
+            bark_ratio: Species-specific bark ratio (DIB/DOB), default 0.90
 
         Returns:
             Diameter growth (inches) for the time period
@@ -344,9 +346,6 @@ class PNDiameterGrowthModel(ParameterizedModel):
             aspect=aspect,
             time_step=time_step
         )
-
-        # Bark ratio (approximate - should use species-specific values)
-        bark_ratio = 0.90  # Inside bark / outside bark
 
         # Convert DBH to inside-bark diameter
         dib = dbh * bark_ratio

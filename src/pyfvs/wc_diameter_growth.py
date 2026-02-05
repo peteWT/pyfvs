@@ -262,7 +262,8 @@ class WCDiameterGrowthModel(ParameterizedModel):
         elevation: float = 20.0,
         slope: float = 0.0,
         aspect: float = 0.0,
-        time_step: float = 10.0
+        time_step: float = 10.0,
+        bark_ratio: float = 0.90
     ) -> float:
         """Calculate diameter growth (DG) from DDS with bark ratio conversion.
 
@@ -270,7 +271,8 @@ class WCDiameterGrowthModel(ParameterizedModel):
         From dgdriv.f: D=DBH(I)*BRATIO(...); DG=(SQRT(DSQ+DDS)-D)
 
         Args:
-            Same as calculate_dds()
+            Same as calculate_dds(), plus:
+            bark_ratio: Species-specific bark ratio (DIB/DOB), default 0.90
 
         Returns:
             Diameter growth (inches) for the time period
@@ -279,9 +281,6 @@ class WCDiameterGrowthModel(ParameterizedModel):
             dbh, crown_ratio, site_index, ba, bal,
             pccf, relht, elevation, slope, aspect, time_step
         )
-
-        # Bark ratio (approximate - should use species-specific values)
-        bark_ratio = 0.90  # Inside bark / outside bark
 
         # Convert DBH to inside-bark diameter
         dib = dbh * bark_ratio

@@ -660,6 +660,13 @@ def create_mortality_model(
             pn_sdi_maxs = StandMetricsCalculator.PN_SDI_MAXIMUMS
             max_sdi = pn_sdi_maxs.get(default_species, 850)
         return MortalityModel(default_species=default_species, max_sdi=max_sdi)
+    elif variant == 'WC':
+        # WC uses the same SDI mortality model with WC-specific SDI maximums
+        from .stand_metrics import StandMetricsCalculator
+        if max_sdi is None:
+            wc_sdi_maxs = StandMetricsCalculator.WC_SDI_MAXIMUMS
+            max_sdi = wc_sdi_maxs.get(default_species, 800)
+        return MortalityModel(default_species=default_species, max_sdi=max_sdi)
     else:
         return MortalityModel(default_species=default_species, max_sdi=max_sdi)
 

@@ -132,6 +132,13 @@ VOLUME_COEFFICIENTS_OUTSIDE_BARK: Dict[str, Dict[str, float]] = {
     'PY': {'a': 0.06, 'b': 0.00210},   # Pacific Yew
     'DG': {'a': 0.06, 'b': 0.00215},   # Pacific Dogwood
     'CH': {'a': 0.06, 'b': 0.00220},   # Bitter Cherry
+    'CW': {'a': 0.06, 'b': 0.00215},   # Black Cottonwood (PNW)
+    'WJ': {'a': 0.10, 'b': 0.00200},   # Western Juniper (high taper, low form)
+    'WB': {'a': 0.08, 'b': 0.00235},   # Whitebark Pine
+    'KP': {'a': 0.08, 'b': 0.00230},   # Knobcone Pine
+    'HT': {'a': 0.06, 'b': 0.00200},   # Hawthorn (small tree)
+    'WI': {'a': 0.06, 'b': 0.00200},   # Willow (small tree)
+    'OT': {'a': 0.08, 'b': 0.00220},   # Other species (PNW generic)
     # Default for other softwoods
     'DEFAULT_SOFTWOOD': {'a': 0.15, 'b': 0.00245},
     'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': 0.10, 'b': 0.00240},
@@ -184,6 +191,13 @@ VOLUME_COEFFICIENTS_INSIDE_BARK: Dict[str, Dict[str, float]] = {
     'BM': {'a': -0.05, 'b': 0.00185},  # Bigleaf Maple
     'GC': {'a': -0.05, 'b': 0.00180},  # Giant Chinquapin
     'AS': {'a': -0.05, 'b': 0.00175},  # Quaking Aspen (PNW)
+    'CW': {'a': -0.05, 'b': 0.00180},  # Black Cottonwood (PNW)
+    'WJ': {'a': -0.08, 'b': 0.00168},  # Western Juniper
+    'WB': {'a': -0.07, 'b': 0.00200},  # Whitebark Pine
+    'KP': {'a': -0.07, 'b': 0.00195},  # Knobcone Pine
+    'HT': {'a': -0.05, 'b': 0.00168},  # Hawthorn
+    'WI': {'a': -0.05, 'b': 0.00168},  # Willow
+    'OT': {'a': -0.07, 'b': 0.00185},  # Other species (PNW generic)
     'DEFAULT_SOFTWOOD': {'a': -0.08, 'b': 0.00205},
     'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': -0.07, 'b': 0.00205},
     'DEFAULT_PNW_SOFTWOOD': {'a': -0.07, 'b': 0.00212},

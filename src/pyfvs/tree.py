@@ -664,7 +664,8 @@ class Tree:
                 elevation=elev,
                 slope=slope,
                 aspect=aspect,
-                time_step=time_step
+                time_step=time_step,
+                bark_ratio=bark_ratio
             )
 
         # Apply increment to DBH

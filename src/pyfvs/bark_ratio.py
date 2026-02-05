@@ -608,7 +608,7 @@ def create_bark_ratio_model(species_code: str = "LP", variant: Optional[str] = N
 
     if variant == 'LS':
         return LSBarkRatioModel(species_code)
-    elif variant == 'PN':
+    elif variant in ('PN', 'WC'):
         return PNBarkRatioModel(species_code)
     else:
         return BarkRatioModel(species_code)
