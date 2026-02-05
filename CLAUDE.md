@@ -13,6 +13,7 @@ Forest Vegetation Simulator (FVS) - Python implementation supporting multiple FV
 - **WC (West Cascades)** - 37 species for western Oregon and Washington Cascades including Douglas-fir, Western Hemlock, and Western Red Cedar
 - **NE (Northeast)** - 108 species for New England and Mid-Atlantic (CT, DE, MA, MD, ME, NH, NJ, NY, OH, PA, RI, VT, WV) including Red Maple, Sugar Maple, Northern Red Oak, Eastern White Pine
 - **CS (Central States)** - 96 species for Midwest oak-hickory forests (IL, IN, IA, MO) including White Oak, Northern Red Oak, Sugar Maple, Black Walnut
+- **OP (ORGANON Pacific Northwest)** - 18 species for intensively managed PNW plantations including Douglas-fir, Western Hemlock, Red Alder
 
 ## Key Development Commands
 
@@ -93,8 +94,8 @@ tree.py
   ├── pn_diameter_growth.py (18-coef ln(DDS) with topographic effects, PN variant)
   ├── wc_diameter_growth.py (19-coef ln(DDS) with topographic effects, WC variant)
   ├── height_diameter.py (Curtis-Arney/Wykoff equations, variant-aware)
-  ├── crown_ratio.py (Weibull-based crown ratio)
-  ├── bark_ratio.py (Clark 1991 DIB/DOB)
+  ├── crown_ratio.py (Weibull-based crown ratio, SN/LS/PN variant models)
+  ├── bark_ratio.py (Clark 1991 DIB/DOB, SN/LS/PN variant models)
   ├── crown_width.py (forest/open grown equations)
   ├── volume_library.py (Amateis & Burkhart equations)
   └── species.py (SpeciesCode enum)
@@ -130,6 +131,8 @@ src/pyfvs/cfg/
 ├── pn/                               # PN (Pacific Northwest Coast) variant
 │   ├── pn_diameter_growth_coefficients.json  # 20 coefficient sets
 │   ├── pn_height_diameter_coefficients.json  # Curtis-Arney P2,P3,P4
+│   ├── pn_bark_ratio_coefficients.json      # 3 equation types, 16 groups
+│   ├── pn_crown_ratio_coefficients.json     # Weibull, 17 groups + Redwood logistic
 │   ├── pn_species_config.yaml
 │   └── species/*.yaml                # PN species configs (39 species)
 ├── wc/                               # WC (West Cascades) variant
@@ -198,14 +201,15 @@ src/pyfvs/cfg/
 25. **String Normalization Utilities** - Added `utils/string_utils.py` with `normalize_code()`, `normalize_species_code()`, and `normalize_ecounit()` functions for consistent string handling throughout the codebase.
 26. **Test Fixtures Consolidation** - Created `tests/conftest.py` with 30+ shared pytest fixtures for trees (seedling, small, transition, large, mature), tree lists (sample, mixed species, density levels), and stands (young, mature, high/low site, ecounits).
 27. **VolumeCalculator Caching** - Added module-level cache for VolumeCalculator instances in `volume_library.py`, keyed by species code. The `get_volume_library()` function returns cached instances for performance.
-28. **Multi-Variant Architecture** - Added support for multiple FVS regional variants. Implemented Lake States (LS), Pacific Northwest Coast (PN), West Cascades (WC), Northeast (NE), and Central States (CS) variants alongside existing Southern (SN) variant. Key changes:
+28. **Multi-Variant Architecture** - Added support for multiple FVS regional variants. Implemented Lake States (LS), Pacific Northwest Coast (PN), West Cascades (WC), Northeast (NE), Central States (CS), and ORGANON Pacific Northwest (OP) variants alongside existing Southern (SN) variant. Key changes:
     - `config_loader.py`: Added `SUPPORTED_VARIANTS` dict, `set_default_variant()`, `get_default_variant()` functions
     - `ls_diameter_growth.py`: New module implementing LS 12-coefficient linear DDS equation
     - `pn_diameter_growth.py`: New module implementing PN 18-coefficient ln(DDS) equation with topographic effects
     - `wc_diameter_growth.py`: New module implementing WC 19-coefficient ln(DDS) equation (same structure as PN)
     - `ne_diameter_growth.py`: New module implementing NE-TWIGS iterative BA growth model
     - `cs_diameter_growth.py`: New module implementing CS linear DDS equation (same structure as LS)
-    - `tree.py`: Added variant parameter, variant-specific growth methods (`_grow_large_tree_ls()`, `_grow_large_tree_pn()`, `_grow_large_tree_wc()`, `_grow_large_tree_ne()`, `_grow_large_tree_cs()`)
+    - `op_diameter_growth.py`: New module implementing ORGANON ln(DG) equation (predicts diameter growth directly, not DDS)
+    - `tree.py`: Added variant parameter, variant-specific growth methods (`_grow_large_tree_ls()`, `_grow_large_tree_pn()`, `_grow_large_tree_wc()`, `_grow_large_tree_ne()`, `_grow_large_tree_cs()`, `_grow_large_tree_op()`)
     - `stand.py`: Added variant parameter, `_calculate_qmd_ge5()` for RELDBH computation
     - `height_diameter.py`: Added `VARIANT_COEFFICIENT_FILES` mapping for variant-aware coefficient loading
     - Created `cfg/ls/` with 71 configuration files (LS: 67 species)
@@ -213,14 +217,32 @@ src/pyfvs/cfg/
     - Created `cfg/wc/` with coefficient files and species configs (WC: 37 species)
     - Created `cfg/ne/` with coefficient files and species configs (NE: 108 species)
     - Created `cfg/cs/` with coefficient files and species configs (CS: 96 species)
+    - Created `cfg/op/` with coefficient files and species configs (OP: 18 species) - ORGANON-based variant
+29. **LS Variant Infrastructure** - Full infrastructure for Lake States variant:
+    - `bark_ratio.py`: Added `LSBarkRatioModel` - constant bark ratio per species from Raile (1982)
+    - `crown_ratio.py`: Added `LSCrownRatioModel` - TWIGS model `ACR=10*(BCR1/(1+BCR2*BA)+BCR3*(1-exp(BCR4*D)))`
+    - `mortality.py`: Added `LSMortalityModel` - 4-group background mortality with VARADJ shade tolerance
+    - `volume_library.py`: Added 25+ LS species combined-variable volume coefficients
+    - `stand_metrics.py`: Added `LS_SDI_MAXIMUMS` dict (67 species)
+    - Created `cfg/ls/ls_bark_ratio_coefficients.json`, `cfg/ls/ls_crown_ratio_coefficients.json`, `cfg/ls/ls_mortality_coefficients.json`
+    - 42 tests in `tests/test_ls_variant.py`
+30. **PN Variant Infrastructure** - Full infrastructure for Pacific Northwest Coast variant:
+    - `bark_ratio.py`: Added `PNBarkRatioModel` - 3 equation types (power `DIB=a*DOB^b`, linear `DIB=a+b*DOB`, constant `DIB=a*DOB`), 16 species groups via JBARK
+    - `crown_ratio.py`: Added `PNCrownRatioModel` - Weibull with linear mean CR, 17 species groups via IMAP, special Redwood logistic equation
+    - `mortality.py`: PN uses `MortalityModel` (same as SN) with PN-specific SDI maximums
+    - `volume_library.py`: Added 17+ PNW species (DF, WH, RC, SS, SF, GF, etc.) combined-variable coefficients from Brackett (1977)
+    - `stand_metrics.py`: Added `PN_SDI_MAXIMUMS` dict (37 species, range 300-1000)
+    - Created `cfg/pn/pn_bark_ratio_coefficients.json`, `cfg/pn/pn_crown_ratio_coefficients.json`
+    - 47 tests in `tests/test_pn_variant.py`
+    - Smoke test: 400 TPA DF SI=120 50yr → 333 TPA, 14.5" QMD, 383 BA, 15,029 cuft
 
 ## Recent Refactoring (2025)
 
 ### ParameterizedModel Architecture
 All growth model classes now inherit from `ParameterizedModel` (`model_base.py`):
-- **BarkRatioModel** (`bark_ratio.py`)
+- **BarkRatioModel**, **LSBarkRatioModel**, **PNBarkRatioModel** (`bark_ratio.py`)
 - **CrownWidthModel** (`crown_width.py`)
-- **CrownRatioModel** (`crown_ratio.py`)
+- **CrownRatioModel**, **LSCrownRatioModel**, **PNCrownRatioModel** (`crown_ratio.py`)
 - **CrownCompetitionFactorModel** (`crown_competition_factor.py`)
 - **HeightDiameterModel** (`height_diameter.py`)
 - **LargeTreeHeightGrowthModel** (`large_tree_height_growth.py`)
@@ -229,6 +251,7 @@ All growth model classes now inherit from `ParameterizedModel` (`model_base.py`)
 - **WCDiameterGrowthModel** (`wc_diameter_growth.py`) - West Cascades variant
 - **NEDiameterGrowthModel** (`ne_diameter_growth.py`) - Northeast variant
 - **CSDiameterGrowthModel** (`cs_diameter_growth.py`) - Central States variant
+- **OPDiameterGrowthModel** (`op_diameter_growth.py`) - ORGANON Pacific Northwest variant
 
 Benefits:
 - Standardized coefficient loading from JSON files via `ConfigLoader`
@@ -300,6 +323,7 @@ PyFVS supports multiple FVS regional variants with variant-specific growth equat
 | **WC** | West Cascades (OR, WA interior) | 37 | DF (Douglas-fir) | 10 years | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, elev, slope, aspect) |
 | **NE** | Northeast (New England, Mid-Atlantic) | 108 | RM (Red Maple) | 10 years | BA Growth = B1 * SI * (1 - exp(-B2 * DBH)) |
 | **CS** | Central States (IL, IN, IA, MO) | 96 | WO (White Oak) | 10 years | ln(DDS) = f(D, CR, RELDBH, SI, BA, BAL) |
+| **OP** | ORGANON Pacific Northwest (OR, WA) | 18 | DF (Douglas-fir) | 5 years | ln(DG) = f(D, CR, SI, BA, BAL) - direct diameter growth |
 
 ### Key Model Differences
 
@@ -314,6 +338,11 @@ PyFVS supports multiple FVS regional variants with variant-specific growth equat
 - Competition via RELDBH (relative DBH to QMD of trees ≥5" DBH)
 - 12 coefficients: INTERC, VDBHC, DBHC, DBH2C, RDBHC, RDBHSQC, CRWNC, CRSQC, SBAC, BALC, SITEC
 - Curtis-Arney height-diameter relationship
+- **Bark ratio**: Constant per species from Raile (1982)
+- **Crown ratio**: TWIGS model `ACR=10*(BCR1/(1+BCR2*BA)+BCR3*(1-exp(BCR4*D)))`
+- **Mortality**: 4-group background mortality with VARADJ shade tolerance adjustment
+- **Volume**: 25+ LS species with combined-variable equations
+- **SDI maximums**: Per-species values (67 species)
 
 **PN (Pacific Northwest Coast) Variant:**
 - Uses ln(DDS) transformation like SN but with topographic effects
@@ -322,6 +351,11 @@ PyFVS supports multiple FVS regional variants with variant-specific growth equat
 - Major species: Douglas-fir (DF), Western Hemlock (WH), Western Red Cedar (RC), Sitka Spruce (SS)
 - Very high productivity region (SI 100-200 feet common)
 - Species-specific site index curves for height growth
+- **Bark ratio**: 3 equation types (power/linear/constant) from bratio.f, 16 species groups via JBARK mapping
+- **Crown ratio**: Weibull distribution with linear mean CR `ACR = C0 + C1 * RELSDI * 100`, 17 species groups via IMAP; Redwood uses logistic equation
+- **Mortality**: Uses standard SDI mortality model (same as SN) with PN-specific SDI maximums (DF=850, WH=900, RC=850, SF=1000)
+- **Volume**: 17+ PNW species with combined-variable equations from Brackett (1977), Curtis et al.
+- **SDI maximums**: Per-species values derived from ecocls.f (range 300-1000)
 
 **WC (West Cascades) Variant:**
 - Uses same ln(DDS) equation structure as PN (shares code)
@@ -349,6 +383,18 @@ PyFVS supports multiple FVS regional variants with variant-specific growth equat
 - 96 species covering Midwest oak-hickory forests (IL, IN, IA, MO)
 - Major species: White Oak (WO), Northern Red Oak (RO), Sugar Maple (SM), Black Walnut (WN), Yellow-Poplar (YP)
 - Curtis-Arney height-diameter relationship
+
+**OP (ORGANON Pacific Northwest) Variant:**
+- **Key difference: Predicts diameter growth directly**, not DDS (diameter squared increment)
+- Based on ORGANON model developed at Oregon State University (Hann et al.)
+- Equation: ln(DG) = B0 + B1*ln(DBH+K1) + B2*DBH^K2 + B3*ln((CR+0.2)/1.2) + B4*ln(SI-4.5) + B5*(BAL^K3/ln(DBH+K4)) + B6*sqrt(BA)
+- Base cycle is 5 years (like SN)
+- 18 species for intensively managed Pacific Northwest plantations
+- Major species: Douglas-fir (DF), Western Hemlock (WH), Western Red Cedar (RC), Red Alder (RA)
+- Has 4 sub-versions: SWO (Southwest Oregon), NWO (Northwest Oregon), SMC (Stand Management Cooperative), RAP (Red Alder Plantation)
+- Calibrated for higher productivity plantation conditions
+- Curtis-Arney height-diameter relationship
+- Source: Zumrawi & Hann (1993), Hann et al. (2006)
 
 ### Variant Usage
 
@@ -383,7 +429,7 @@ stand_pn = Stand.initialize_planted(
     variant='PN'        # Pacific Northwest Coast variant
 )
 stand_pn.grow(years=50)
-# Produces ~480 sq ft BA, ~15" QMD, ~18,000 cu ft/acre
+# Produces ~383 sq ft BA, ~14.5" QMD, ~15,029 cu ft/acre
 
 # WC variant (West Cascades)
 stand_wc = Stand.initialize_planted(
@@ -414,6 +460,16 @@ stand_cs = Stand.initialize_planted(
 )
 stand_cs.grow(years=50)
 # Produces ~209 sq ft BA, ~9.4" QMD (Midwest oak-hickory)
+
+# OP variant (ORGANON Pacific Northwest)
+stand_op = Stand.initialize_planted(
+    trees_per_acre=400,
+    site_index=120,     # High PNW sites SI 100-180
+    species='DF',       # Douglas-fir (OP default)
+    variant='OP'        # ORGANON Pacific Northwest variant
+)
+stand_op.grow(years=50)
+# Produces ~590 sq ft BA, ~18.5" QMD (intensive plantation)
 ```
 
 ### Adding New Variants
@@ -424,6 +480,11 @@ To add a new FVS variant:
 3. Add variant-specific logic to `tree.py` growth methods
 4. Update `HeightDiameterModel` with variant coefficient file mapping
 5. Create species configs in `cfg/<variant>/species/`
+6. Add variant bark ratio model to `bark_ratio.py` and update `create_bark_ratio_model()` factory
+7. Add variant crown ratio model to `crown_ratio.py` and update `create_crown_ratio_model()` factory
+8. Add variant SDI maximums to `stand_metrics.py` and update `_get_sdi_maximums()`
+9. Add variant mortality dispatch in `mortality.py:create_mortality_model()`
+10. Add variant species volume coefficients to `volume_library.py`
 
 ## Ecological Unit Effects on Growth
 
@@ -524,7 +585,9 @@ See `test_output/manuscript_validation/` for validation reports
 3. ~~**ParameterizedModel Refactoring**~~ **DONE** - All growth models inherit from base class (see Recent Refactoring 2025)
 4. ~~**GrowthParameters Dataclass**~~ **DONE** - Encapsulates tree growth inputs (see Recently Fixed #23)
 5. ~~**SpeciesCode Enum**~~ **DONE** - Type-safe species handling (see Recently Fixed #24)
-6. ~~**Multi-Variant Support**~~ **DONE** - 6 variants implemented: SN (90), LS (67), PN (39), WC (37), NE (108), CS (96 species) - Eastern variants 100% complete - see Recently Fixed #28
+6. ~~**Multi-Variant Support**~~ **DONE** - 7 variants implemented: SN (90), LS (67), PN (39), WC (37), NE (108), CS (96), OP (18 species) - see Recently Fixed #28
+7. ~~**LS Variant Infrastructure**~~ **DONE** - Bark ratio, crown ratio, mortality, volume, SDI maximums (42 tests)
+8. ~~**PN Variant Infrastructure**~~ **DONE** - Bark ratio (3 eq types), crown ratio (Weibull+Redwood logistic), mortality, volume (17+ species), SDI maximums (47 tests)
 
 ### Testing & Validation
 1. ~~Re-run manuscript validation tests with appropriate ecounit settings~~ **DONE**
