@@ -120,11 +120,14 @@ class CompetitionCalculator:
         # FVS RELHT = HT(I) / AVH where AVH is dominant stand height
         top_height = self._metrics.calculate_top_height(trees)
 
+        # Precompute PBAL for all trees in O(n) using sorted order
+        pbal_map = self._metrics.calculate_pbal_all(sorted_trees)
+
         # Calculate metrics for each tree
         competition_list = []
         for tree in trees:
-            # Calculate PBAL (basal area in larger trees)
-            pbal = self._metrics.calculate_pbal(trees, tree)
+            # Look up precomputed PBAL
+            pbal = pbal_map.get(id(tree), 0.0)
 
             # Calculate relative position in diameter distribution
             rank = tree_to_rank[id(tree)] / len(trees)

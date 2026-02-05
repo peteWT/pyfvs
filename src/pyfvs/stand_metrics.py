@@ -377,6 +377,45 @@ class StandMetricsCalculator:
         )
         return pbal
 
+    def calculate_pbal_all(self, sorted_trees: List['Tree']) -> Dict[int, float]:
+        """Calculate PBAL for all trees in O(n) given a pre-sorted list.
+
+        Trees must be sorted ascending by DBH. Returns a dict mapping
+        tree id() to PBAL value. Trees with the same DBH get the same
+        PBAL (BA of trees with strictly larger DBH).
+
+        Args:
+            sorted_trees: List of Tree objects sorted ascending by DBH
+
+        Returns:
+            Dict mapping id(tree) to PBAL in square feet per acre
+        """
+        if not sorted_trees:
+            return {}
+
+        bas = [calculate_tree_basal_area(t.dbh) for t in sorted_trees]
+        total_ba = sum(bas)
+        pbal_map: Dict[int, float] = {}
+
+        i = 0
+        cum_ba_le = 0.0  # cumulative BA of trees with DBH <= current group
+        while i < len(sorted_trees):
+            current_dbh = sorted_trees[i].dbh
+            group_start = i
+            group_ba = 0.0
+            while i < len(sorted_trees) and sorted_trees[i].dbh == current_dbh:
+                group_ba += bas[i]
+                i += 1
+            # PBAL = BA of trees with strictly larger DBH
+            pbal_value = total_ba - cum_ba_le - group_ba
+            if pbal_value < 1e-10:
+                pbal_value = 0.0
+            for j in range(group_start, i):
+                pbal_map[id(sorted_trees[j])] = pbal_value
+            cum_ba_le += group_ba
+
+        return pbal_map
+
 
 # Module-level convenience functions for backwards compatibility
 _default_calculator: Optional[StandMetricsCalculator] = None

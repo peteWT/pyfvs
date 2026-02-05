@@ -264,7 +264,10 @@ class WCDiameterGrowthModel(ParameterizedModel):
         aspect: float = 0.0,
         time_step: float = 10.0
     ) -> float:
-        """Calculate diameter growth (DG) from DDS.
+        """Calculate diameter growth (DG) from DDS with bark ratio conversion.
+
+        FVS applies DDS to inside-bark diameter, then converts back.
+        From dgdriv.f: D=DBH(I)*BRATIO(...); DG=(SQRT(DSQ+DDS)-D)
 
         Args:
             Same as calculate_dds()
@@ -277,13 +280,22 @@ class WCDiameterGrowthModel(ParameterizedModel):
             pccf, relht, elevation, slope, aspect, time_step
         )
 
-        # Convert DDS to diameter growth: DG = sqrt(D² + DDS) - D
-        current_dsq = dbh * dbh
-        new_dsq = current_dsq + dds
-        if new_dsq > current_dsq:
-            new_dbh = math.sqrt(new_dsq)
-            return new_dbh - dbh
-        return 0.0
+        # Bark ratio (approximate - should use species-specific values)
+        bark_ratio = 0.90  # Inside bark / outside bark
+
+        # Convert DBH to inside-bark diameter
+        dib = dbh * bark_ratio
+        dsq = dib * dib
+
+        # Apply DDS to inside-bark diameter squared
+        new_dsq = dsq + dds
+        if new_dsq <= dsq:
+            return 0.0
+
+        # Convert back to outside-bark and calculate growth
+        new_dib = math.sqrt(new_dsq)
+        new_dbh = new_dib / bark_ratio
+        return new_dbh - dbh
 
 
 # Module-level cache for model instances
