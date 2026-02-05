@@ -1,0 +1,143 @@
+{
+    "metadata": {
+        "variant": "PN",
+        "source": "FVS PN variant bratio.f",
+        "description": "Bark ratio coefficients for Pacific Northwest Coast variant",
+        "equation_types": {
+            "1": "DIB = a * DOB^b (power equation)",
+            "2": "DIB = a + b * DOB (linear equation)",
+            "3": "DIB = a * DOB (constant ratio)"
+        },
+        "notes": "16 bark ratio groups mapped from 39 PN species via JBARK array"
+    },
+    "species_groups": {
+        "1": {
+            "type": 1,
+            "a": 0.903563,
+            "b": 0.989388,
+            "species": ["SF", "DF"],
+            "description": "Silver Fir / Douglas-fir group"
+        },
+        "2": {
+            "type": 1,
+            "a": 0.904973,
+            "b": 1.0,
+            "species": ["WF", "GF"],
+            "description": "White Fir / Grand Fir group"
+        },
+        "3": {
+            "type": 1,
+            "a": 0.809427,
+            "b": 1.016866,
+            "species": ["PP", "JP", "LL", "WB", "KP"],
+            "description": "Ponderosa Pine / Lodgepole group"
+        },
+        "4": {
+            "type": 1,
+            "a": 0.837291,
+            "b": 1.0,
+            "species": ["IC", "NF", "YC", "AF"],
+            "description": "Incense Cedar / Noble Fir group"
+        },
+        "5": {
+            "type": 1,
+            "a": 0.958330,
+            "b": 1.0,
+            "species": ["SS", "SP", "WP"],
+            "description": "Sitka Spruce / Sugar Pine group"
+        },
+        "6": {
+            "type": 1,
+            "a": 0.949670,
+            "b": 1.0,
+            "species": ["RC"],
+            "description": "Western Red Cedar group"
+        },
+        "7": {
+            "type": 1,
+            "a": 0.933710,
+            "b": 1.0,
+            "species": ["WH"],
+            "description": "Western Hemlock group"
+        },
+        "8": {
+            "type": 1,
+            "a": 0.855800,
+            "b": 1.021300,
+            "species": ["WO"],
+            "description": "White Oak group"
+        },
+        "9": {
+            "type": 2,
+            "a": 0.083600,
+            "b": 0.947820,
+            "species": ["BM"],
+            "description": "Bigleaf Maple (linear)"
+        },
+        "10": {
+            "type": 2,
+            "a": 0.155650,
+            "b": 0.901820,
+            "species": ["GC"],
+            "description": "Giant Chinquapin (linear)"
+        },
+        "11": {
+            "type": 2,
+            "a": 0.075256,
+            "b": 0.943730,
+            "species": ["RA"],
+            "description": "Red Alder (linear)"
+        },
+        "12": {
+            "type": 1,
+            "a": 0.933290,
+            "b": 1.0,
+            "species": ["OT"],
+            "description": "Other species (default)"
+        },
+        "13": {
+            "type": 3,
+            "a": 0.900000,
+            "b": null,
+            "species": ["ES", "LP"],
+            "description": "Engelmann Spruce / Lodgepole Pine (constant 0.90)"
+        },
+        "14": {
+            "type": 1,
+            "a": 0.701200,
+            "b": 1.048620,
+            "species": ["RW"],
+            "description": "Redwood group"
+        },
+        "15": {
+            "type": 1,
+            "a": 0.949670,
+            "b": 1.0,
+            "species": ["YC"],
+            "description": "Alaska Yellow Cedar (uses RC group)"
+        },
+        "16": {
+            "type": 1,
+            "a": 0.933710,
+            "b": 1.0,
+            "species": ["MH"],
+            "description": "Mountain Hemlock (uses WH group)"
+        }
+    },
+    "species_to_group": {
+        "SF": 1, "WF": 2, "GF": 2, "AF": 4, "RF": 4,
+        "SS": 5, "NF": 4, "YC": 15, "IC": 4, "ES": 13,
+        "LP": 13, "JP": 3, "SP": 5, "WP": 5, "PP": 3,
+        "DF": 1, "RW": 14, "RC": 6, "WH": 7, "MH": 16,
+        "BM": 9, "RA": 11, "WA": 14, "PB": 14, "GC": 10,
+        "AS": 14, "CW": 14, "WO": 8, "WJ": 14, "LL": 3,
+        "WB": 3, "KP": 3, "PY": 14, "DG": 14, "HT": 14,
+        "CH": 14, "WI": 14, "OT": 12
+    },
+    "jbark_array": [1,2,2,4,4,5,4,15,4,13,13,3,5,5,3,1,14,6,7,16,9,11,14,14,10,14,14,8,14,3,3,3,14,14,14,14,14,14,12],
+    "jbark_species_order": ["SF","WF","GF","AF","RF","SS","NF","YC","IC","ES","LP","JP","SP","WP","PP","DF","RW","RC","WH","MH","BM","RA","WA","PB","GC","AS","CW","WO","WJ","LL","WB","KP","PY","DG","HT","CH","WI","--","OT"],
+    "defaults": {
+        "softwood_group": 12,
+        "hardwood_group": 9
+    }
+}

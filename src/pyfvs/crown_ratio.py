@@ -4,6 +4,7 @@ Crown ratio relationship functions for FVS-Python.
 Supports multiple FVS variants:
 - SN (Southern): Weibull-based crown model
 - LS (Lake States): TWIGS model from Belcher et al. (1982)
+- PN (Pacific Northwest Coast): Weibull with linear mean CR from crown.f
 """
 import math
 import random
@@ -15,6 +16,7 @@ from .config_loader import load_coefficient_file, get_default_variant
 __all__ = [
     'CrownRatioModel',
     'LSCrownRatioModel',
+    'PNCrownRatioModel',
     'create_crown_ratio_model',
     'calculate_average_crown_ratio',
     'predict_tree_crown_ratio',
@@ -480,6 +482,272 @@ class LSCrownRatioModel:
         return max(0.05, min(0.95, new_cr))
 
 
+class PNCrownRatioModel:
+    """Crown ratio model for the Pacific Northwest Coast (PN) variant.
+
+    Uses Weibull distribution with PN-specific coefficients from crown.f:
+    - Mean CR: ACR = C0 + C1 * RELSDI * 100 (linear in relative SDI)
+    - Weibull location: A = WEIBA[group]
+    - Weibull scale: B = WEIBB0 + WEIBB1 * ACR
+    - Weibull shape: C = WEIBC0 + WEIBC1 * ACR
+    - Crown ratio: CR = A + B * (-ln(1-X))^(1/C), bounded [0.10, 0.95]
+
+    17 species groups mapped from 39 PN species via IMAP array.
+    Special Redwood (species 17) uses logistic equation.
+    """
+
+    # Species-to-group mapping from IMAP array in crown.f
+    _SPECIES_TO_GROUP = {
+        'SF': 1, 'WF': 2, 'GF': 2, 'AF': 3, 'RF': 3,
+        'SS': 16, 'NF': 4, 'YC': 15, 'IC': 11, 'ES': 11,
+        'LP': 16, 'JP': 6, 'SP': 5, 'WP': 5, 'PP': 6,
+        'DF': 7, 'RW': 11, 'RC': 8, 'WH': 9, 'MH': 10,
+        'BM': 12, 'RA': 13, 'WA': 14, 'PB': 14, 'GC': 14,
+        'AS': 14, 'CW': 14, 'WO': 14, 'WJ': 14, 'LL': 11,
+        'WB': 11, 'KP': 11, 'PY': 14, 'DG': 14, 'HT': 14,
+        'CH': 14, 'WI': 14, 'OT': 14,
+    }
+
+    # Fallback mean CR coefficients (C0, C1) by group
+    _FALLBACK_MEAN_CR = {
+        1:  (5.073, -0.01143),
+        2:  (5.212, -0.01162),
+        3:  (4.860, -0.00617),
+        4:  (5.569, -0.02129),
+        5:  (4.280, -0.00248),
+        6:  (5.073, -0.02099),
+        7:  (5.191, -0.00827),
+        8:  (5.330, -0.01408),
+        9:  (4.522, -0.00628),
+        10: (5.330, -0.01408),
+        11: (5.138, -0.01128),
+        12: (3.802, -0.00393),
+        13: (6.193, -0.01792),
+        14: (5.175, -0.01128),
+        15: (5.330, -0.01408),
+        16: (4.556, -0.00898),
+        17: (0, 0),
+    }
+
+    # Fallback Weibull parameters (WEIBA, WEIBB0, WEIBB1, WEIBC0, WEIBC1) by group
+    _FALLBACK_WEIBULL = {
+        1:  (0, -0.17168, 1.16155, 2.82630, 0),
+        2:  (0,  0.13094, 1.09341, 1.35514, 0.35047),
+        3:  (1, -0.98111, 1.09227, 1.32605, 0.31839),
+        4:  (0, -0.13581, 1.14771, 3.01749, 0),
+        5:  (0,  0.01995, 1.10874, 2.62123, 0.18673),
+        6:  (0, -0.03670, 1.13279, 2.87609, 0),
+        7:  (0,  0.04023, 1.10040, 2.57407, 0),
+        8:  (0,  0.13424, 1.08508, 1.49476, 0.37279),
+        9:  (0,  0.14291, 1.10098, 2.64033, 0.12893),
+        10: (0,  0.13424, 1.08508, 1.49476, 0.37279),
+        11: (0, -0.14891, 1.14484, 2.67756, 0),
+        12: (0,  0.13424, 1.08508, 1.49476, 0.37279),
+        13: (0, -0.17168, 1.16155, 2.82630, 0),
+        14: (0,  0.12139, 1.06988, 3.47174, -0.11500),
+        15: (0,  0.13424, 1.08508, 1.49476, 0.37279),
+        16: (0,  0.14291, 1.10098, 2.64033, 0.12893),
+        17: (0, 0, 0, 0, 0),
+    }
+
+    # Redwood logistic equation coefficients
+    _REDWOOD_LOGISTIC = {
+        'a0': -1.021064,
+        'a1': 0.309296,
+        'a2': 0.869720,
+        'a3': -0.116274,
+    }
+
+    DEFAULT_GROUP = 14  # Misc hardwoods
+
+    def __init__(self, species_code: str = "DF"):
+        """Initialize with species-specific crown ratio parameters.
+
+        Args:
+            species_code: Species code (e.g., "DF", "WH", "RC", etc.)
+        """
+        self.species_code = species_code
+        self._group = None
+        self._mean_cr_c0 = None
+        self._mean_cr_c1 = None
+        self._weiba = None
+        self._weibb0 = None
+        self._weibb1 = None
+        self._weibc0 = None
+        self._weibc1 = None
+        self._load_parameters()
+
+    def _load_parameters(self):
+        """Load crown ratio parameters from PN coefficient file."""
+        species_to_group = self._SPECIES_TO_GROUP
+        mean_cr_groups = self._FALLBACK_MEAN_CR
+        weibull_groups = self._FALLBACK_WEIBULL
+
+        try:
+            data = load_coefficient_file('pn/pn_crown_ratio_coefficients.json')
+            species_to_group = data.get('species_to_group', species_to_group)
+
+            # Load mean CR coefficients
+            mcr_data = data.get('mean_cr_coefficients', {}).get('groups', {})
+            if mcr_data:
+                mean_cr_groups = {}
+                for k, v in mcr_data.items():
+                    mean_cr_groups[int(k)] = (v['C0'], v['C1'])
+
+            # Load Weibull parameters
+            weib_data = data.get('weibull_parameters', {}).get('groups', {})
+            if weib_data:
+                weibull_groups = {}
+                for k, v in weib_data.items():
+                    weibull_groups[int(k)] = (
+                        v['WEIBA'], v['WEIBB0'], v['WEIBB1'],
+                        v['WEIBC0'], v['WEIBC1']
+                    )
+        except FileNotFoundError:
+            pass
+
+        # Look up this species' group
+        self._group = species_to_group.get(self.species_code, self.DEFAULT_GROUP)
+
+        # Load mean CR coefficients for the group
+        c0, c1 = mean_cr_groups.get(self._group, mean_cr_groups[self.DEFAULT_GROUP])
+        self._mean_cr_c0 = c0
+        self._mean_cr_c1 = c1
+
+        # Load Weibull parameters for the group
+        weib = weibull_groups.get(self._group, weibull_groups[self.DEFAULT_GROUP])
+        self._weiba = weib[0]
+        self._weibb0 = weib[1]
+        self._weibb1 = weib[2]
+        self._weibc0 = weib[3]
+        self._weibc1 = weib[4]
+
+    def calculate_average_crown_ratio(self, relsdi: float) -> float:
+        """Calculate average crown ratio using PN linear equation.
+
+        PN equation: ACR = C0 + C1 * RELSDI * 100
+        where RELSDI is on the 1-12 scale (as used in FVS).
+
+        Args:
+            relsdi: Relative stand density index (1.0-12.0 scale)
+
+        Returns:
+            Average crown ratio as proportion (0.05-0.95)
+        """
+        relsdi = max(1.0, min(12.0, relsdi))
+
+        # PN uses RELSDI * 100 in the equation (converting to 100-1200 scale)
+        acr = self._mean_cr_c0 + self._mean_cr_c1 * relsdi * 100.0
+
+        # ACR is on 0-10 scale in PN, convert to proportion
+        acr_proportion = acr / 10.0
+
+        return max(0.05, min(0.95, acr_proportion))
+
+    def predict_individual_crown_ratio(self, tree_rank: float, relsdi: float,
+                                       ccf: float = 100.0, dbh: float = 5.0,
+                                       ba: float = 100.0, height: float = 50.0,
+                                       qmd: float = 8.0) -> float:
+        """Predict individual tree crown ratio using PN Weibull distribution.
+
+        Args:
+            tree_rank: Tree's rank in diameter distribution (0-1)
+            relsdi: Relative stand density index (1.0-12.0)
+            ccf: Crown competition factor (not used in PN)
+            dbh: Diameter at breast height (inches)
+            ba: Stand basal area (sq ft/acre)
+            height: Tree height (feet)
+            qmd: Stand QMD (inches)
+
+        Returns:
+            Crown ratio as proportion (0.10-0.95)
+        """
+        # Calculate average crown ratio
+        acr = self.calculate_average_crown_ratio(relsdi)
+
+        # ACR as a 0-10 value for Weibull parameter calculation
+        acr_ten = acr * 10.0
+
+        # Calculate Weibull parameters
+        weib_a = self._weiba
+        weib_b = self._weibb0 + self._weibb1 * acr_ten
+        weib_c = self._weibc0 + self._weibc1 * acr_ten
+
+        # Ensure B and C are positive and reasonable
+        weib_b = max(1.0, weib_b)
+        weib_c = max(0.5, weib_c)
+
+        # Bound tree rank to avoid numerical issues
+        x = max(0.05, min(0.95, tree_rank))
+
+        try:
+            # Weibull: CR = A + B * (-ln(1-X))^(1/C)
+            cr = weib_a + weib_b * ((-math.log(1 - x)) ** (1.0 / weib_c))
+
+            # CR is on 0-10 scale, convert to proportion
+            cr = cr / 10.0
+
+        except (ValueError, OverflowError, ZeroDivisionError):
+            cr = acr
+
+        # Bound to [0.10, 0.95] per PN specification
+        return max(0.10, min(0.95, cr))
+
+    def predict_redwood_crown_ratio(self, dbh: float, height: float,
+                                     qmd: float, relative_density: float) -> float:
+        """Predict crown ratio for Redwood using logistic equation.
+
+        Equation: X = a0 + a1*ln(HDR) + a2*PRD + a3*(D/QMDPLT)
+                  CR = 1/(1+exp(X))
+
+        Args:
+            dbh: Diameter at breast height (inches)
+            height: Tree total height (feet)
+            qmd: Plot-level QMD (inches)
+            relative_density: Predicted relative density (0-1)
+
+        Returns:
+            Crown ratio as proportion (0.10-0.95)
+        """
+        if dbh <= 0 or height <= 0:
+            return 0.50
+
+        hdr = height / dbh
+        d_over_qmd = dbh / qmd if qmd > 0 else 1.0
+
+        coeffs = self._REDWOOD_LOGISTIC
+        x = (coeffs['a0']
+             + coeffs['a1'] * math.log(max(1.0, hdr))
+             + coeffs['a2'] * relative_density
+             + coeffs['a3'] * d_over_qmd)
+
+        cr = 1.0 / (1.0 + math.exp(x))
+
+        return max(0.10, min(0.95, cr))
+
+    def update_crown_ratio_change(self, current_cr: float, predicted_cr: float,
+                                  height_growth: float, cycle_length: int = 5) -> float:
+        """Calculate crown ratio change with bounds checking.
+
+        Args:
+            current_cr: Current crown ratio (proportion)
+            predicted_cr: Predicted crown ratio (proportion)
+            height_growth: Height growth during cycle (feet)
+            cycle_length: Length of projection cycle (years)
+
+        Returns:
+            New crown ratio (proportion)
+        """
+        change = predicted_cr - current_cr
+
+        # Bound change to 1% per year
+        max_cycle_change = 0.01 * cycle_length
+        bounded_change = max(-max_cycle_change, min(max_cycle_change, change))
+
+        new_cr = current_cr + bounded_change
+        return max(0.10, min(0.95, new_cr))
+
+
 def create_crown_ratio_model(species_code: str = "LP", variant: Optional[str] = None):
     """Factory function to create a crown ratio model for a species and variant.
 
@@ -495,6 +763,8 @@ def create_crown_ratio_model(species_code: str = "LP", variant: Optional[str] = 
 
     if variant == 'LS':
         return LSCrownRatioModel(species_code)
+    elif variant == 'PN':
+        return PNCrownRatioModel(species_code)
     else:
         return CrownRatioModel(species_code)
 

@@ -60,6 +60,18 @@ class StandMetricsCalculator:
         'BN': 350, 'WN': 400, 'HH': 400, 'BK': 350, 'OH': 350,
     }
 
+    # PN SDI maximums derived from ecocls.f typical eco-class values
+    PN_SDI_MAXIMUMS = {
+        'SF': 1000, 'WF': 700, 'GF': 700, 'AF': 550, 'RF': 700,
+        'SS': 800, 'NF': 700, 'YC': 600, 'IC': 500, 'ES': 550,
+        'LP': 450, 'JP': 450, 'SP': 550, 'WP': 550, 'PP': 450,
+        'DF': 850, 'RW': 950, 'RC': 850, 'WH': 900, 'MH': 600,
+        'BM': 500, 'RA': 700, 'WA': 500, 'PB': 400, 'GC': 500,
+        'AS': 400, 'CW': 500, 'WO': 500, 'WJ': 300, 'LL': 400,
+        'WB': 400, 'KP': 400, 'PY': 350, 'DG': 400, 'HT': 350,
+        'CH': 400, 'WI': 350, 'OT': 500,
+    }
+
     def __init__(self, default_species: str = 'LP', variant: Optional[str] = None):
         """Initialize the metrics calculator.
 
@@ -81,6 +93,10 @@ class StandMetricsCalculator:
         if self.variant == 'LS':
             self._sdi_cache['LS'] = self.LS_SDI_MAXIMUMS
             return self.LS_SDI_MAXIMUMS
+
+        if self.variant == 'PN':
+            self._sdi_cache['PN'] = self.PN_SDI_MAXIMUMS
+            return self.PN_SDI_MAXIMUMS
 
         # Default: load SN SDI maximums
         sdi_maximums = self._load_sn_sdi_maximums()

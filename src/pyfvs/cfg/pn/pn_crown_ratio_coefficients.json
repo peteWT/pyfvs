@@ -1,0 +1,75 @@
+{
+    "metadata": {
+        "variant": "PN",
+        "source": "FVS PN variant crown.f",
+        "description": "Crown ratio coefficients for Pacific Northwest Coast variant",
+        "model": "Weibull distribution with linear mean CR in relative SDI",
+        "notes": "17 species groups mapped from 39 PN species via IMAP array. Group 17 (Redwood) uses logistic equation."
+    },
+    "mean_cr_coefficients": {
+        "description": "ACR = C0 + C1 * RELSDI * 100",
+        "groups": {
+            "1":  {"C0": 5.073, "C1": -0.01143, "species": ["SF"]},
+            "2":  {"C0": 5.212, "C1": -0.01162, "species": ["WF", "GF"]},
+            "3":  {"C0": 4.860, "C1": -0.00617, "species": ["AF", "RF"]},
+            "4":  {"C0": 5.569, "C1": -0.02129, "species": ["NF"]},
+            "5":  {"C0": 4.280, "C1": -0.00248, "species": ["SP", "WP"]},
+            "6":  {"C0": 5.073, "C1": -0.02099, "species": ["JP", "PP"]},
+            "7":  {"C0": 5.191, "C1": -0.00827, "species": ["DF"]},
+            "8":  {"C0": 5.330, "C1": -0.01408, "species": ["RC"]},
+            "9":  {"C0": 4.522, "C1": -0.00628, "species": ["WH"]},
+            "10": {"C0": 5.330, "C1": -0.01408, "species": ["MH"]},
+            "11": {"C0": 5.138, "C1": -0.01128, "species": ["IC", "ES", "LP", "LL", "WB", "KP", "RW"]},
+            "12": {"C0": 3.802, "C1": -0.00393, "species": ["BM"]},
+            "13": {"C0": 6.193, "C1": -0.01792, "species": ["RA"]},
+            "14": {"C0": 5.175, "C1": -0.01128, "species": ["WA", "PB", "GC", "AS", "CW", "WO", "WJ", "PY", "DG", "HT", "CH", "WI", "OT"]},
+            "15": {"C0": 5.330, "C1": -0.01408, "species": ["YC"]},
+            "16": {"C0": 4.556, "C1": -0.00898, "species": ["SS"]},
+            "17": {"C0": 0, "C1": 0, "species": ["RW_LOGISTIC"], "note": "Redwood uses logistic equation, not Weibull"}
+        }
+    },
+    "weibull_parameters": {
+        "description": "A=location, B=WEIBB0+WEIBB1*ACR (scale), C=WEIBC0+WEIBC1*ACR (shape)",
+        "groups": {
+            "1":  {"WEIBA": 0, "WEIBB0": -0.17168, "WEIBB1": 1.16155, "WEIBC0": 2.82630, "WEIBC1": 0},
+            "2":  {"WEIBA": 0, "WEIBB0":  0.13094, "WEIBB1": 1.09341, "WEIBC0": 1.35514, "WEIBC1": 0.35047},
+            "3":  {"WEIBA": 1, "WEIBB0": -0.98111, "WEIBB1": 1.09227, "WEIBC0": 1.32605, "WEIBC1": 0.31839},
+            "4":  {"WEIBA": 0, "WEIBB0": -0.13581, "WEIBB1": 1.14771, "WEIBC0": 3.01749, "WEIBC1": 0},
+            "5":  {"WEIBA": 0, "WEIBB0":  0.01995, "WEIBB1": 1.10874, "WEIBC0": 2.62123, "WEIBC1": 0.18673},
+            "6":  {"WEIBA": 0, "WEIBB0": -0.03670, "WEIBB1": 1.13279, "WEIBC0": 2.87609, "WEIBC1": 0},
+            "7":  {"WEIBA": 0, "WEIBB0":  0.04023, "WEIBB1": 1.10040, "WEIBC0": 2.57407, "WEIBC1": 0},
+            "8":  {"WEIBA": 0, "WEIBB0":  0.13424, "WEIBB1": 1.08508, "WEIBC0": 1.49476, "WEIBC1": 0.37279},
+            "9":  {"WEIBA": 0, "WEIBB0":  0.14291, "WEIBB1": 1.10098, "WEIBC0": 2.64033, "WEIBC1": 0.12893},
+            "10": {"WEIBA": 0, "WEIBB0":  0.13424, "WEIBB1": 1.08508, "WEIBC0": 1.49476, "WEIBC1": 0.37279},
+            "11": {"WEIBA": 0, "WEIBB0": -0.14891, "WEIBB1": 1.14484, "WEIBC0": 2.67756, "WEIBC1": 0},
+            "12": {"WEIBA": 0, "WEIBB0":  0.13424, "WEIBB1": 1.08508, "WEIBC0": 1.49476, "WEIBC1": 0.37279},
+            "13": {"WEIBA": 0, "WEIBB0": -0.17168, "WEIBB1": 1.16155, "WEIBC0": 2.82630, "WEIBC1": 0},
+            "14": {"WEIBA": 0, "WEIBB0":  0.12139, "WEIBB1": 1.06988, "WEIBC0": 3.47174, "WEIBC1": -0.11500},
+            "15": {"WEIBA": 0, "WEIBB0":  0.13424, "WEIBB1": 1.08508, "WEIBC0": 1.49476, "WEIBC1": 0.37279},
+            "16": {"WEIBA": 0, "WEIBB0":  0.14291, "WEIBB1": 1.10098, "WEIBC0": 2.64033, "WEIBC1": 0.12893},
+            "17": {"WEIBA": 0, "WEIBB0": 0, "WEIBB1": 0, "WEIBC0": 0, "WEIBC1": 0}
+        }
+    },
+    "redwood_logistic": {
+        "description": "CR = 1/(1+exp(X)) where X = a0 + a1*ln(HDR) + a2*PRD + a3*(D/QMDPLT)",
+        "coefficients": {
+            "a0": -1.021064,
+            "a1": 0.309296,
+            "a2": 0.869720,
+            "a3": -0.116274
+        },
+        "notes": "HDR=height/diameter ratio, PRD=predicted relative density, D=DBH, QMDPLT=plot QMD"
+    },
+    "species_to_group": {
+        "SF": 1, "WF": 2, "GF": 2, "AF": 3, "RF": 3,
+        "SS": 16, "NF": 4, "YC": 15, "IC": 11, "ES": 11,
+        "LP": 16, "JP": 6, "SP": 5, "WP": 5, "PP": 6,
+        "DF": 7, "RW": 11, "RC": 8, "WH": 9, "MH": 10,
+        "BM": 12, "RA": 13, "WA": 14, "PB": 14, "GC": 14,
+        "AS": 14, "CW": 14, "WO": 14, "WJ": 14, "LL": 11,
+        "WB": 11, "KP": 11, "PY": 14, "DG": 14, "HT": 14,
+        "CH": 14, "WI": 14, "OT": 14
+    },
+    "imap_array": [1,2,2,3,3,16,4,15,11,11,16,6,5,5,6,7,11,8,9,10,12,13,14,14,14,14,14,14,14,11,11,11,14,14,14,14,14,14,14],
+    "imap_species_order": ["SF","WF","GF","AF","RF","SS","NF","YC","IC","ES","LP","JP","SP","WP","PP","DF","RW","RC","WH","MH","BM","RA","WA","PB","GC","AS","CW","WO","WJ","LL","WB","KP","PY","DG","HT","CH","WI","--","OT"]
+}

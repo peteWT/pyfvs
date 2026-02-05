@@ -108,12 +108,38 @@ VOLUME_COEFFICIENTS_OUTSIDE_BARK: Dict[str, Dict[str, float]] = {
     'BA': {'a': 0.08000, 'b': 0.00220},   # Black Ash
     'WN': {'a': 0.10000, 'b': 0.00240},   # Black Walnut (high value, good form)
     'BC': {'a': 0.08000, 'b': 0.00230},   # Black Cherry
+    # PNW conifers - from Brackett (1977), Curtis et al. (1981)
+    'DF': {'a': 0.10, 'b': 0.00260},   # Douglas-fir (excellent form)
+    'WH': {'a': 0.08, 'b': 0.00255},   # Western Hemlock
+    'RC': {'a': 0.10, 'b': 0.00245},   # Western Redcedar (high taper)
+    'SS': {'a': 0.10, 'b': 0.00265},   # Sitka Spruce (good form)
+    'SF': {'a': 0.08, 'b': 0.00250},   # Silver Fir (Pacific Silver Fir)
+    'GF': {'a': 0.08, 'b': 0.00250},   # Grand Fir
+    'WF': {'a': 0.08, 'b': 0.00248},   # White Fir
+    'NF': {'a': 0.08, 'b': 0.00252},   # Noble Fir
+    'AF': {'a': 0.06, 'b': 0.00240},   # Subalpine Fir
+    'RF': {'a': 0.08, 'b': 0.00250},   # California Red Fir
+    'IC': {'a': 0.10, 'b': 0.00240},   # Incense Cedar
+    'ES': {'a': 0.08, 'b': 0.00240},   # Engelmann Spruce
+    'YC': {'a': 0.10, 'b': 0.00245},   # Alaska Yellow Cedar
+    'RW': {'a': 0.15, 'b': 0.00270},   # Redwood (massive form)
+    'MH': {'a': 0.06, 'b': 0.00245},   # Mountain Hemlock
+    # PNW hardwoods - from Brackett (1977), Chambers & Foltz (1979)
+    'RA': {'a': 0.06, 'b': 0.00230},   # Red Alder
+    'BM': {'a': 0.06, 'b': 0.00220},   # Bigleaf Maple
+    'GC': {'a': 0.06, 'b': 0.00215},   # Giant Chinquapin
+    'AS': {'a': 0.06, 'b': 0.00210},   # Quaking Aspen (PNW)
+    'PY': {'a': 0.06, 'b': 0.00210},   # Pacific Yew
+    'DG': {'a': 0.06, 'b': 0.00215},   # Pacific Dogwood
+    'CH': {'a': 0.06, 'b': 0.00220},   # Bitter Cherry
     # Default for other softwoods
     'DEFAULT_SOFTWOOD': {'a': 0.15, 'b': 0.00245},
     'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': 0.10, 'b': 0.00240},
+    'DEFAULT_PNW_SOFTWOOD': {'a': 0.08, 'b': 0.00250},
     # Hardwoods typically have lower form factors
     'DEFAULT_HARDWOOD': {'a': 0.10, 'b': 0.00220},
     'DEFAULT_LAKE_STATES_HARDWOOD': {'a': 0.08, 'b': 0.00225},
+    'DEFAULT_PNW_HARDWOOD': {'a': 0.06, 'b': 0.00220},
 }
 
 VOLUME_COEFFICIENTS_INSIDE_BARK: Dict[str, Dict[str, float]] = {
@@ -137,13 +163,36 @@ VOLUME_COEFFICIENTS_INSIDE_BARK: Dict[str, Dict[str, float]] = {
     'WO': {'a': -0.07000, 'b': 0.00195},  # White Oak
     'PB': {'a': -0.07000, 'b': 0.00190},  # Paper Birch
     'YB': {'a': -0.07000, 'b': 0.00200},  # Yellow Birch
+    # PNW conifers (inside bark)
+    'DF': {'a': -0.08, 'b': 0.00220},  # Douglas-fir
+    'WH': {'a': -0.07, 'b': 0.00215},  # Western Hemlock
+    'RC': {'a': -0.08, 'b': 0.00210},  # Western Redcedar
+    'SS': {'a': -0.08, 'b': 0.00225},  # Sitka Spruce
+    'SF': {'a': -0.07, 'b': 0.00212},  # Silver Fir
+    'GF': {'a': -0.07, 'b': 0.00212},  # Grand Fir
+    'WF': {'a': -0.07, 'b': 0.00210},  # White Fir
+    'NF': {'a': -0.07, 'b': 0.00215},  # Noble Fir
+    'AF': {'a': -0.06, 'b': 0.00200},  # Subalpine Fir
+    'RF': {'a': -0.07, 'b': 0.00212},  # California Red Fir
+    'IC': {'a': -0.08, 'b': 0.00202},  # Incense Cedar
+    'ES': {'a': -0.07, 'b': 0.00205},  # Engelmann Spruce
+    'YC': {'a': -0.08, 'b': 0.00210},  # Alaska Yellow Cedar
+    'RW': {'a': -0.10, 'b': 0.00235},  # Redwood
+    'MH': {'a': -0.06, 'b': 0.00208},  # Mountain Hemlock
+    # PNW hardwoods (inside bark)
+    'RA': {'a': -0.05, 'b': 0.00195},  # Red Alder
+    'BM': {'a': -0.05, 'b': 0.00185},  # Bigleaf Maple
+    'GC': {'a': -0.05, 'b': 0.00180},  # Giant Chinquapin
+    'AS': {'a': -0.05, 'b': 0.00175},  # Quaking Aspen (PNW)
     'DEFAULT_SOFTWOOD': {'a': -0.08, 'b': 0.00205},
     'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': -0.07, 'b': 0.00205},
+    'DEFAULT_PNW_SOFTWOOD': {'a': -0.07, 'b': 0.00212},
     'DEFAULT_HARDWOOD': {'a': -0.05, 'b': 0.00185},
     'DEFAULT_LAKE_STATES_HARDWOOD': {'a': -0.06, 'b': 0.00190},
+    'DEFAULT_PNW_HARDWOOD': {'a': -0.05, 'b': 0.00185},
 }
 
-# Hardwood species codes (SN + LS)
+# Hardwood species codes (SN + LS + PNW)
 HARDWOOD_SPECIES = {
     # SN hardwoods
     'WO', 'SO', 'WK', 'LK', 'OV', 'CW', 'SK', 'HI', 'SU', 'YP',
@@ -154,6 +203,8 @@ HARDWOOD_SPECIES = {
     'BH', 'PH', 'SH', 'BT', 'QA', 'BP', 'PB', 'BN', 'WN', 'HH',
     'BK', 'ST', 'MM', 'AH', 'AC', 'HK', 'DW', 'HT', 'AP', 'PR',
     'CC', 'PL', 'WI', 'BL', 'DM', 'SS', 'MA', 'RE', 'NP',
+    # PNW additional hardwoods
+    'GC', 'AS', 'PY', 'DG', 'CH',
 }
 
 # FVS merchantability specifications

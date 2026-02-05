@@ -4,6 +4,7 @@ Bark ratio relationship functions for FVS-Python.
 Supports multiple FVS variants:
 - SN (Southern): Clark (1991) equation DIB = b1 + b2 * DOB
 - LS (Lake States): Constant bark ratio per species from Raile (1982)
+- PN (Pacific Northwest Coast): 3 equation types from bratio.f (power, linear, constant)
 """
 from typing import Dict, Any, Optional
 
@@ -13,6 +14,7 @@ from .config_loader import load_coefficient_file, get_default_variant
 __all__ = [
     'BarkRatioModel',
     'LSBarkRatioModel',
+    'PNBarkRatioModel',
     'create_bark_ratio_model',
     'calculate_dib_from_dob',
     'calculate_bark_ratio',
@@ -26,6 +28,7 @@ __all__ = [
 VARIANT_BARK_RATIO_FILES = {
     'SN': 'sn_bark_ratio_coefficients.json',
     'LS': 'ls/ls_bark_ratio_coefficients.json',
+    'PN': 'pn/pn_bark_ratio_coefficients.json',
 }
 
 
@@ -371,6 +374,225 @@ class LSBarkRatioModel:
         return 0.80 <= bark_ratio <= 0.99
 
 
+class PNBarkRatioModel:
+    """Bark ratio model for the Pacific Northwest Coast (PN) variant.
+
+    PN uses 3 equation types from bratio.f with 16 species groups:
+    - Type 1: DIB = a * DOB^b (power equation, most conifers)
+    - Type 2: DIB = a + b * DOB (linear, BM/GC/RA)
+    - Type 3: DIB = a * DOB (constant ratio, ES/LP)
+
+    Species are mapped to groups via the JBARK array (39 species -> 16 groups).
+    """
+
+    # Fallback species-to-group mapping from bratio.f JBARK array
+    _SPECIES_TO_GROUP = {
+        'SF': 1, 'WF': 2, 'GF': 2, 'AF': 4, 'RF': 4,
+        'SS': 5, 'NF': 4, 'YC': 15, 'IC': 4, 'ES': 13,
+        'LP': 13, 'JP': 3, 'SP': 5, 'WP': 5, 'PP': 3,
+        'DF': 1, 'RW': 14, 'RC': 6, 'WH': 7, 'MH': 16,
+        'BM': 9, 'RA': 11, 'WA': 14, 'PB': 14, 'GC': 10,
+        'AS': 14, 'CW': 14, 'WO': 8, 'WJ': 14, 'LL': 3,
+        'WB': 3, 'KP': 3, 'PY': 14, 'DG': 14, 'HT': 14,
+        'CH': 14, 'WI': 14, 'OT': 12,
+    }
+
+    # Fallback group coefficients from bratio.f
+    _FALLBACK_GROUPS = {
+        1:  {'type': 1, 'a': 0.903563, 'b': 0.989388},
+        2:  {'type': 1, 'a': 0.904973, 'b': 1.0},
+        3:  {'type': 1, 'a': 0.809427, 'b': 1.016866},
+        4:  {'type': 1, 'a': 0.837291, 'b': 1.0},
+        5:  {'type': 1, 'a': 0.958330, 'b': 1.0},
+        6:  {'type': 1, 'a': 0.949670, 'b': 1.0},
+        7:  {'type': 1, 'a': 0.933710, 'b': 1.0},
+        8:  {'type': 1, 'a': 0.855800, 'b': 1.021300},
+        9:  {'type': 2, 'a': 0.083600, 'b': 0.947820},
+        10: {'type': 2, 'a': 0.155650, 'b': 0.901820},
+        11: {'type': 2, 'a': 0.075256, 'b': 0.943730},
+        12: {'type': 1, 'a': 0.933290, 'b': 1.0},
+        13: {'type': 3, 'a': 0.900000, 'b': None},
+        14: {'type': 1, 'a': 0.701200, 'b': 1.048620},
+        15: {'type': 1, 'a': 0.949670, 'b': 1.0},
+        16: {'type': 1, 'a': 0.933710, 'b': 1.0},
+    }
+
+    DEFAULT_GROUP = 12  # OT (other species) group
+
+    def __init__(self, species_code: str = "DF"):
+        """Initialize with species-specific bark ratio parameters.
+
+        Args:
+            species_code: Species code (e.g., "DF", "WH", "RC", etc.)
+        """
+        self.species_code = species_code
+        self._eq_type = None
+        self._a = None
+        self._b = None
+        self._species_to_group = None
+        self._groups = None
+        self._load_parameters()
+
+    def _load_parameters(self):
+        """Load bark ratio parameters from PN coefficient file."""
+        try:
+            data = load_coefficient_file('pn/pn_bark_ratio_coefficients.json')
+            self._species_to_group = data.get('species_to_group', self._SPECIES_TO_GROUP)
+            groups_raw = data.get('species_groups', {})
+            # Convert string keys to int keys
+            self._groups = {int(k): v for k, v in groups_raw.items()}
+        except FileNotFoundError:
+            self._species_to_group = self._SPECIES_TO_GROUP
+            self._groups = self._FALLBACK_GROUPS
+
+        # Look up this species' group
+        group_num = self._species_to_group.get(self.species_code, self.DEFAULT_GROUP)
+        group = self._groups.get(group_num, self._FALLBACK_GROUPS[self.DEFAULT_GROUP])
+
+        self._eq_type = group['type']
+        self._a = group['a']
+        self._b = group.get('b')
+
+    def calculate_dib_from_dob(self, dob: float) -> float:
+        """Calculate diameter inside bark from diameter outside bark.
+
+        Uses one of 3 equation types based on species group:
+        - Type 1: DIB = a * DOB^b (power)
+        - Type 2: DIB = a + b * DOB (linear)
+        - Type 3: DIB = a * DOB (constant ratio)
+
+        Args:
+            dob: Diameter outside bark (inches)
+
+        Returns:
+            Diameter inside bark (inches)
+        """
+        if dob <= 0:
+            return 0.0
+
+        if self._eq_type == 1:
+            dib = self._a * (dob ** self._b)
+        elif self._eq_type == 2:
+            dib = self._a + self._b * dob
+        elif self._eq_type == 3:
+            dib = self._a * dob
+        else:
+            dib = 0.9 * dob  # safe fallback
+
+        # Ensure DIB is not negative and not greater than DOB
+        return max(0.0, min(dib, dob))
+
+    def calculate_dob_from_dib(self, dib: float) -> float:
+        """Calculate diameter outside bark from diameter inside bark.
+
+        Inverts the bark ratio equation for each type.
+
+        Args:
+            dib: Diameter inside bark (inches)
+
+        Returns:
+            Diameter outside bark (inches)
+        """
+        if dib <= 0:
+            return 0.0
+
+        if self._eq_type == 1:
+            # DIB = a * DOB^b  =>  DOB = (DIB / a)^(1/b)
+            if self._a > 0 and self._b != 0:
+                dob = (dib / self._a) ** (1.0 / self._b)
+            else:
+                dob = dib
+        elif self._eq_type == 2:
+            # DIB = a + b * DOB  =>  DOB = (DIB - a) / b
+            if self._b != 0:
+                dob = (dib - self._a) / self._b
+            else:
+                dob = dib
+        elif self._eq_type == 3:
+            # DIB = a * DOB  =>  DOB = DIB / a
+            if self._a > 0:
+                dob = dib / self._a
+            else:
+                dob = dib
+        else:
+            dob = dib / 0.9
+
+        return max(dib, dob)
+
+    def calculate_bark_ratio(self, dob: float) -> float:
+        """Calculate bark ratio (DIB/DOB) for a given diameter outside bark.
+
+        Args:
+            dob: Diameter outside bark (inches)
+
+        Returns:
+            Bark ratio as proportion (bounded 0.80-0.99)
+        """
+        if dob <= 0:
+            return 1.0
+
+        dib = self.calculate_dib_from_dob(dob)
+        bark_ratio = dib / dob
+
+        # Apply FVS bounds: 0.80 < BRATIO < 0.99
+        return max(0.80, min(0.99, bark_ratio))
+
+    def calculate_bark_thickness(self, dob: float) -> float:
+        """Calculate bark thickness from diameter outside bark.
+
+        Args:
+            dob: Diameter outside bark (inches)
+
+        Returns:
+            Bark thickness (inches)
+        """
+        if dob <= 0:
+            return 0.0
+        dib = self.calculate_dib_from_dob(dob)
+        return max(0.0, (dob - dib) / 2.0)
+
+    def apply_bark_ratio_to_dbh(self, dbh_ob: float) -> float:
+        """Apply bark ratio to convert DBH outside bark to inside bark.
+
+        Args:
+            dbh_ob: DBH outside bark (inches)
+
+        Returns:
+            DBH inside bark (inches)
+        """
+        return self.calculate_dib_from_dob(dbh_ob)
+
+    def convert_dbh_ib_to_ob(self, dbh_ib: float) -> float:
+        """Convert DBH inside bark to outside bark.
+
+        Args:
+            dbh_ib: DBH inside bark (inches)
+
+        Returns:
+            DBH outside bark (inches)
+        """
+        return self.calculate_dob_from_dib(dbh_ib)
+
+    def get_species_coefficients(self) -> Dict[str, Any]:
+        """Get the bark ratio coefficients for this species.
+
+        Returns:
+            Dictionary with equation type, a, and b coefficients
+        """
+        return {'type': self._eq_type, 'a': self._a, 'b': self._b}
+
+    def validate_bark_ratio(self, bark_ratio: float) -> bool:
+        """Validate that a bark ratio is within acceptable bounds.
+
+        Args:
+            bark_ratio: Bark ratio to validate (proportion)
+
+        Returns:
+            True if bark ratio is within bounds
+        """
+        return 0.80 <= bark_ratio <= 0.99
+
+
 def create_bark_ratio_model(species_code: str = "LP", variant: Optional[str] = None):
     """Factory function to create a bark ratio model for a species and variant.
 
@@ -386,6 +608,8 @@ def create_bark_ratio_model(species_code: str = "LP", variant: Optional[str] = N
 
     if variant == 'LS':
         return LSBarkRatioModel(species_code)
+    elif variant == 'PN':
+        return PNBarkRatioModel(species_code)
     else:
         return BarkRatioModel(species_code)
 

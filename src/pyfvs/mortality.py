@@ -652,6 +652,14 @@ def create_mortality_model(
 
     if variant == 'LS':
         return LSMortalityModel(default_species=default_species, max_sdi=max_sdi)
+    elif variant == 'PN':
+        # PN uses the same base FVS SDI mortality model as SN
+        # but with PN-specific SDI maximums (loaded via StandMetricsCalculator)
+        from .stand_metrics import StandMetricsCalculator
+        if max_sdi is None:
+            pn_sdi_maxs = StandMetricsCalculator.PN_SDI_MAXIMUMS
+            max_sdi = pn_sdi_maxs.get(default_species, 850)
+        return MortalityModel(default_species=default_species, max_sdi=max_sdi)
     else:
         return MortalityModel(default_species=default_species, max_sdi=max_sdi)
 
