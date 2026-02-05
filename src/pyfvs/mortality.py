@@ -300,7 +300,7 @@ class MortalityModel:
             # Need to reduce density to asymptotic level
             target_sdi = self.UPPER_THRESHOLD * max_sdi
             excess_sdi = current_sdi - target_sdi
-            sdi_to_remove = min(excess_sdi, excess_sdi * 0.5)  # Remove up to half per cycle
+            sdi_to_remove = excess_sdi * 0.5  # Remove up to half per cycle
         else:
             # Between lower and upper thresholds - gradual transition
             target_sdi = current_sdi * (
@@ -330,8 +330,8 @@ class MortalityModel:
             ri = 1.0 / (1.0 + math.exp(p0 + p1 * tree.dbh))
             rip = 1.0 - ((1.0 - ri) ** cycle_length)
 
-            # Combined mortality probability
-            total_mort_prob = min(1.0, mort + rip)
+            # Combined mortality probability (independent events)
+            total_mort_prob = 1.0 - (1.0 - mort) * (1.0 - rip)
 
             # Apply mortality stochastically
             if random.random() > total_mort_prob:

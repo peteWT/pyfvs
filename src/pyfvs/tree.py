@@ -216,25 +216,31 @@ class Tree:
         
         # Temporarily increment age for growth calculations
         self.age = initial_age + time_step
-        
-        # Calculate small tree growth
-        self._grow_small_tree(site_index, competition_factor, time_step)
-        small_dbh = self.dbh
-        small_height = self.height
-        
-        # Reset to initial state for large tree model
-        self.dbh = initial_dbh
-        self.height = initial_height
-        
-        # Calculate large tree growth
-        self._grow_large_tree(site_index, competition_factor, ba, pbal, slope, aspect, time_step, qmd_ge5)
-        large_dbh = self.dbh
-        large_height = self.height
-        
-        # Blend results based on initial DBH
-        self.dbh = (1 - weight) * small_dbh + weight * large_dbh
-        self.height = (1 - weight) * small_height + weight * large_height
-        
+
+        if weight == 0.0:
+            # Pure small-tree model (DBH < xmin)
+            self._grow_small_tree(site_index, competition_factor, time_step)
+        elif weight == 1.0:
+            # Pure large-tree model (DBH > xmax)
+            self._grow_large_tree(site_index, competition_factor, ba, pbal, slope, aspect, time_step, qmd_ge5)
+        else:
+            # Transition zone: blend both models
+            self._grow_small_tree(site_index, competition_factor, time_step)
+            small_dbh = self.dbh
+            small_height = self.height
+
+            # Reset to initial state for large tree model
+            self.dbh = initial_dbh
+            self.height = initial_height
+
+            self._grow_large_tree(site_index, competition_factor, ba, pbal, slope, aspect, time_step, qmd_ge5)
+            large_dbh = self.dbh
+            large_height = self.height
+
+            # Blend results
+            self.dbh = (1 - weight) * small_dbh + weight * large_dbh
+            self.height = (1 - weight) * small_height + weight * large_height
+
         # Ensure age is properly set after growth
         self.age = initial_age + time_step
         

@@ -592,6 +592,14 @@ class Stand:
         # Calculate QMD of trees >= 5" DBH (needed for LS variant RELDBH)
         qmd_ge5 = self._calculate_qmd_ge5()
 
+        # Calculate top height (avg height of 40 largest trees per acre)
+        # Used for RELHT in SN, PN, WC, CA, OC, WS variants
+        top_height = self._metrics.calculate_top_height(self.trees)
+
+        # Set top_height on each tree so RELHT can be computed in tree.grow()
+        for tree in self.trees:
+            tree._top_height = top_height
+
         # Get competition metrics for each tree
         competition_metrics = self._calculate_competition_metrics()
 

@@ -116,6 +116,10 @@ class CompetitionCalculator:
         # Calculate mean DBH for relative size calculations
         mean_dbh = sum(t.dbh for t in trees) / len(trees)
 
+        # Calculate top height (avg height of 40 largest trees per acre)
+        # FVS RELHT = HT(I) / AVH where AVH is dominant stand height
+        top_height = self._metrics.calculate_top_height(trees)
+
         # Calculate metrics for each tree
         competition_list = []
         for tree in trees:
@@ -125,9 +129,11 @@ class CompetitionCalculator:
             # Calculate relative position in diameter distribution
             rank = tree_to_rank[id(tree)] / len(trees)
 
-            # Calculate relative height for competition
-            # RELHT = tree height / site_index (approximation)
-            relht = min(1.5, tree.height / site_index) if site_index > 0 else 1.0
+            # Calculate RELHT per FVS: tree height / top height
+            if top_height > 0:
+                relht = min(1.5, tree.height / top_height)
+            else:
+                relht = 1.0
 
             # Calculate competition factor combining density and size effects
             density_factor = min(0.8, stand_ba / 150.0)
