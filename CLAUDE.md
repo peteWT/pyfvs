@@ -235,6 +235,14 @@ src/pyfvs/cfg/
     - Created `cfg/pn/pn_bark_ratio_coefficients.json`, `cfg/pn/pn_crown_ratio_coefficients.json`
     - 47 tests in `tests/test_pn_variant.py`
     - Smoke test: 400 TPA DF SI=120 50yr → 333 TPA, 14.5" QMD, 383 BA, 15,029 cuft
+31. **OP Variant Infrastructure** - Full infrastructure for ORGANON Pacific Northwest variant:
+    - `bark_ratio.py`: OP dispatches to `PNBarkRatioModel` (same as WC pattern — shared PNW species)
+    - `crown_ratio.py`: OP dispatches to `PNCrownRatioModel` (same as WC pattern)
+    - `mortality.py`: OP uses `MortalityModel` (same as SN/PN/WC) with OP-specific SDI maximums
+    - `volume_library.py`: Added CL (California Laurel) coefficients; BL uses default hardwood
+    - `stand_metrics.py`: Added `OP_SDI_MAXIMUMS` dict (19 species, range 300-900)
+    - 33 tests in `tests/test_op_variant.py`
+    - Smoke test: 400 TPA DF SI=120 50yr → 323 TPA, 18.5" QMD, 601 BA, 28,395 cuft (highest yield variant)
 
 ## Recent Refactoring (2025)
 
@@ -394,6 +402,11 @@ PyFVS supports multiple FVS regional variants with variant-specific growth equat
 - Has 4 sub-versions: SWO (Southwest Oregon), NWO (Northwest Oregon), SMC (Stand Management Cooperative), RAP (Red Alder Plantation)
 - Calibrated for higher productivity plantation conditions
 - Curtis-Arney height-diameter relationship
+- **Bark ratio**: Dispatches to `PNBarkRatioModel` (same PNW species groups); OP-unique species (TA, CL, BL, PD) fall to PN defaults
+- **Crown ratio**: Dispatches to `PNCrownRatioModel` (Weibull with linear mean CR)
+- **Mortality**: Uses standard SDI mortality model (same as SN/PN/WC) with OP-specific SDI maximums (DF=850, WH=900, RA=650)
+- **Volume**: Shares PN/WC volume coefficients; CL (California Laurel) added as OP-unique species
+- **SDI maximums**: Per-species values (19 species, range 300-900)
 - Source: Zumrawi & Hann (1993), Hann et al. (2006)
 
 ### Variant Usage
@@ -469,7 +482,7 @@ stand_op = Stand.initialize_planted(
     variant='OP'        # ORGANON Pacific Northwest variant
 )
 stand_op.grow(years=50)
-# Produces ~590 sq ft BA, ~18.5" QMD (intensive plantation)
+# Produces ~601 sq ft BA, ~18.5" QMD, ~28,395 cu ft/acre (highest yield variant)
 ```
 
 ### Adding New Variants
@@ -588,6 +601,7 @@ See `test_output/manuscript_validation/` for validation reports
 6. ~~**Multi-Variant Support**~~ **DONE** - 7 variants implemented: SN (90), LS (67), PN (39), WC (37), NE (108), CS (96), OP (18 species) - see Recently Fixed #28
 7. ~~**LS Variant Infrastructure**~~ **DONE** - Bark ratio, crown ratio, mortality, volume, SDI maximums (42 tests)
 8. ~~**PN Variant Infrastructure**~~ **DONE** - Bark ratio (3 eq types), crown ratio (Weibull+Redwood logistic), mortality, volume (17+ species), SDI maximums (47 tests)
+9. ~~**OP Variant Infrastructure**~~ **DONE** - Reuses PN bark ratio/crown ratio models, OP-specific SDI maximums (19 species), CL volume, mortality dispatch (33 tests)
 
 ### Testing & Validation
 1. ~~Re-run manuscript validation tests with appropriate ecounit settings~~ **DONE**
