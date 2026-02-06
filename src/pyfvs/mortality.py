@@ -703,6 +703,77 @@ class NEMortalityModel(LSMortalityModel):
         super().__init__(default_species=default_species, max_sdi=max_sdi, variant=variant)
 
 
+class CSMortalityModel(LSMortalityModel):
+    """FVS Central States mortality model.
+
+    CS uses the same 4-group background + SDI density model as LS/NE (TWIGS family),
+    with CS-specific species-group mappings, shade tolerances, and SDI maximums.
+    """
+
+    _COEFFICIENT_FILE = 'cs/cs_mortality_coefficients.json'
+
+    # CS species-to-mortality-group mapping (96 species)
+    SPECIES_MORTALITY_GROUP = {
+        # Group 1: Conifers (8 species)
+        'RC': 1, 'JU': 1, 'SP': 1, 'VP': 1, 'LP': 1, 'OS': 1, 'WP': 1, 'BY': 1,
+        # Group 3: Major hardwoods (~60 species)
+        'WN': 3, 'BN': 3, 'TL': 3, 'TS': 3, 'WT': 3,
+        'HS': 3, 'SH': 3, 'SL': 3, 'MH': 3, 'PH': 3, 'HI': 3,
+        'WH': 3, 'BH': 3, 'PE': 3, 'BI': 3,
+        'AB': 3, 'BA': 3, 'PA': 3, 'UA': 3,
+        'RM': 3, 'BE': 3, 'SV': 3, 'BC': 3,
+        'AE': 3, 'SG': 3, 'WE': 3, 'EL': 3, 'SI': 3, 'RL': 3, 'RE': 3,
+        'YP': 3, 'BW': 3, 'SM': 3, 'AS': 3, 'WA': 3, 'GA': 3,
+        'WO': 3, 'RO': 3, 'SK': 3, 'BO': 3, 'SO': 3, 'BJ': 3,
+        'CK': 3, 'SW': 3, 'BR': 3, 'SN': 3, 'PO': 3, 'DO': 3,
+        'CO': 3, 'PN': 3, 'CB': 3, 'QI': 3, 'OV': 3, 'WK': 3,
+        'NK': 3, 'WL': 3, 'QS': 3, 'HL': 3, 'SY': 3,
+        'BK': 3, 'RB': 3, 'SU': 3, 'OB': 3, 'CT': 3, 'MV': 3,
+        # Group 4: Misc/understory/small trees (~28 species)
+        'BG': 4, 'UH': 4, 'SS': 4, 'CA': 4, 'PS': 4,
+        'EC': 4, 'BP': 4, 'BT': 4, 'QA': 4, 'OL': 4,
+        'WI': 4, 'BL': 4, 'NC': 4, 'AH': 4, 'RD': 4,
+        'DW': 4, 'HT': 4, 'KC': 4, 'OO': 4, 'MB': 4,
+        'HH': 4, 'SD': 4, 'HK': 4,
+    }
+
+    # CS SDI maximums (references StandMetricsCalculator.CS_SDI_MAXIMUMS)
+    _SDI_MAXIMUMS = {
+        'RC': 400, 'JU': 350, 'SP': 450, 'VP': 400, 'LP': 450,
+        'OS': 400, 'WP': 450, 'BY': 400,
+        'WN': 400, 'BN': 350, 'TL': 400, 'TS': 400,
+        'HS': 380, 'SH': 380, 'SL': 380, 'MH': 380, 'PH': 380,
+        'HI': 380, 'WH': 380, 'BH': 380, 'PE': 380, 'BI': 380,
+        'AB': 450, 'BA': 350, 'PA': 350, 'UA': 350,
+        'RM': 400, 'SM': 450, 'BE': 400, 'SV': 400,
+        'BC': 400, 'AE': 400, 'SG': 400, 'WE': 350, 'EL': 350,
+        'SI': 350, 'RL': 350, 'RE': 350,
+        'YP': 450, 'BW': 350, 'WA': 400, 'GA': 400, 'AS': 400,
+        'WO': 420, 'RO': 420, 'SK': 400, 'BO': 420, 'SO': 400,
+        'BJ': 350, 'CK': 420, 'SW': 420, 'BR': 420, 'SN': 400,
+        'PO': 380, 'DO': 380, 'CO': 420, 'PN': 400, 'CB': 420,
+        'QI': 380, 'OV': 380, 'WK': 380, 'NK': 400, 'WL': 400,
+        'QS': 400,
+    }
+
+    _FALLBACK_SHADE_TOLERANCE = {
+        'WO': 0.50, 'RO': 0.50, 'SM': 0.90, 'WN': 0.30,
+        'YP': 0.30, 'WA': 0.30, 'BC': 0.40, 'SP': 0.30,
+        'RM': 0.85, 'AB': 0.90, 'BO': 0.50, 'SH': 0.50,
+    }
+
+    def __init__(self, default_species: str = 'WO', max_sdi: Optional[float] = None,
+                 variant: str = 'CS'):
+        """Initialize the CS mortality model.
+
+        Args:
+            default_species: Default species code for coefficient lookups
+            max_sdi: Maximum SDI for the stand (if None, uses species default)
+            variant: Variant code
+        """
+        super().__init__(default_species=default_species, max_sdi=max_sdi, variant=variant)
+
+
 # Module-level convenience functions
 _default_model: Optional[MortalityModel] = None
 
@@ -730,6 +801,8 @@ def create_mortality_model(
         return LSMortalityModel(default_species=default_species, max_sdi=max_sdi)
     elif variant == 'NE':
         return NEMortalityModel(default_species=default_species, max_sdi=max_sdi)
+    elif variant == 'CS':
+        return CSMortalityModel(default_species=default_species, max_sdi=max_sdi)
     elif variant == 'PN':
         # PN uses the same base FVS SDI mortality model as SN
         # but with PN-specific SDI maximums (loaded via StandMetricsCalculator)

@@ -112,6 +112,50 @@ class StandMetricsCalculator:
         'HH': 350, 'PL': 300, 'PR': 300,
     }
 
+    # CS SDI maximums for Central States variant - from FVS CS variant
+    # documentation and TWIGS calibration data for Midwest oak-hickory forests
+    CS_SDI_MAXIMUMS = {
+        # Conifers
+        'RC': 400, 'JU': 350, 'SP': 450, 'VP': 400, 'LP': 450,
+        'OS': 400, 'WP': 450, 'BY': 400,
+        # Walnuts/Butternut
+        'WN': 400, 'BN': 350,
+        # Tupelo/Sweetgum
+        'TL': 400, 'TS': 400, 'SU': 400,
+        # Hickories
+        'HS': 380, 'SH': 380, 'SL': 380, 'MH': 380, 'PH': 380,
+        'HI': 380, 'WH': 380, 'BH': 380, 'PE': 380, 'BI': 380,
+        # Beech/Birch
+        'AB': 450, 'BW': 350, 'BK': 350, 'RB': 350,
+        # Ashes
+        'BA': 350, 'PA': 350, 'UA': 350, 'WA': 400, 'GA': 400, 'AS': 400,
+        # Maples
+        'RM': 400, 'SM': 450, 'BE': 400, 'SV': 400,
+        # Cherry/Magnolia
+        'BC': 400, 'CT': 400, 'MV': 400,
+        # Elms
+        'AE': 400, 'SG': 400, 'WE': 350, 'EL': 350, 'SI': 350, 'RL': 350, 'RE': 350,
+        # Yellow-Poplar/Basswood
+        'YP': 450, 'BW': 350,
+        # White Oaks
+        'WO': 420, 'BR': 420, 'CK': 420, 'SW': 420, 'PO': 380,
+        'DO': 380, 'CO': 420, 'OV': 380, 'WK': 380,
+        # Red Oaks
+        'RO': 420, 'SK': 400, 'BO': 420, 'SO': 400, 'BJ': 350,
+        'SN': 400, 'PN': 400, 'CB': 420, 'QI': 380, 'NK': 400,
+        'WL': 400, 'QS': 400,
+        # Poplars/Aspen
+        'EC': 300, 'BP': 300, 'BT': 350, 'QA': 350,
+        # Misc hardwoods
+        'WT': 350, 'BG': 350, 'HK': 350, 'UH': 350, 'SS': 350,
+        'OB': 350, 'CA': 350, 'PS': 350, 'HL': 400, 'SY': 400,
+        'OL': 350, 'WI': 300, 'BL': 300,
+        'OO': 350, 'MB': 350, 'HH': 350, 'SD': 300,
+        # Understory/small trees
+        'NC': 300, 'AH': 350, 'RD': 300, 'DW': 300, 'HT': 300,
+        'KC': 350,
+    }
+
     # WC SDI maximums for West Cascades variant (interior Cascades, generally
     # lower than coastal PN due to drier conditions)
     WC_SDI_MAXIMUMS = {
@@ -158,6 +202,10 @@ class StandMetricsCalculator:
         if self.variant == 'NE':
             self._sdi_cache['NE'] = self.NE_SDI_MAXIMUMS
             return self.NE_SDI_MAXIMUMS
+
+        if self.variant == 'CS':
+            self._sdi_cache['CS'] = self.CS_SDI_MAXIMUMS
+            return self.CS_SDI_MAXIMUMS
 
         # Default: load SN SDI maximums
         sdi_maximums = self._load_sn_sdi_maximums()

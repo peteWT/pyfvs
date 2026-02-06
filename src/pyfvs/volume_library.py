@@ -165,6 +165,31 @@ VOLUME_COEFFICIENTS_OUTSIDE_BARK: Dict[str, Dict[str, float]] = {
     'SE': {'a': 0.06000, 'b': 0.00200},   # Serviceberry (small tree)
     'EL': {'a': 0.08000, 'b': 0.00220},   # Other Elm
     'WB': {'a': 0.08000, 'b': 0.00225},   # White Basswood
+    # CS-unique species - from Clark et al. (1991), Miles & Smith (2009)
+    'BY': {'a': 0.12000, 'b': 0.00250},   # Bald Cypress (excellent form)
+    'TL': {'a': 0.10000, 'b': 0.00230},   # Tupelo (Black Tupelo)
+    'TS': {'a': 0.10000, 'b': 0.00230},   # Swamp Tupelo
+    'HS': {'a': 0.10000, 'b': 0.00225},   # Shagbark Hickory (generic hickory)
+    'PE': {'a': 0.10000, 'b': 0.00225},   # Pecan
+    'BI': {'a': 0.10000, 'b': 0.00225},   # Bitternut Hickory
+    'UA': {'a': 0.08000, 'b': 0.00220},   # Blue Ash
+    'SG': {'a': 0.08000, 'b': 0.00220},   # Sugarberry
+    'WE': {'a': 0.08000, 'b': 0.00220},   # Winged Elm
+    'SI': {'a': 0.08000, 'b': 0.00220},   # Siberian Elm
+    'BJ': {'a': 0.10000, 'b': 0.00220},   # Blackjack Oak (small form)
+    'DO': {'a': 0.10000, 'b': 0.00230},   # Bottomland Post Oak
+    'NK': {'a': 0.10000, 'b': 0.00230},   # Nuttall Oak
+    'QS': {'a': 0.10000, 'b': 0.00235},   # Shumard Oak
+    'OV': {'a': 0.10000, 'b': 0.00225},   # Overcup Oak
+    'UH': {'a': 0.08000, 'b': 0.00220},   # Unidentified Hardwood
+    'OB': {'a': 0.08000, 'b': 0.00220},   # Ohio Buckeye
+    'CA': {'a': 0.08000, 'b': 0.00215},   # Catalpa
+    'HL': {'a': 0.08000, 'b': 0.00225},   # Honeylocust
+    'OL': {'a': 0.08000, 'b': 0.00225},   # Other Locust
+    'NC': {'a': 0.06000, 'b': 0.00200},   # Other Noncommercial Hdwd (small)
+    'RD': {'a': 0.06000, 'b': 0.00200},   # Redbud (small tree)
+    'KC': {'a': 0.08000, 'b': 0.00225},   # Kentucky Coffeetree
+    'MB': {'a': 0.08000, 'b': 0.00215},   # Mulberry
     # Default for other softwoods
     'DEFAULT_SOFTWOOD': {'a': 0.15, 'b': 0.00245},
     'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': 0.10, 'b': 0.00240},
@@ -250,6 +275,31 @@ VOLUME_COEFFICIENTS_INSIDE_BARK: Dict[str, Dict[str, float]] = {
     'SE': {'a': -0.05000, 'b': 0.00168},  # Serviceberry
     'EL': {'a': -0.06000, 'b': 0.00185},  # Other Elm
     'WB': {'a': -0.06000, 'b': 0.00190},  # White Basswood
+    # CS-unique species (inside bark)
+    'BY': {'a': -0.08000, 'b': 0.00215},  # Bald Cypress
+    'TL': {'a': -0.07000, 'b': 0.00195},  # Tupelo (Black Tupelo)
+    'TS': {'a': -0.07000, 'b': 0.00195},  # Swamp Tupelo
+    'HS': {'a': -0.07000, 'b': 0.00190},  # Shagbark Hickory
+    'PE': {'a': -0.07000, 'b': 0.00190},  # Pecan
+    'BI': {'a': -0.07000, 'b': 0.00190},  # Bitternut Hickory
+    'UA': {'a': -0.06000, 'b': 0.00185},  # Blue Ash
+    'SG': {'a': -0.06000, 'b': 0.00185},  # Sugarberry
+    'WE': {'a': -0.06000, 'b': 0.00185},  # Winged Elm
+    'SI': {'a': -0.06000, 'b': 0.00185},  # Siberian Elm
+    'BJ': {'a': -0.07000, 'b': 0.00185},  # Blackjack Oak
+    'DO': {'a': -0.07000, 'b': 0.00195},  # Bottomland Post Oak
+    'NK': {'a': -0.07000, 'b': 0.00195},  # Nuttall Oak
+    'QS': {'a': -0.07000, 'b': 0.00200},  # Shumard Oak
+    'OV': {'a': -0.07000, 'b': 0.00190},  # Overcup Oak
+    'UH': {'a': -0.06000, 'b': 0.00185},  # Unidentified Hardwood
+    'OB': {'a': -0.06000, 'b': 0.00185},  # Ohio Buckeye
+    'CA': {'a': -0.06000, 'b': 0.00180},  # Catalpa
+    'HL': {'a': -0.06000, 'b': 0.00190},  # Honeylocust
+    'OL': {'a': -0.06000, 'b': 0.00190},  # Other Locust
+    'NC': {'a': -0.05000, 'b': 0.00168},  # Other Noncommercial Hdwd
+    'RD': {'a': -0.05000, 'b': 0.00168},  # Redbud
+    'KC': {'a': -0.06000, 'b': 0.00190},  # Kentucky Coffeetree
+    'MB': {'a': -0.06000, 'b': 0.00180},  # Mulberry
     'DEFAULT_SOFTWOOD': {'a': -0.08, 'b': 0.00205},
     'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': -0.07, 'b': 0.00205},
     'DEFAULT_PNW_SOFTWOOD': {'a': -0.07, 'b': 0.00212},
@@ -275,6 +325,10 @@ HARDWOOD_SPECIES = {
     'SB', 'RB', 'GB', 'WR', 'SL', 'CT', 'PO', 'OK', 'QI', 'PN', 'CO',
     'SW', 'SN', 'CB', 'WL', 'BU', 'YY', 'PS', 'HY', 'OO', 'MG', 'MV',
     'WT', 'SD', 'PW', 'WB', 'EL', 'AI', 'SE', 'SK', 'SO', 'YP', 'SU',
+    # CS additional hardwoods
+    'TL', 'TS', 'HS', 'PE', 'BI', 'UA', 'SG', 'WE', 'SI', 'RL',
+    'BJ', 'DO', 'NK', 'QS', 'OV', 'UH', 'OB', 'CA', 'HL', 'OL',
+    'NC', 'RD', 'KC', 'MB',
 }
 
 # FVS merchantability specifications

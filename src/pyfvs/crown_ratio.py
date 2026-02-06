@@ -18,6 +18,7 @@ __all__ = [
     'CrownRatioModel',
     'LSCrownRatioModel',
     'NECrownRatioModel',
+    'CSCrownRatioModel',
     'PNCrownRatioModel',
     'create_crown_ratio_model',
     'calculate_average_crown_ratio',
@@ -521,6 +522,35 @@ class NECrownRatioModel(LSCrownRatioModel):
         super().__init__(species_code)
 
 
+class CSCrownRatioModel(LSCrownRatioModel):
+    """Crown ratio model for the Central States (CS) variant.
+
+    CS uses the TWIGS model (same equation as LS/NE), with CS-specific coefficients.
+    Inherits all calculation methods from LSCrownRatioModel; only overrides
+    coefficient file path and fallback coefficients.
+    """
+
+    _COEFFICIENT_FILE = 'cs/cs_crown_ratio_coefficients.json'
+
+    FALLBACK_COEFFICIENTS = {
+        'WO':  {'BCR1': 2.450, 'BCR2': 0.00820, 'BCR3': 6.120, 'BCR4': -0.02150},
+        'RO':  {'BCR1': 2.380, 'BCR2': 0.00780, 'BCR3': 5.950, 'BCR4': -0.02450},
+        'SM':  {'BCR1': 3.111, 'BCR2': 0.01534, 'BCR3': 6.251, 'BCR4': -0.01552},
+        'WN':  {'BCR1': 2.200, 'BCR2': 0.00600, 'BCR3': 5.500, 'BCR4': -0.03200},
+        'SP':  {'BCR1': 1.800, 'BCR2': 0.00400, 'BCR3': 5.300, 'BCR4': -0.04800},
+    }
+
+    DEFAULT_COEFFICIENTS = {'BCR1': 2.300, 'BCR2': 0.00700, 'BCR3': 5.800, 'BCR4': -0.02800}
+
+    def __init__(self, species_code: str = "WO"):
+        """Initialize with CS species-specific TWIGS coefficients.
+
+        Args:
+            species_code: Species code (e.g., "WO", "RO", "SM", etc.)
+        """
+        super().__init__(species_code)
+
+
 class PNCrownRatioModel:
     """Crown ratio model for the Pacific Northwest Coast (PN) variant.
 
@@ -804,6 +834,8 @@ def create_crown_ratio_model(species_code: str = "LP", variant: Optional[str] = 
         return LSCrownRatioModel(species_code)
     elif variant == 'NE':
         return NECrownRatioModel(species_code)
+    elif variant == 'CS':
+        return CSCrownRatioModel(species_code)
     elif variant in ('PN', 'WC'):
         return PNCrownRatioModel(species_code)
     else:

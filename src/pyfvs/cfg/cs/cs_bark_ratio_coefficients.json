@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "variant": "CS",
+    "variant_name": "Central States",
+    "description": "Bark ratio (DIB/DOB) constants for the Central States variant of FVS",
+    "source": "Raile (1982) 'Estimating stump volume' USDA FS RP-NC-224; Miles & Smith (2009) USFS GTR-NRS-38; FVS CS bratio.f",
+    "notes": "CS variant uses constant bark ratios per species (same TWIGS model as LS/NE). Shared species reuse Raile (1982) values; CS-unique species use genus-level or regional averages."
+  },
+  "species_bark_ratios": {
+    "RC": 0.900, "JU": 0.900, "SP": 0.910, "VP": 0.905, "LP": 0.910,
+    "OS": 0.910, "WP": 0.907, "BY": 0.916,
+    "WN": 0.914, "BN": 0.914, "TL": 0.914, "TS": 0.914, "WT": 0.914,
+    "BG": 0.914, "HS": 0.914, "SH": 0.914, "SL": 0.914, "MH": 0.914,
+    "PH": 0.914, "HI": 0.914, "WH": 0.914, "BH": 0.914, "PE": 0.914,
+    "BI": 0.914, "AB": 0.920, "BA": 0.918, "PA": 0.918, "UA": 0.918,
+    "EC": 0.911, "RM": 0.918, "BE": 0.918, "SV": 0.918, "BC": 0.920,
+    "AE": 0.914, "SG": 0.914, "HK": 0.914, "WE": 0.914, "EL": 0.914,
+    "SI": 0.914, "RL": 0.914, "RE": 0.914, "YP": 0.918, "BW": 0.918,
+    "SM": 0.918, "AS": 0.918, "WA": 0.918, "GA": 0.918,
+    "WO": 0.914, "RO": 0.914, "SK": 0.914, "BO": 0.914, "SO": 0.914,
+    "BJ": 0.914, "CK": 0.914, "SW": 0.914, "BR": 0.914, "SN": 0.914,
+    "PO": 0.914, "DO": 0.914, "CO": 0.914, "PN": 0.914, "CB": 0.914,
+    "QI": 0.914, "OV": 0.914, "WK": 0.914, "NK": 0.914, "WL": 0.914,
+    "QS": 0.914, "UH": 0.914, "SS": 0.914, "OB": 0.918,
+    "CA": 0.914, "PS": 0.914, "HL": 0.914, "BP": 0.911, "BT": 0.911,
+    "QA": 0.911, "BK": 0.920, "OL": 0.914, "SY": 0.914,
+    "RB": 0.920, "SU": 0.914, "WI": 0.911, "BL": 0.911,
+    "NC": 0.914, "AH": 0.914, "RD": 0.914, "DW": 0.914, "HT": 0.914,
+    "KC": 0.914, "OO": 0.914, "CT": 0.918, "MV": 0.918, "MB": 0.914,
+    "HH": 0.914, "SD": 0.914
+  },
+  "defaults": {
+    "softwood": 0.910,
+    "hardwood": 0.914
+  }
+}

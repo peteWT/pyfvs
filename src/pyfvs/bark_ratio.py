@@ -16,6 +16,7 @@ __all__ = [
     'BarkRatioModel',
     'LSBarkRatioModel',
     'NEBarkRatioModel',
+    'CSBarkRatioModel',
     'PNBarkRatioModel',
     'create_bark_ratio_model',
     'calculate_dib_from_dob',
@@ -420,6 +421,43 @@ class NEBarkRatioModel(LSBarkRatioModel):
         super().__init__(species_code)
 
 
+class CSBarkRatioModel(LSBarkRatioModel):
+    """Bark ratio model for the Central States (CS) variant.
+
+    CS uses constant bark ratios per species, same TWIGS model family as LS/NE.
+    Inherits all calculation methods from LSBarkRatioModel; only overrides
+    coefficient file path, fallback ratios, and hardwood species set.
+    """
+
+    _COEFFICIENT_FILE = 'cs/cs_bark_ratio_coefficients.json'
+
+    FALLBACK_RATIOS = {
+        'WO': 0.914, 'RO': 0.914, 'SM': 0.918, 'WN': 0.914,
+        'YP': 0.918, 'WA': 0.918, 'BC': 0.920, 'SP': 0.910,
+        'WP': 0.907, 'RM': 0.918, 'BO': 0.914, 'SH': 0.914,
+    }
+
+    _HARDWOOD_SET = {
+        'WN', 'BN', 'TL', 'TS', 'WT', 'BG', 'HS', 'SH', 'SL', 'MH',
+        'PH', 'HI', 'WH', 'BH', 'PE', 'BI', 'AB', 'BA', 'PA', 'UA',
+        'EC', 'RM', 'BE', 'SV', 'BC', 'AE', 'SG', 'HK', 'WE', 'EL',
+        'SI', 'RL', 'RE', 'YP', 'BW', 'SM', 'AS', 'WA', 'GA',
+        'WO', 'RO', 'SK', 'BO', 'SO', 'BJ', 'CK', 'SW', 'BR', 'SN',
+        'PO', 'DO', 'CO', 'PN', 'CB', 'QI', 'OV', 'WK', 'NK', 'WL',
+        'QS', 'UH', 'SS', 'OB', 'CA', 'PS', 'HL', 'BP', 'BT', 'QA',
+        'BK', 'OL', 'SY', 'RB', 'SU', 'WI', 'BL', 'NC', 'AH', 'RD',
+        'DW', 'HT', 'KC', 'OO', 'CT', 'MV', 'MB', 'HH', 'SD',
+    }
+
+    def __init__(self, species_code: str = "WO"):
+        """Initialize with CS species-specific constant bark ratio.
+
+        Args:
+            species_code: Species code (e.g., "WO", "RO", "SM", etc.)
+        """
+        super().__init__(species_code)
+
+
 class PNBarkRatioModel:
     """Bark ratio model for the Pacific Northwest Coast (PN) variant.
 
@@ -656,6 +694,8 @@ def create_bark_ratio_model(species_code: str = "LP", variant: Optional[str] = N
         return LSBarkRatioModel(species_code)
     elif variant == 'NE':
         return NEBarkRatioModel(species_code)
+    elif variant == 'CS':
+        return CSBarkRatioModel(species_code)
     elif variant in ('PN', 'WC'):
         return PNBarkRatioModel(species_code)
     else:
