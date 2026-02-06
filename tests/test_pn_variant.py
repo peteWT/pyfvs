@@ -301,7 +301,7 @@ class TestPNVolume:
 
     def test_df_volume_reasonable(self):
         """Douglas-fir volume is reasonable (10" DBH, 80' ht -> ~20-30 cuft)."""
-        result = calculate_tree_volume(10.0, 80.0, 'DF')
+        result = calculate_tree_volume(10.0, 80.0, 'DF', variant='PN')
         assert result.is_valid()
         assert 15.0 <= result.total_cubic_volume <= 35.0, (
             f"DF volume {result.total_cubic_volume} outside expected range"
@@ -309,7 +309,7 @@ class TestPNVolume:
 
     def test_wh_volume_reasonable(self):
         """Western Hemlock volume is reasonable."""
-        result = calculate_tree_volume(12.0, 90.0, 'WH')
+        result = calculate_tree_volume(12.0, 90.0, 'WH', variant='PN')
         assert result.is_valid()
         assert 20.0 <= result.total_cubic_volume <= 50.0, (
             f"WH volume {result.total_cubic_volume} outside expected range"
@@ -317,7 +317,7 @@ class TestPNVolume:
 
     def test_rc_volume_reasonable(self):
         """Western Red Cedar volume is reasonable."""
-        result = calculate_tree_volume(15.0, 100.0, 'RC')
+        result = calculate_tree_volume(15.0, 100.0, 'RC', variant='PN')
         assert result.is_valid()
         assert 40.0 <= result.total_cubic_volume <= 80.0, (
             f"RC volume {result.total_cubic_volume} outside expected range"
@@ -325,7 +325,7 @@ class TestPNVolume:
 
     def test_ss_volume_reasonable(self):
         """Sitka Spruce volume is reasonable."""
-        result = calculate_tree_volume(14.0, 100.0, 'SS')
+        result = calculate_tree_volume(14.0, 100.0, 'SS', variant='PN')
         assert result.is_valid()
         assert 40.0 <= result.total_cubic_volume <= 75.0, (
             f"SS volume {result.total_cubic_volume} outside expected range"
@@ -333,7 +333,7 @@ class TestPNVolume:
 
     def test_ra_hardwood_volume(self):
         """Red Alder hardwood volume is reasonable."""
-        result = calculate_tree_volume(10.0, 70.0, 'RA')
+        result = calculate_tree_volume(10.0, 70.0, 'RA', variant='PN')
         assert result.is_valid()
         assert 10.0 <= result.total_cubic_volume <= 30.0, (
             f"RA volume {result.total_cubic_volume} outside expected range"

@@ -1,0 +1,98 @@
+{
+  "metadata": {
+    "source": "Flewelling and Raynes (1993), NW Taper Coop April 1994",
+    "model": "Variable-shape stem profile",
+    "fortran_source": "f_west.f, sf_taper.f, sf_yhat.f (FMSC-Measurements/VolumeLibrary)",
+    "variants": ["PN", "WC", "OP"],
+    "notes": [
+      "JSP 3-5: Westside species from f_west.f (SHP_W3, SHP_W4, SHP_W5)",
+      "JSP 11-21: Inland species from f_ingy.f (SHP_C2) - future addition",
+      "Bark thickness from FDBT_C1 (f_west.f)",
+      "Taper coefficients from SF_TAPER (sf_taper.f)",
+      "Profile function from SF_YHAT (sf_yhat.f)",
+      "Scaling factor F from SF_2PT (sf_2pt.f)"
+    ]
+  },
+  "species_parameters": {
+    "DF": {
+      "jsp": 3,
+      "description": "Douglas-fir (westside)",
+      "dmedian": {"m1": 0.566, "m2": 0.634, "m3": 0.00074},
+      "shape_coefficients": {
+        "f13": -0.07799267, "f14": 0.8096211, "f15": -0.9247244,
+        "f17": 0.166749, "f18": -9.20884, "f19": 0.1212094,
+        "f21": 5.0719922, "f22": -0.12555733, "f23": -1.6408313, "f24": -0.3005388,
+        "f25": -2.000088, "f26": -0.410677,
+        "f29": -1.428671, "f30": -0.8660924, "f31": 0.0543758,
+        "f33": 0.80981083, "f34": 5.1785820, "f35": 1.8935219,
+        "f36": -2.420031, "f37": -0.009232401,
+        "f38": -11.49305, "f39": 2.037438, "f40": -0.0114178,
+        "f42": 2.246288, "f43": -1.1410822, "f44": 1.7293166,
+        "f45": -3.18221, "f46": -2.119838, "f47": 1.3756086
+      },
+      "bark": {
+        "type": "dform",
+        "a0": -2.4641, "a1": 0.04393, "a2": -0.2922, "a3": 0.05964
+      }
+    },
+    "WH": {
+      "jsp": 4,
+      "description": "Western hemlock (westside)",
+      "dmedian": {
+        "type": "complex",
+        "a": 0.2855, "b": 0.307, "c": -0.00505, "d": 0.00001745, "e": 0.19
+      },
+      "shape_coefficients": {
+        "f13": -3.1137977, "f14": 1.1996084, "f15": -0.01195901,
+        "f17": -0.066829984, "f18": 0.026990398, "f19": 0.24661021,
+        "f21": -8.3415555, "f22": 2.4274384, "f23": -5.6918023, "f24": 0.56487213,
+        "f25": -7.6464554, "f26": 5.1709049, "f27": -2.7133381, "f28": 0.38918349,
+        "f29": -7.0,
+        "f34": -1.2882571, "f35": 35.688410, "f36": 0.17995769, "f37": 1.5565605,
+        "f38": 6.4397446, "f39": -1.3439736, "f40": 6.3442558,
+        "f42": 11.898092, "f43": -3.6789851, "f44": 0.15168209,
+        "f45": -1.3248733, "f46": -0.11788962, "f47": -0.015909154
+      },
+      "bark": {
+        "type": "exponential",
+        "a": 0.04504, "b": 0.8307, "c": -0.2048
+      }
+    },
+    "RC": {
+      "jsp": 5,
+      "description": "Western red cedar (westside)",
+      "dmedian": {"m1": 0.11, "m2": 1.08, "m3": 0.0006},
+      "shape_coefficients": {
+        "f13": -1.1917515, "f15": 0.15632952,
+        "f17": 0.44805624, "f18": -0.10269221,
+        "f21": 0.82814200, "f22": 17.750205,
+        "f25": -17.959260, "f26": 3.8308966, "f27": 45.163788,
+        "f29": -1.7546090, "f30": -7.9230813, "f31": -112.53761,
+        "f34": -0.17943249, "f35": 0.15534485, "f36": -0.032777026,
+        "f38": 8.5305448, "f39": -0.83350599, "f40": 12.100013,
+        "f42": 8.3021283, "f43": -150.0,
+        "f45": -7.1594841, "f46": 0.11263465, "f47": 22.396603
+      },
+      "bark": {
+        "type": "reciprocal",
+        "a": 0.01949, "b": 15.599, "c": -29.212, "min_dbh": 3.8
+      }
+    }
+  },
+  "group_mapping": {
+    "SS": null,
+    "SF": null,
+    "GF": null,
+    "PP": null,
+    "WL": null,
+    "LP": null,
+    "MH": null,
+    "WP": null,
+    "ES": null,
+    "AF": null,
+    "BF": null,
+    "RA": null,
+    "BM": null,
+    "CW": null
+  }
+}

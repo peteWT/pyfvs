@@ -983,14 +983,15 @@ class Tree:
             Volume in specified units
         """
         from .volume_library import calculate_tree_volume
-        
-        # Calculate volume using NVEL if available, fallback otherwise
+
+        # Calculate volume using taper model if available, fallback otherwise
         result = calculate_tree_volume(
             dbh=self.dbh,
             height=self.height,
-            species_code=self.species
+            species_code=self.species,
+            variant=getattr(self, '_variant', 'SN')
         )
-        
+
         # Return requested volume type
         volume_mapping = {
             'total_cubic': result.total_cubic_volume,
@@ -1021,7 +1022,8 @@ class Tree:
         result = calculate_tree_volume(
             dbh=self.dbh,
             height=self.height,
-            species_code=self.species
+            species_code=self.species,
+            variant=getattr(self, '_variant', 'SN')
         )
 
         return result.to_dict()

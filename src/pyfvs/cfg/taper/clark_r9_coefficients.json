@@ -1,0 +1,364 @@
+{
+  "metadata": {
+    "source": "Clark, Thomas, Souter (1991) SE-282",
+    "region": "R9",
+    "coefficient_set": "coef0 (total height known)",
+    "variants": ["NE", "CS", "LS"],
+    "extracted_from": "NVEL VolumeLibrary r9coeff.inc (01/31/2011, YB refit 07/2013)",
+    "notes": "Coefficients for Clark segmented stem profile model. a4/b4 predict DIB at BH from DBHOB. a17/b17 predict DIB at 17.3ft. r/c/e control butt swell. p controls mid-segment. a/b control upper stem taper. FIA codes use the R9 convention (may differ from post-2002 national codes)."
+  },
+  "species_coefficients": {
+    "BF": {
+      "fia_code": 12, "name": "balsam fir",
+      "a4": -0.072, "b4": 0.949,
+      "a17": 0.858, "b17": -0.561,
+      "r": 40.50, "c": 1.316, "e": -12.0, "p": 0.969, "a": 0.869, "b": 1.941
+    },
+    "RC": {
+      "fia_code": 68, "name": "eastern redcedar",
+      "a4": -0.162, "b4": 0.989,
+      "a17": 0.864, "b17": -0.919,
+      "r": 25.40, "c": 1.090, "e": 43.0, "p": 1.122, "a": 0.899, "b": 1.467
+    },
+    "WS": {
+      "fia_code": 94, "name": "white spruce",
+      "a4": -0.050, "b4": 0.961,
+      "a17": 0.890, "b17": -0.877,
+      "r": 12.10, "c": 0.899, "e": 17.0, "p": 1.952, "a": 0.861, "b": 2.062
+    },
+    "BS": {
+      "fia_code": 95, "name": "black spruce",
+      "a4": -0.122, "b4": 0.959,
+      "a17": 0.900, "b17": -0.713,
+      "r": 42.50, "c": 1.390, "e": -69.0, "p": 0.582, "a": 0.850, "b": 2.956
+    },
+    "JP": {
+      "fia_code": 105, "name": "jack pine",
+      "a4": -0.180, "b4": 0.941,
+      "a17": 0.902, "b17": -0.740,
+      "r": 50.10, "c": 0.690, "e": 12.0, "p": -0.181, "a": 0.790, "b": 2.260
+    },
+    "SP": {
+      "fia_code": 110, "name": "shortleaf pine",
+      "a4": -0.151, "b4": 0.919,
+      "a17": 0.951, "b17": -0.610,
+      "r": 18.10, "c": 0.529, "e": -24.0, "p": 3.355, "a": 0.731, "b": 3.052
+    },
+    "RN": {
+      "fia_code": 125, "name": "red pine",
+      "a4": 0.142, "b4": 0.910,
+      "a17": 0.939, "b17": -0.831,
+      "r": 36.10, "c": 0.573, "e": 22.0, "p": 0.813, "a": 0.732, "b": 2.417
+    },
+    "WP": {
+      "fia_code": 129, "name": "eastern white pine",
+      "a4": 0.039, "b4": 0.919,
+      "a17": 0.879, "b17": -0.401,
+      "r": 37.10, "c": 0.694, "e": 45.0, "p": 4.718, "a": 0.624, "b": 1.696
+    },
+    "NC": {
+      "fia_code": 241, "name": "northern white cedar",
+      "a4": 0.124, "b4": 0.940,
+      "a17": 0.862, "b17": -0.940,
+      "r": 18.10, "c": 1.245, "e": -5.0, "p": 2.200, "a": 0.718, "b": 1.357
+    },
+    "EH": {
+      "fia_code": 261, "name": "eastern hemlock",
+      "a4": -0.390, "b4": 0.941,
+      "a17": 0.931, "b17": -0.880,
+      "r": 30.71, "c": 1.098, "e": -120.0, "p": 1.264, "a": 0.615, "b": 1.711
+    },
+    "RM": {
+      "fia_code": 316, "name": "red maple",
+      "a4": -0.080, "b4": 0.951,
+      "a17": 0.871, "b17": -0.500,
+      "r": 34.37, "c": 0.567, "e": 52.0, "p": 6.773, "a": 0.143, "b": 1.073
+    },
+    "SV": {
+      "fia_code": 317, "name": "silver maple",
+      "a4": -0.455, "b4": 0.980,
+      "a17": 0.989, "b17": -3.371,
+      "r": 2.05, "c": 0.281, "e": 956.0, "p": -0.027, "a": 0.223, "b": 1.076
+    },
+    "SM": {
+      "fia_code": 318, "name": "sugar maple",
+      "a4": -0.019, "b4": 0.941,
+      "a17": 0.940, "b17": -1.321,
+      "r": 51.52, "c": 0.891, "e": 97.0, "p": 5.086, "a": 0.285, "b": 1.183
+    },
+    "YB": {
+      "fia_code": 371, "name": "yellow birch",
+      "a4": -0.090, "b4": 0.951,
+      "a17": 0.849, "b17": -0.281,
+      "r": 36.00, "c": 0.990, "e": 114.0, "p": 6.170, "a": 0.159, "b": 1.013
+    },
+    "PB": {
+      "fia_code": 375, "name": "paper birch",
+      "a4": -0.095, "b4": 0.951,
+      "a17": 0.919, "b17": -0.821,
+      "r": 52.10, "c": 1.125, "e": -1.0, "p": 3.883, "a": 0.405, "b": 1.312
+    },
+    "SH": {
+      "fia_code": 407, "name": "shagbark hickory",
+      "a4": -0.220, "b4": 0.951,
+      "a17": 0.890, "b17": -0.221,
+      "r": 69.00, "c": 1.224, "e": 464.0, "p": 17.110, "a": 0.346, "b": 1.398
+    },
+    "AB": {
+      "fia_code": 531, "name": "american beech",
+      "a4": -0.059, "b4": 0.970,
+      "a17": 0.929, "b17": -1.211,
+      "r": 54.69, "c": 0.799, "e": 93.0, "p": 6.368, "a": 0.246, "b": 1.149
+    },
+    "WA": {
+      "fia_code": 541, "name": "white ash",
+      "a4": -0.480, "b4": 0.951,
+      "a17": 0.862, "b17": -0.020,
+      "r": 56.10, "c": 1.022, "e": -109.0, "p": 9.382, "a": 0.340, "b": 1.261
+    },
+    "BA": {
+      "fia_code": 543, "name": "black ash",
+      "a4": -0.291, "b4": 0.969,
+      "a17": 0.900, "b17": -0.863,
+      "r": 57.10, "c": 1.587, "e": -40.0, "p": -0.097, "a": 0.476, "b": 1.333
+    },
+    "YP": {
+      "fia_code": 621, "name": "yellow-poplar",
+      "a4": 0.334, "b4": 0.920,
+      "a17": 0.930, "b17": -1.113,
+      "r": 6.50, "c": 0.481, "e": -121.0, "p": 8.651, "a": 0.558, "b": 1.625
+    },
+    "BP": {
+      "fia_code": 741, "name": "balsam poplar",
+      "a4": -0.507, "b4": 0.951,
+      "a17": 0.931, "b17": -1.030,
+      "r": 80.00, "c": 1.383, "e": 281.0, "p": -0.431, "a": 0.719, "b": 2.203
+    },
+    "EC": {
+      "fia_code": 742, "name": "eastern cottonwood",
+      "a4": -0.354, "b4": 0.940,
+      "a17": 0.901, "b17": -1.300,
+      "r": -10.00, "c": 0.329, "e": 188.0, "p": 8.258, "a": 0.476, "b": 1.331
+    },
+    "BT": {
+      "fia_code": 743, "name": "bigtooth aspen",
+      "a4": -0.237, "b4": 0.950,
+      "a17": 0.959, "b17": -1.281,
+      "r": 65.19, "c": 0.784, "e": -43.0, "p": -0.549, "a": 0.572, "b": 1.713
+    },
+    "QA": {
+      "fia_code": 746, "name": "quaking aspen",
+      "a4": -0.231, "b4": 0.949,
+      "a17": 0.929, "b17": -0.881,
+      "r": 43.32, "c": 0.840, "e": -40.0, "p": 2.653, "a": 0.572, "b": 1.732
+    },
+    "BC": {
+      "fia_code": 762, "name": "black cherry",
+      "a4": -0.440, "b4": 0.981,
+      "a17": 0.939, "b17": -1.161,
+      "r": 55.10, "c": 0.482, "e": 138.0, "p": 9.905, "a": 0.712, "b": 1.588
+    },
+    "WO": {
+      "fia_code": 802, "name": "white oak",
+      "a4": -0.171, "b4": 0.939,
+      "a17": 0.919, "b17": -0.941,
+      "r": 34.10, "c": 1.116, "e": 112.0, "p": 1.312, "a": 0.203, "b": 1.116
+    },
+    "SO": {
+      "fia_code": 806, "name": "northern red oak / scarlet oak",
+      "a4": -0.270, "b4": 0.951,
+      "a17": 0.969, "b17": -1.151,
+      "r": 67.20, "c": 1.082, "e": 238.0, "p": 4.310, "a": 0.180, "b": 1.213
+    },
+    "PN_OAK": {
+      "fia_code": 809, "name": "pin oak",
+      "a4": -0.490, "b4": 0.952,
+      "a17": 0.941, "b17": -1.176,
+      "r": 14.10, "c": 0.803, "e": 9.0, "p": 1.446, "a": 0.157, "b": 1.031
+    },
+    "BR": {
+      "fia_code": 823, "name": "bur oak",
+      "a4": -0.821, "b4": 0.969,
+      "a17": 0.959, "b17": -1.641,
+      "r": 0.02, "c": 0.521, "e": 384.0, "p": -2.575, "a": 0.040, "b": 1.108
+    },
+    "RO": {
+      "fia_code": 833, "name": "northern red oak / black walnut",
+      "a4": -0.193, "b4": 0.940,
+      "a17": 0.921, "b17": -1.050,
+      "r": 37.78, "c": 1.002, "e": -2.0, "p": 2.331, "a": 0.355, "b": 1.247
+    },
+    "EL": {
+      "fia_code": 837, "name": "american elm",
+      "a4": -0.536, "b4": 0.960,
+      "a17": 0.899, "b17": -0.681,
+      "r": 36.92, "c": 0.968, "e": 62.0, "p": 2.859, "a": 0.269, "b": 1.230
+    },
+    "QA_951": {
+      "fia_code": 951, "name": "quaking aspen (alt code)",
+      "a4": -0.431, "b4": 0.959,
+      "a17": 0.931, "b17": -1.280,
+      "r": 21.10, "c": 0.794, "e": -63.0, "p": 8.945, "a": 0.534, "b": 1.493
+    },
+    "UH": {
+      "fia_code": 972, "name": "misc hardwood",
+      "a4": -0.081, "b4": 0.939,
+      "a17": 0.931, "b17": -1.600,
+      "r": 40.10, "c": 1.116, "e": 205.0, "p": 6.982, "a": 0.190, "b": 1.046
+    },
+    "DEFAULT_SOFTWOOD": {
+      "fia_group": 1000, "name": "other softwoods (default)",
+      "a4": 0.075, "b4": 0.921,
+      "a17": 0.929, "b17": -0.981,
+      "r": 22.00, "c": 0.645, "e": 16.0, "p": 1.283, "a": 0.742, "b": 2.148
+    },
+    "OTHER_SPRUCE": {
+      "fia_group": 1090, "name": "other spruces",
+      "a4": -0.171, "b4": 0.969,
+      "a17": 0.891, "b17": -0.800,
+      "r": 21.06, "c": 1.048, "e": -38.0, "p": 1.740, "a": 0.839, "b": 2.187
+    },
+    "OTHER_PINE": {
+      "fia_group": 1100, "name": "other pines",
+      "a4": 0.025, "b4": 0.919,
+      "a17": 0.919, "b17": -0.751,
+      "r": 42.00, "c": 0.647, "e": 13.0, "p": 0.529, "a": 0.717, "b": 2.190
+    },
+    "OTHER_HARD_MAPLE": {
+      "fia_group": 1300, "name": "other hard maples",
+      "a4": -0.100, "b4": 0.941,
+      "a17": 0.911, "b17": -0.860,
+      "r": 29.20, "c": 0.764, "e": 16.0, "p": 3.801, "a": 0.406, "b": 1.273
+    },
+    "OTHER_SOFT_MAPLE": {
+      "fia_group": 1310, "name": "other soft maples",
+      "a4": -0.091, "b4": 0.949,
+      "a17": 0.901, "b17": -0.800,
+      "r": 38.20, "c": 0.691, "e": 62.0, "p": 5.834, "a": 0.273, "b": 1.148
+    },
+    "OTHER_BIRCH": {
+      "fia_group": 1370, "name": "other birches",
+      "a4": -0.095, "b4": 0.951,
+      "a17": 0.889, "b17": -0.562,
+      "r": 45.30, "c": 1.091, "e": -6.0, "p": 5.497, "a": 0.323, "b": 1.169
+    },
+    "OTHER_ELM": {
+      "fia_group": 1400, "name": "other elms",
+      "a4": -0.411, "b4": 0.960,
+      "a17": 0.911, "b17": -0.910,
+      "r": 57.57, "c": 0.950, "e": 390.0, "p": 9.447, "a": 0.469, "b": 1.161
+    },
+    "OTHER_ASH": {
+      "fia_group": 1540, "name": "other ashes",
+      "a4": -0.381, "b4": 0.949,
+      "a17": 0.869, "b17": -0.211,
+      "r": 56.79, "c": 1.080, "e": -17.0, "p": 6.379, "a": 0.355, "b": 1.267
+    },
+    "OTHER_RED_OAK": {
+      "fia_group": 1740, "name": "other red oaks",
+      "a4": -0.354, "b4": 0.940,
+      "a17": 0.901, "b17": -1.300,
+      "r": -10.00, "c": 0.329, "e": 188.0, "p": 8.258, "a": 0.476, "b": 1.331
+    },
+    "OTHER_WHITE_OAK": {
+      "fia_group": 1750, "name": "other white oaks",
+      "a4": -0.241, "b4": 0.949,
+      "a17": 0.931, "b17": -0.890,
+      "r": 46.00, "c": 0.818, "e": -40.0, "p": 2.490, "a": 0.575, "b": 1.734
+    },
+    "OTHER_HICKORY": {
+      "fia_group": 1760, "name": "other hickories",
+      "a4": -0.440, "b4": 0.981,
+      "a17": 0.939, "b17": -1.161,
+      "r": 60.50, "c": 0.509, "e": 140.0, "p": 8.670, "a": 0.710, "b": 1.585
+    },
+    "DEFAULT_HARDWOOD": {
+      "fia_group": 1800, "name": "other hardwoods (default)",
+      "a4": -0.351, "b4": 0.949,
+      "a17": 0.922, "b17": -1.010,
+      "r": 33.42, "c": 0.975, "e": 25.0, "p": 1.890, "a": 0.273, "b": 1.198
+    },
+    "OTHER_POPLAR": {
+      "fia_group": 1950, "name": "other poplars/aspens",
+      "a4": -0.431, "b4": 0.959,
+      "a17": 0.931, "b17": -1.280,
+      "r": 21.10, "c": 0.794, "e": -63.0, "p": 8.945, "a": 0.534, "b": 1.493
+    },
+    "OTHER_MISC_HW": {
+      "fia_group": 1970, "name": "other misc hardwoods",
+      "a4": -0.081, "b4": 0.939,
+      "a17": 0.930, "b17": -1.545,
+      "r": 32.00, "c": 0.952, "e": 209.0, "p": 6.314, "a": 0.205, "b": 1.051
+    }
+  },
+  "group_mapping": {
+    "WC": "NC",
+    "JU": "RC",
+    "RS": "OTHER_SPRUCE",
+    "NS": "OTHER_SPRUCE",
+    "PI": "DEFAULT_SOFTWOOD",
+    "SC": "OTHER_PINE",
+    "VP": "OTHER_PINE",
+    "LP": "OTHER_PINE",
+    "OP": "DEFAULT_SOFTWOOD",
+    "TA": "DEFAULT_SOFTWOOD",
+    "TM": "DEFAULT_SOFTWOOD",
+    "AW": "DEFAULT_SOFTWOOD",
+    "HM": "EH",
+    "OS": "DEFAULT_SOFTWOOD",
+    "BM": "OTHER_HARD_MAPLE",
+    "BE": "OTHER_SOFT_MAPLE",
+    "ST": "OTHER_SOFT_MAPLE",
+    "SB": "OTHER_BIRCH",
+    "RB": "OTHER_BIRCH",
+    "GB": "OTHER_BIRCH",
+    "WR": "OTHER_BIRCH",
+    "HI": "OTHER_HICKORY",
+    "PH": "OTHER_HICKORY",
+    "SL": "OTHER_HICKORY",
+    "MH": "OTHER_HICKORY",
+    "AS": "OTHER_ASH",
+    "GA": "OTHER_ASH",
+    "PA": "OTHER_ASH",
+    "SU": "DEFAULT_HARDWOOD",
+    "CT": "DEFAULT_HARDWOOD",
+    "MG": "DEFAULT_HARDWOOD",
+    "MV": "DEFAULT_HARDWOOD",
+    "BN": "DEFAULT_HARDWOOD",
+    "WN": "RO",
+    "BW": "YP",
+    "BB": "YP",
+    "HK": "DEFAULT_HARDWOOD",
+    "PS": "DEFAULT_HARDWOOD",
+    "HY": "DEFAULT_HARDWOOD",
+    "OO": "DEFAULT_HARDWOOD",
+    "OK": "OTHER_RED_OAK",
+    "SK": "OTHER_RED_OAK",
+    "CB": "OTHER_RED_OAK",
+    "WK": "OTHER_RED_OAK",
+    "WL": "OTHER_RED_OAK",
+    "BO": "OTHER_RED_OAK",
+    "PN": "PN_OAK",
+    "CO": "OTHER_WHITE_OAK",
+    "CK": "OTHER_WHITE_OAK",
+    "PO": "OTHER_WHITE_OAK",
+    "SW": "OTHER_WHITE_OAK",
+    "SN": "OTHER_WHITE_OAK",
+    "BU": "DEFAULT_HARDWOOD",
+    "YY": "DEFAULT_HARDWOOD",
+    "QI": "OTHER_RED_OAK",
+    "BJ": "OTHER_RED_OAK",
+    "AE": "EL",
+    "AP": "DEFAULT_HARDWOOD",
+    "PY": "OTHER_POPLAR",
+    "SS": "DEFAULT_HARDWOOD",
+    "DW": "DEFAULT_HARDWOOD",
+    "AH": "DEFAULT_HARDWOOD",
+    "HB": "DEFAULT_HARDWOOD",
+    "HL": "DEFAULT_HARDWOOD",
+    "RD": "DEFAULT_HARDWOOD",
+    "HA": "DEFAULT_HARDWOOD",
+    "RP": "RN",
+    "NP": "RN"
+  }
+}

@@ -1,13 +1,27 @@
 """
 Volume calculation module for FVS-Python.
 
-Implements combined-variable volume equations from published forestry research:
-- Amateis & Burkhart (1987) - Cubic-Foot Volume Equations for Loblolly Pine
-- Tasissa et al. (1997) - Volume ratio equations for southern pines
-- Gonzalez-Benecke et al. (2014) - Longleaf pine volume functions
-- Clark et al. (1991) SE-282 - Stem Profile Equations for Southern Species
+Implements two volume estimation approaches:
+
+1. **Taper-based volume** (preferred when coefficients are available):
+   Uses stem profile models to predict diameter at any height, then
+   merchandises the tree into logs with Scribner, International 1/4",
+   and Doyle board-foot rules.
+
+   - Clark model for Eastern US (SN, NE, CS, LS variants)
+   - Flewelling model for Western US (PN, WC, OP variants)
+
+2. **Combined-variable fallback** (``V = a + b * D²H``):
+   Used when taper coefficients are not available for a species/variant.
+
+References:
+    Clark et al. (1991) SE-282 - Stem Profile Equations for Southern Species
+    Flewelling & Raynes (1993) - Variable-shape stem-profile predictions
+    Amateis & Burkhart (1987) - Cubic-Foot Volume Equations for Loblolly Pine
 """
 from typing import Dict, Any, Optional, List
+
+from .config_loader import get_default_variant
 
 
 class VolumeResult:
@@ -34,8 +48,11 @@ class VolumeResult:
         self.dry_weight = vol_array[7] if len(vol_array) > 7 else 0.0
         self.sawlog_cubic_volume = vol_array[8] if len(vol_array) > 8 else 0.0
         self.sawlog_board_foot = vol_array[9] if len(vol_array) > 9 else 0.0
-        self.sawlog_cubic_foot_intl = vol_array[10] if len(vol_array) > 10 else 0.0
-        self.sawlog_board_foot_intl = vol_array[11] if len(vol_array) > 11 else 0.0
+        self.board_foot_international = vol_array[10] if len(vol_array) > 10 else 0.0
+        self.board_foot_doyle = vol_array[11] if len(vol_array) > 11 else 0.0
+        # Backwards compatibility aliases
+        self.sawlog_cubic_foot_intl = self.board_foot_international
+        self.sawlog_board_foot_intl = self.board_foot_doyle
         self.biomass_main_stem = vol_array[12] if len(vol_array) > 12 else 0.0
         self.biomass_live_branches = vol_array[13] if len(vol_array) > 13 else 0.0
         self.biomass_foliage = vol_array[14] if len(vol_array) > 14 else 0.0
@@ -57,8 +74,8 @@ class VolumeResult:
             'dry_weight': self.dry_weight,
             'sawlog_cubic_volume': self.sawlog_cubic_volume,
             'sawlog_board_foot': self.sawlog_board_foot,
-            'sawlog_cubic_foot_intl': self.sawlog_cubic_foot_intl,
-            'sawlog_board_foot_intl': self.sawlog_board_foot_intl,
+            'board_foot_international': self.board_foot_international,
+            'board_foot_doyle': self.board_foot_doyle,
             'biomass_main_stem': self.biomass_main_stem,
             'biomass_live_branches': self.biomass_live_branches,
             'biomass_foliage': self.biomass_foliage,
@@ -344,26 +361,33 @@ MIN_MERCH_TOP = 4.0  # inches DOB
 
 
 class VolumeCalculator:
-    """Calculate tree volumes using combined-variable equations.
+    """Calculate tree volumes using taper models or combined-variable equations.
 
-    Implements volume equations from published forestry research:
-    - V = a + b × D²H for total stem volume
-    - Merchantable cubic: Trees ≥5" DBH, from 1-ft stump to 4" top DOB
-    - Board foot (sawlog): Softwoods ≥9" DBH to 7.6" top; Hardwoods ≥11" DBH to 9.6" top
+    When taper coefficients are available for the species+variant, uses
+    stem profile models (Clark or Flewelling) with per-log merchandising
+    for accurate board-foot and cubic-foot volumes.
+
+    Falls back to combined-variable equations (V = a + b × D²H) when
+    taper coefficients are not available.
 
     References:
-        Amateis & Burkhart (1987) - Cubic-Foot Volume Equations for Loblolly Pine
-        Tasissa et al. (1997) - Volume ratio equations for southern pines
         Clark et al. (1991) SE-282 - Stem Profile Equations for Southern Species
+        Flewelling & Raynes (1993) - Variable-shape stem-profile predictions
+        Amateis & Burkhart (1987) - Cubic-Foot Volume Equations for Loblolly Pine
     """
 
-    def __init__(self, species_code: str = "LP"):
+    def __init__(self, species_code: str = "LP", variant: Optional[str] = None):
         """Initialize volume calculator.
 
         Args:
             species_code: FVS species code (default: LP for Loblolly Pine)
+            variant: FVS variant code (e.g., 'SN', 'PN'). If None, uses
+                     the current default variant.
         """
+        from .taper import create_taper_model
+
         self.species_code = species_code
+        self.variant = variant or get_default_variant()
         self.is_hardwood = species_code in HARDWOOD_SPECIES
 
         # Set sawlog specifications based on species type
@@ -374,7 +398,7 @@ class VolumeCalculator:
             self.min_saw_dbh = 9.0   # inches
             self.min_saw_top = 7.6   # inches DIB
 
-        # Get coefficients
+        # Get combined-variable coefficients (fallback)
         default_key = 'DEFAULT_HARDWOOD' if self.is_hardwood else 'DEFAULT_SOFTWOOD'
         self.coef_ob = VOLUME_COEFFICIENTS_OUTSIDE_BARK.get(
             species_code,
@@ -385,8 +409,14 @@ class VolumeCalculator:
             VOLUME_COEFFICIENTS_INSIDE_BARK[default_key]
         )
 
+        # Try to get a taper model for this species/variant
+        self._taper_model = create_taper_model(species_code, self.variant)
+
     def calculate_volume(self, dbh: float, height: float) -> VolumeResult:
-        """Calculate tree volume using combined-variable equations.
+        """Calculate tree volume.
+
+        Uses taper-based volume when a taper model is available for this
+        species+variant, otherwise falls back to combined-variable equations.
 
         Args:
             dbh: Diameter at breast height (inches, outside bark)
@@ -394,6 +424,84 @@ class VolumeCalculator:
 
         Returns:
             VolumeResult object with calculated volumes
+        """
+        # Try taper-based volume first
+        if self._taper_model is not None and dbh >= 1.0 and height > 4.5:
+            try:
+                return self._calculate_volume_taper(dbh, height)
+            except Exception:
+                pass  # Fall through to combined-variable
+
+        return self._calculate_volume_combined_variable(dbh, height)
+
+    def _calculate_volume_taper(self, dbh: float, height: float) -> VolumeResult:
+        """Taper-based volume with per-log merchandising.
+
+        Uses the taper model to predict stem profile.  Merchantable cubic
+        volume is computed from stump to the 4" DOB top (standard FVS
+        practice).  Board-foot volumes come from per-log merchandising
+        with the variant-specific primary-product top DIB.
+        """
+        from .merchandising import merchandise_tree, get_merchandising_rules
+
+        taper = self._taper_model
+        taper.initialize_tree(dbh, height)
+
+        # Total cubic volume (stump to tip, inside bark)
+        total_cubic = taper.predict_volume(STUMP_HEIGHT, height)
+
+        # Merchantable cubic: stump to 4" top DIB (MIN_MERCH_TOP)
+        # This is separate from board-foot merchandising which uses a
+        # higher top diameter (6-7") for sawtimber.
+        merch_cubic = 0.0
+        if dbh >= MIN_MERCH_DBH:
+            merch_top_ht = taper.predict_height_to_dib(MIN_MERCH_TOP)
+            if merch_top_ht > STUMP_HEIGHT:
+                merch_cubic = taper.predict_volume(STUMP_HEIGHT, merch_top_ht)
+                merch_cubic = min(merch_cubic, total_cubic)
+
+        # Board-foot merchandising: use variant-specific rules
+        # (6" or 7" primary product top)
+        rules = get_merchandising_rules(self.variant)
+        logs, _log_cubic, tip_vol = merchandise_tree(taper, rules)
+
+        # Sum board feet across all logs
+        bf_scribner = sum(log.bf_scribner for log in logs)
+        bf_international = sum(log.bf_international for log in logs)
+        bf_doyle = sum(log.bf_doyle for log in logs)
+
+        # Cord volume from merchantable cubic
+        cord_volume = merch_cubic / 79.0 if merch_cubic > 0 else 0.0
+
+        # Net cubic (apply 5% defect allowance)
+        net_cubic = total_cubic * 0.95
+
+        # Build volume array
+        vol_array = [
+            total_cubic,           # 0: total cubic volume (inside bark)
+            total_cubic,           # 1: gross cubic volume
+            net_cubic,             # 2: net cubic volume (5% defect)
+            merch_cubic,           # 3: merchantable cubic volume (to 4" top)
+            bf_scribner,           # 4: board foot volume (Scribner - FVS standard)
+            cord_volume,           # 5: cord volume
+            0.0,                   # 6: green weight (not calculated)
+            0.0,                   # 7: dry weight (not calculated)
+            0.0,                   # 8: sawlog cubic volume (future)
+            0.0,                   # 9: sawlog board foot (future)
+            bf_international,      # 10: International 1/4" board feet
+            bf_doyle,              # 11: Doyle board feet
+            0.0,                   # 12: biomass main stem
+            0.0,                   # 13: biomass live branches
+            0.0,                   # 14: biomass foliage
+        ]
+
+        return VolumeResult(vol_array, 0)
+
+    def _calculate_volume_combined_variable(self, dbh: float,
+                                            height: float) -> VolumeResult:
+        """Combined-variable fallback: V = a + b * D²H.
+
+        Used when taper coefficients are not available.
         """
         from .bark_ratio import create_bark_ratio_model
 
@@ -548,45 +656,54 @@ class VolumeCalculator:
 VolumeLibrary = VolumeCalculator
 
 
-# Module-level cache for VolumeCalculator instances, keyed by species code
+# Module-level cache for VolumeCalculator instances, keyed by variant:species
 _volume_calculators: Dict[str, VolumeCalculator] = {}
 
 
-def get_volume_library(species_code: str = "LP") -> VolumeCalculator:
-    """Get a cached volume calculator instance for the given species.
+def get_volume_library(species_code: str = "LP",
+                       variant: Optional[str] = None) -> VolumeCalculator:
+    """Get a cached volume calculator instance for the given species+variant.
 
     Args:
         species_code: FVS species code (default: LP for Loblolly Pine)
+        variant: FVS variant code. If None, uses the current default variant.
 
     Returns:
-        VolumeCalculator instance (cached per species)
+        VolumeCalculator instance (cached per species+variant)
     """
-    if species_code not in _volume_calculators:
-        _volume_calculators[species_code] = VolumeCalculator(species_code)
-    return _volume_calculators[species_code]
+    variant = variant or get_default_variant()
+    cache_key = f"{variant}:{species_code}"
+    if cache_key not in _volume_calculators:
+        _volume_calculators[cache_key] = VolumeCalculator(species_code, variant)
+    return _volume_calculators[cache_key]
 
 
 def calculate_tree_volume(
     dbh: float,
     height: float,
     species_code: str = "LP",
+    variant: Optional[str] = None,
     **kwargs: Any
 ) -> VolumeResult:
     """Calculate tree volume.
 
     Convenience function for calculating tree volume using a cached
-    VolumeCalculator instance for the given species.
+    VolumeCalculator instance for the given species and variant.
+
+    Uses taper-based volume when available, otherwise falls back to
+    combined-variable equations.
 
     Args:
         dbh: Diameter at breast height (inches, outside bark)
         height: Total tree height (feet)
         species_code: FVS species code (default: LP)
+        variant: FVS variant code. If None, uses the default variant.
         **kwargs: Additional arguments (ignored, for backwards compatibility)
 
     Returns:
         VolumeResult object with calculated volumes
     """
-    calculator = get_volume_library(species_code)
+    calculator = get_volume_library(species_code, variant)
     return calculator.calculate_volume(dbh, height)
 
 
