@@ -1,4 +1,4 @@
 Age: 30 years
-Trees per acre: 454
-Basal area: 214.0 ft²/acre
-Volume: 7166 ft³/acre
+Trees per acre: 453
+Basal area: 148.0 ft²/acre
+Volume: 4990 ft³/acre

@@ -828,8 +828,9 @@ class Tree:
         """
         from .crown_ratio import create_crown_ratio_model
 
-        # Create crown ratio model for this species
-        cr_model = create_crown_ratio_model(self.species)
+        # Create crown ratio model for this species and variant
+        variant = getattr(self, '_variant', 'SN')
+        cr_model = create_crown_ratio_model(self.species, variant=variant)
 
         # Calculate CCF from competition factor (rough approximation)
         ccf = 100.0 + 100.0 * competition_factor

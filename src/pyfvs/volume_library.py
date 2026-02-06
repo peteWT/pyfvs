@@ -139,6 +139,32 @@ VOLUME_COEFFICIENTS_OUTSIDE_BARK: Dict[str, Dict[str, float]] = {
     'HT': {'a': 0.06, 'b': 0.00200},   # Hawthorn (small tree)
     'WI': {'a': 0.06, 'b': 0.00200},   # Willow (small tree)
     'OT': {'a': 0.08, 'b': 0.00220},   # Other species (PNW generic)
+    # NE-unique species - from Miles & Smith (2009), Hahn (1984)
+    'RS': {'a': 0.10000, 'b': 0.00240},   # Red Spruce
+    'AW': {'a': 0.10000, 'b': 0.00240},   # Atlantic White Cedar
+    'TM': {'a': 0.15000, 'b': 0.00235},   # Table Mountain Pine
+    'SB': {'a': 0.10000, 'b': 0.00235},   # Sweet Birch (similar to Yellow Birch)
+    'RB': {'a': 0.08000, 'b': 0.00220},   # River Birch
+    'GB': {'a': 0.06000, 'b': 0.00200},   # Gray Birch (small tree)
+    'CT': {'a': 0.10000, 'b': 0.00240},   # Cucumbertree (Magnolia family)
+    'CO': {'a': 0.10000, 'b': 0.00230},   # Chestnut Oak (use White Oak)
+    'SL': {'a': 0.10000, 'b': 0.00230},   # Shellbark Hickory
+    'YP': {'a': 0.10000, 'b': 0.00250},   # Yellow-Poplar (excellent form)
+    'SU': {'a': 0.08000, 'b': 0.00225},   # Sweetgum
+    'SO': {'a': 0.10000, 'b': 0.00230},   # Scarlet Oak
+    'CB': {'a': 0.10000, 'b': 0.00235},   # Cherrybark Oak
+    'SK': {'a': 0.10000, 'b': 0.00230},   # Southern Red Oak
+    'WL': {'a': 0.10000, 'b': 0.00230},   # Willow Oak
+    'BU': {'a': 0.08000, 'b': 0.00225},   # Buckeye
+    'YY': {'a': 0.08000, 'b': 0.00225},   # Yellow Buckeye
+    'MG': {'a': 0.10000, 'b': 0.00240},   # Magnolia
+    'MV': {'a': 0.10000, 'b': 0.00240},   # Sweetbay
+    'SD': {'a': 0.06000, 'b': 0.00200},   # Sourwood (small tree)
+    'PW': {'a': 0.08000, 'b': 0.00230},   # Paulownia
+    'AI': {'a': 0.08000, 'b': 0.00220},   # Ailanthus
+    'SE': {'a': 0.06000, 'b': 0.00200},   # Serviceberry (small tree)
+    'EL': {'a': 0.08000, 'b': 0.00220},   # Other Elm
+    'WB': {'a': 0.08000, 'b': 0.00225},   # White Basswood
     # Default for other softwoods
     'DEFAULT_SOFTWOOD': {'a': 0.15, 'b': 0.00245},
     'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': 0.10, 'b': 0.00240},
@@ -198,6 +224,32 @@ VOLUME_COEFFICIENTS_INSIDE_BARK: Dict[str, Dict[str, float]] = {
     'HT': {'a': -0.05, 'b': 0.00168},  # Hawthorn
     'WI': {'a': -0.05, 'b': 0.00168},  # Willow
     'OT': {'a': -0.07, 'b': 0.00185},  # Other species (PNW generic)
+    # NE-unique species (inside bark)
+    'RS': {'a': -0.07000, 'b': 0.00205},  # Red Spruce
+    'AW': {'a': -0.07000, 'b': 0.00205},  # Atlantic White Cedar
+    'TM': {'a': -0.10000, 'b': 0.00200},  # Table Mountain Pine
+    'SB': {'a': -0.07000, 'b': 0.00200},  # Sweet Birch
+    'RB': {'a': -0.06000, 'b': 0.00185},  # River Birch
+    'GB': {'a': -0.05000, 'b': 0.00168},  # Gray Birch
+    'CT': {'a': -0.07000, 'b': 0.00205},  # Cucumbertree
+    'CO': {'a': -0.07000, 'b': 0.00195},  # Chestnut Oak
+    'SL': {'a': -0.07000, 'b': 0.00195},  # Shellbark Hickory
+    'YP': {'a': -0.07000, 'b': 0.00215},  # Yellow-Poplar
+    'SU': {'a': -0.06000, 'b': 0.00190},  # Sweetgum
+    'SO': {'a': -0.07000, 'b': 0.00195},  # Scarlet Oak
+    'CB': {'a': -0.07000, 'b': 0.00200},  # Cherrybark Oak
+    'SK': {'a': -0.07000, 'b': 0.00195},  # Southern Red Oak
+    'WL': {'a': -0.07000, 'b': 0.00195},  # Willow Oak
+    'BU': {'a': -0.06000, 'b': 0.00190},  # Buckeye
+    'YY': {'a': -0.06000, 'b': 0.00190},  # Yellow Buckeye
+    'MG': {'a': -0.07000, 'b': 0.00205},  # Magnolia
+    'MV': {'a': -0.07000, 'b': 0.00205},  # Sweetbay
+    'SD': {'a': -0.05000, 'b': 0.00168},  # Sourwood
+    'PW': {'a': -0.06000, 'b': 0.00195},  # Paulownia
+    'AI': {'a': -0.06000, 'b': 0.00185},  # Ailanthus
+    'SE': {'a': -0.05000, 'b': 0.00168},  # Serviceberry
+    'EL': {'a': -0.06000, 'b': 0.00185},  # Other Elm
+    'WB': {'a': -0.06000, 'b': 0.00190},  # White Basswood
     'DEFAULT_SOFTWOOD': {'a': -0.08, 'b': 0.00205},
     'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': -0.07, 'b': 0.00205},
     'DEFAULT_PNW_SOFTWOOD': {'a': -0.07, 'b': 0.00212},
@@ -219,6 +271,10 @@ HARDWOOD_SPECIES = {
     'CC', 'PL', 'WI', 'BL', 'DM', 'SS', 'MA', 'RE', 'NP',
     # PNW additional hardwoods
     'GC', 'AS', 'PY', 'DG', 'CH',
+    # NE additional hardwoods
+    'SB', 'RB', 'GB', 'WR', 'SL', 'CT', 'PO', 'OK', 'QI', 'PN', 'CO',
+    'SW', 'SN', 'CB', 'WL', 'BU', 'YY', 'PS', 'HY', 'OO', 'MG', 'MV',
+    'WT', 'SD', 'PW', 'WB', 'EL', 'AI', 'SE', 'SK', 'SO', 'YP', 'SU',
 }
 
 # FVS merchantability specifications

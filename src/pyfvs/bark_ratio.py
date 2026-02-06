@@ -4,6 +4,7 @@ Bark ratio relationship functions for FVS-Python.
 Supports multiple FVS variants:
 - SN (Southern): Clark (1991) equation DIB = b1 + b2 * DOB
 - LS (Lake States): Constant bark ratio per species from Raile (1982)
+- NE (Northeast): Constant bark ratio per species (TWIGS family, same as LS)
 - PN (Pacific Northwest Coast): 3 equation types from bratio.f (power, linear, constant)
 """
 from typing import Dict, Any, Optional
@@ -14,6 +15,7 @@ from .config_loader import load_coefficient_file, get_default_variant
 __all__ = [
     'BarkRatioModel',
     'LSBarkRatioModel',
+    'NEBarkRatioModel',
     'PNBarkRatioModel',
     'create_bark_ratio_model',
     'calculate_dib_from_dob',
@@ -227,7 +229,13 @@ class LSBarkRatioModel:
 
     LS uses constant bark ratios per species from Raile (1982),
     unlike SN which uses the Clark (1991) equation DIB = b1 + b2 * DOB.
+
+    Subclasses (e.g., NEBarkRatioModel) override class attributes to
+    load variant-specific coefficient files and hardwood sets.
     """
+
+    # Coefficient file path (relative to cfg/), overridden by subclasses
+    _COEFFICIENT_FILE = 'ls/ls_bark_ratio_coefficients.json'
 
     # Fallback bark ratios for common LS species
     FALLBACK_RATIOS = {
@@ -241,8 +249,8 @@ class LSBarkRatioModel:
     DEFAULT_SOFTWOOD = 0.916
     DEFAULT_HARDWOOD = 0.914
 
-    # LS hardwood species codes
-    _LS_HARDWOODS = {
+    # Hardwood species codes (overridden by subclasses)
+    _HARDWOOD_SET = {
         'BA', 'GA', 'EC', 'SV', 'RM', 'BC', 'AE', 'RL', 'RE', 'YB',
         'BW', 'SM', 'BM', 'AB', 'WA', 'WO', 'SW', 'BR', 'CK', 'RO',
         'BO', 'BH', 'PH', 'SH', 'BT', 'QA', 'BP', 'PB', 'BN', 'WN',
@@ -263,16 +271,16 @@ class LSBarkRatioModel:
         self._load_bark_ratio()
 
     def _load_bark_ratio(self):
-        """Load constant bark ratio from LS coefficient file."""
+        """Load constant bark ratio from coefficient file."""
         try:
-            data = load_coefficient_file('ls/ls_bark_ratio_coefficients.json')
+            data = load_coefficient_file(self._COEFFICIENT_FILE)
             ratios = data.get('species_bark_ratios', {})
             self._all_ratios = ratios
             if self.species_code in ratios:
                 self._bark_ratio = ratios[self.species_code]
             else:
                 # Use softwood/hardwood default
-                if self.species_code in self._LS_HARDWOODS:
+                if self.species_code in self._HARDWOOD_SET:
                     self._bark_ratio = data.get('defaults', {}).get('hardwood', self.DEFAULT_HARDWOOD)
                 else:
                     self._bark_ratio = data.get('defaults', {}).get('softwood', self.DEFAULT_SOFTWOOD)
@@ -372,6 +380,44 @@ class LSBarkRatioModel:
             True if bark ratio is within bounds
         """
         return 0.80 <= bark_ratio <= 0.99
+
+
+class NEBarkRatioModel(LSBarkRatioModel):
+    """Bark ratio model for the Northeast (NE) variant.
+
+    NE uses constant bark ratios per species, same TWIGS model family as LS.
+    Inherits all calculation methods from LSBarkRatioModel; only overrides
+    coefficient file path, fallback ratios, and hardwood species set.
+    """
+
+    _COEFFICIENT_FILE = 'ne/ne_bark_ratio_coefficients.json'
+
+    FALLBACK_RATIOS = {
+        'RM': 0.918, 'SM': 0.918, 'WP': 0.907, 'RO': 0.914,
+        'WO': 0.914, 'BF': 0.926, 'RS': 0.924, 'EH': 0.916,
+        'YB': 0.920, 'AB': 0.920, 'WA': 0.918, 'BC': 0.920,
+        'YP': 0.918, 'WN': 0.914, 'RN': 0.916, 'QA': 0.911,
+    }
+
+    _HARDWOOD_SET = {
+        'RM', 'SM', 'BM', 'SV', 'BE', 'ST', 'YB', 'SB', 'RB', 'PB',
+        'GB', 'WR', 'HI', 'PH', 'SL', 'SH', 'MH', 'AB', 'AS', 'WA',
+        'BA', 'GA', 'PA', 'YP', 'SU', 'CT', 'QA', 'BP', 'EC', 'BT',
+        'PY', 'BC', 'WO', 'BR', 'CK', 'PO', 'SW', 'SN', 'CO', 'OK',
+        'SO', 'QI', 'WK', 'PN', 'RO', 'SK', 'BO', 'CB', 'WL', 'BU',
+        'YY', 'HK', 'PS', 'HY', 'BN', 'WN', 'OO', 'MG', 'MV', 'AP',
+        'WT', 'BG', 'SD', 'PW', 'SY', 'BK', 'BL', 'SS', 'BW', 'WB',
+        'EL', 'AE', 'RL', 'OH', 'AI', 'SE', 'AH', 'DW', 'HT', 'HH',
+        'PL', 'PR',
+    }
+
+    def __init__(self, species_code: str = "RM"):
+        """Initialize with NE species-specific constant bark ratio.
+
+        Args:
+            species_code: Species code (e.g., "RM", "SM", "WP", etc.)
+        """
+        super().__init__(species_code)
 
 
 class PNBarkRatioModel:
@@ -608,6 +654,8 @@ def create_bark_ratio_model(species_code: str = "LP", variant: Optional[str] = N
 
     if variant == 'LS':
         return LSBarkRatioModel(species_code)
+    elif variant == 'NE':
+        return NEBarkRatioModel(species_code)
     elif variant in ('PN', 'WC'):
         return PNBarkRatioModel(species_code)
     else:

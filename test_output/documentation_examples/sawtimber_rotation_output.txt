@@ -1,2 +1,2 @@
-Final DBH: 14.0 inches
-Final volume: 4955 ft³/acre
+Final DBH: 9.8 inches
+Final volume: 2483 ft³/acre

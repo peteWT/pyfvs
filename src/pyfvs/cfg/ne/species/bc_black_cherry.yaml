@@ -1,0 +1,26 @@
+metadata:
+  code: BC
+  fia_code: 762
+  scientific_name: Prunus serotina
+  common_name: black cherry
+  valid_site_species: true
+  fvs_index: 53
+site_index:
+  min: 40
+  max: 100
+density:
+  sdi_max: 400
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 396.251
+    p3: 4.248
+    p4: -0.348
+    dbw: 0.2
+diameter_growth:
+  model: ne_twigs
+  coefficients:
+    B1: 0.0008500
+    B2: 0.1050000
+mortality:
+  shade_tolerance: 0.4

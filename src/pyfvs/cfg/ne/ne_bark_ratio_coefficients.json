@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "variant": "NE",
+    "variant_name": "Northeast",
+    "description": "Bark ratio (DIB/DOB) constants for the Northeast variant of FVS",
+    "source": "Raile (1982) 'Estimating stump volume' USDA FS RP-NC-224; Miles & Smith (2009) USFS GTR-NRS-38; FVS NE bratio.f",
+    "notes": "NE variant uses constant bark ratios per species (same model as LS). Shared species reuse Raile (1982) values; NE-unique species use genus-level or regional averages."
+  },
+  "species_bark_ratios": {
+    "BF": 0.926, "TA": 0.915, "WS": 0.924, "RS": 0.924, "NS": 0.924,
+    "BS": 0.924, "PI": 0.924, "RN": 0.916, "WP": 0.907, "LP": 0.910,
+    "VP": 0.905, "OP": 0.910, "JP": 0.899, "SP": 0.910, "TM": 0.905,
+    "PP": 0.905, "PD": 0.905, "SC": 0.899, "WC": 0.916, "AW": 0.916,
+    "RC": 0.900, "JU": 0.900, "EH": 0.916, "HM": 0.916, "OS": 0.910,
+    "RM": 0.918, "SM": 0.918, "BM": 0.918, "SV": 0.918, "BE": 0.918,
+    "ST": 0.918, "YB": 0.920, "SB": 0.920, "RB": 0.920, "PB": 0.920,
+    "GB": 0.920, "WR": 0.920, "HI": 0.914, "PH": 0.914, "SL": 0.914,
+    "SH": 0.914, "MH": 0.914, "AB": 0.920, "AS": 0.918, "WA": 0.918,
+    "BA": 0.918, "GA": 0.918, "PA": 0.918, "YP": 0.918, "SU": 0.914,
+    "CT": 0.918, "QA": 0.911, "BP": 0.911, "EC": 0.911, "BT": 0.911,
+    "PY": 0.911, "BC": 0.920, "WO": 0.914, "BR": 0.914, "CK": 0.914,
+    "PO": 0.914, "SW": 0.914, "SN": 0.914, "CO": 0.914, "OK": 0.914,
+    "SO": 0.914, "QI": 0.914, "WK": 0.914, "PN": 0.914, "RO": 0.914,
+    "SK": 0.914, "BO": 0.914, "CB": 0.914, "WL": 0.914, "BU": 0.918,
+    "YY": 0.918, "HK": 0.914, "PS": 0.914, "HY": 0.918, "BN": 0.914,
+    "WN": 0.914, "OO": 0.914, "MG": 0.918, "MV": 0.918, "AP": 0.914,
+    "WT": 0.914, "BG": 0.914, "SD": 0.914, "PW": 0.914, "SY": 0.914,
+    "BK": 0.920, "BL": 0.911, "SS": 0.914, "BW": 0.918, "WB": 0.918,
+    "EL": 0.914, "AE": 0.914, "RL": 0.914, "OH": 0.914, "AI": 0.914,
+    "SE": 0.920, "AH": 0.914, "DW": 0.914, "HT": 0.914, "HH": 0.914,
+    "PL": 0.920, "PR": 0.920
+  },
+  "defaults": {
+    "softwood": 0.916,
+    "hardwood": 0.914
+  }
+}

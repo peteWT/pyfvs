@@ -4,6 +4,7 @@ Mortality model for FVS-Python.
 Supports multiple FVS variants:
 - SN (Southern): SDI-based mortality from Section 5.0 / EFVS 7.3.2
 - LS (Lake States): 4-group background mortality from morts.f with VARADJ shade tolerance
+- NE (Northeast): 4-group background mortality (same model as LS, different species mappings)
 
 Implements FVS mortality equations:
 - 5.0.1: Background mortality rate
@@ -408,7 +409,13 @@ class LSMortalityModel:
     Background rates are halved compared to SN (LS has lower natural mortality).
     Density mortality uses VARADJ (shade tolerance): tolerant trees survive
     longer under density stress.
+
+    Subclasses (e.g., NEMortalityModel) override class attributes to use
+    variant-specific coefficient files, species-group mappings, and SDI maximums.
     """
+
+    # Coefficient file path (relative to cfg/), overridden by subclasses
+    _COEFFICIENT_FILE = 'ls/ls_mortality_coefficients.json'
 
     # SDI threshold constants (same as SN)
     LOWER_THRESHOLD = 0.55
@@ -423,7 +430,7 @@ class LSMortalityModel:
         4: {'P0': 4.50, 'P1': -0.0048, 'desc': 'Misc/Other'},
     }
 
-    # Species-to-mortality-group mapping from morts.f
+    # Species-to-mortality-group mapping from morts.f (overridden by subclasses)
     SPECIES_MORTALITY_GROUP = {
         # Group 1: Pines and spruces
         'JP': 1, 'SC': 1, 'RN': 1, 'RP': 1, 'WP': 1, 'NP': 1,
@@ -443,14 +450,21 @@ class LSMortalityModel:
         'BL': 4, 'DM': 4, 'SS': 4, 'MA': 4,
     }
 
-    # Default SDI maximums for LS species (from ls_mortality_coefficients.json)
-    LS_SDI_MAXIMUMS = {
+    # Default SDI maximums (overridden by subclasses)
+    _SDI_MAXIMUMS = {
         'JP': 400, 'SC': 400, 'RN': 500, 'RP': 500, 'WP': 450,
         'WS': 500, 'NS': 500, 'BF': 400, 'BS': 400, 'TA': 350,
         'WC': 400, 'EH': 500, 'SM': 450, 'RM': 400, 'QA': 350,
         'PB': 350, 'RO': 400, 'WO': 400, 'YB': 400, 'AB': 450,
     }
     DEFAULT_SDI_MAX = 400
+
+    # Fallback shade tolerances (overridden by subclasses)
+    _FALLBACK_SHADE_TOLERANCE = {
+        'JP': 0.30, 'RN': 0.30, 'WP': 0.50, 'BF': 0.90,
+        'SM': 0.90, 'RM': 0.85, 'QA': 0.10, 'PB': 0.30,
+        'RO': 0.50, 'WO': 0.50,
+    }
 
     def __init__(self, default_species: str = 'RN', max_sdi: Optional[float] = None,
                  variant: str = 'LS'):
@@ -459,7 +473,7 @@ class LSMortalityModel:
         Args:
             default_species: Default species code for coefficient lookups
             max_sdi: Maximum SDI for the stand (if None, uses species default)
-            variant: Variant code (always 'LS' for this model)
+            variant: Variant code
         """
         self.default_species = default_species
         self.max_sdi = max_sdi
@@ -468,20 +482,15 @@ class LSMortalityModel:
         self._load_shade_tolerance()
 
     def _load_shade_tolerance(self):
-        """Load shade tolerance (VARADJ) from LS mortality coefficients."""
+        """Load shade tolerance (VARADJ) from mortality coefficients."""
         try:
             from .config_loader import load_coefficient_file
-            data = load_coefficient_file('ls/ls_mortality_coefficients.json')
+            data = load_coefficient_file(self._COEFFICIENT_FILE)
             coeffs = data.get('coefficients', {})
             for species, values in coeffs.items():
                 self._shade_tolerance[species] = values.get('shade_tolerance', 0.30)
         except (FileNotFoundError, KeyError):
-            # Hardcode common species shade tolerances
-            self._shade_tolerance = {
-                'JP': 0.30, 'RN': 0.30, 'WP': 0.50, 'BF': 0.90,
-                'SM': 0.90, 'RM': 0.85, 'QA': 0.10, 'PB': 0.30,
-                'RO': 0.50, 'WO': 0.50,
-            }
+            self._shade_tolerance = dict(self._FALLBACK_SHADE_TOLERANCE)
 
     def _get_background_rate(self, tree: 'Tree', cycle_length: int) -> float:
         """Calculate LS 4-group background mortality rate.
@@ -535,7 +544,7 @@ class LSMortalityModel:
         if random_seed is not None:
             random.seed(random_seed)
 
-        max_sdi = max_sdi or self.max_sdi or self.LS_SDI_MAXIMUMS.get(
+        max_sdi = max_sdi or self.max_sdi or self._SDI_MAXIMUMS.get(
             self.default_species, self.DEFAULT_SDI_MAX
         )
 
@@ -627,6 +636,73 @@ class LSMortalityModel:
         return self._get_background_rate(tree, cycle_length)
 
 
+class NEMortalityModel(LSMortalityModel):
+    """FVS Northeast mortality model.
+
+    NE uses the same 4-group background + SDI density model as LS (TWIGS family),
+    with NE-specific species-group mappings, shade tolerances, and SDI maximums.
+    """
+
+    _COEFFICIENT_FILE = 'ne/ne_mortality_coefficients.json'
+
+    # NE species-to-mortality-group mapping (108 species)
+    SPECIES_MORTALITY_GROUP = {
+        # Group 1: Pines and spruces
+        'RN': 1, 'WP': 1, 'LP': 1, 'VP': 1, 'OP': 1, 'JP': 1,
+        'SP': 1, 'TM': 1, 'PP': 1, 'PD': 1, 'SC': 1,
+        'WS': 1, 'RS': 1, 'NS': 1, 'BS': 1, 'PI': 1,
+        # Group 2: Firs, cedars, hemlock
+        'BF': 2, 'TA': 2, 'WC': 2, 'AW': 2, 'RC': 2, 'JU': 2,
+        'EH': 2, 'HM': 2, 'OS': 2,
+        # Group 3: Major hardwoods
+        'RM': 3, 'SM': 3, 'BM': 3, 'SV': 3, 'YB': 3, 'SB': 3,
+        'RB': 3, 'PB': 3, 'HI': 3, 'PH': 3, 'SL': 3, 'SH': 3,
+        'MH': 3, 'AB': 3, 'AS': 3, 'WA': 3, 'BA': 3, 'GA': 3,
+        'PA': 3, 'YP': 3, 'SU': 3, 'CT': 3, 'QA': 3, 'BP': 3,
+        'EC': 3, 'BT': 3, 'PY': 3, 'BC': 3, 'WO': 3, 'BR': 3,
+        'CK': 3, 'PO': 3, 'SW': 3, 'SN': 3, 'CO': 3, 'OK': 3,
+        'SO': 3, 'QI': 3, 'WK': 3, 'PN': 3, 'RO': 3, 'SK': 3,
+        'BO': 3, 'CB': 3, 'WL': 3, 'BU': 3, 'YY': 3, 'BN': 3,
+        'WN': 3, 'MG': 3, 'MV': 3, 'SY': 3, 'BW': 3, 'WB': 3,
+        'AE': 3, 'RL': 3, 'EL': 3,
+        # Group 4: Misc/understory/small trees
+        'BE': 4, 'ST': 4, 'GB': 4, 'WR': 4, 'HK': 4, 'PS': 4,
+        'HY': 4, 'OO': 4, 'AP': 4, 'WT': 4, 'BG': 4, 'SD': 4,
+        'PW': 4, 'BK': 4, 'BL': 4, 'SS': 4, 'OH': 4, 'AI': 4,
+        'SE': 4, 'AH': 4, 'DW': 4, 'HT': 4, 'HH': 4, 'PL': 4,
+        'PR': 4,
+    }
+
+    # NE SDI maximums (references StandMetricsCalculator.NE_SDI_MAXIMUMS)
+    _SDI_MAXIMUMS = {
+        'BF': 400, 'TA': 350, 'WS': 500, 'RS': 450, 'NS': 450,
+        'BS': 400, 'PI': 400, 'RN': 500, 'WP': 450, 'LP': 450,
+        'VP': 350, 'OP': 400, 'JP': 400, 'SP': 400, 'TM': 350,
+        'PP': 350, 'PD': 350, 'SC': 400, 'WC': 400, 'AW': 350,
+        'RC': 350, 'JU': 350, 'EH': 500, 'HM': 450, 'OS': 400,
+        'RM': 400, 'SM': 450, 'BM': 450, 'SV': 400, 'WO': 400,
+        'RO': 400, 'YB': 400, 'AB': 450, 'WA': 350, 'BC': 400,
+        'YP': 450, 'WN': 400, 'QA': 350, 'PB': 350,
+    }
+
+    _FALLBACK_SHADE_TOLERANCE = {
+        'RM': 0.85, 'SM': 0.90, 'WP': 0.50, 'RO': 0.50,
+        'WO': 0.50, 'BF': 0.90, 'RS': 0.70, 'EH': 0.90,
+        'YB': 0.50, 'AB': 0.90, 'WA': 0.30, 'BC': 0.40,
+    }
+
+    def __init__(self, default_species: str = 'RM', max_sdi: Optional[float] = None,
+                 variant: str = 'NE'):
+        """Initialize the NE mortality model.
+
+        Args:
+            default_species: Default species code for coefficient lookups
+            max_sdi: Maximum SDI for the stand (if None, uses species default)
+            variant: Variant code
+        """
+        super().__init__(default_species=default_species, max_sdi=max_sdi, variant=variant)
+
+
 # Module-level convenience functions
 _default_model: Optional[MortalityModel] = None
 
@@ -652,6 +728,8 @@ def create_mortality_model(
 
     if variant == 'LS':
         return LSMortalityModel(default_species=default_species, max_sdi=max_sdi)
+    elif variant == 'NE':
+        return NEMortalityModel(default_species=default_species, max_sdi=max_sdi)
     elif variant == 'PN':
         # PN uses the same base FVS SDI mortality model as SN
         # but with PN-specific SDI maximums (loaded via StandMetricsCalculator)

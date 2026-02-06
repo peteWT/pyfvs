@@ -53,6 +53,9 @@ The Forest Vegetation Simulator (FVS) is maintained by the USDA Forest Service F
 | **NE** | Northeast | 108 | BA Growth = B1 * SI * (1 - exp(-B2 * DBH)) | NE-TWIGS iterative BA growth, Curtis-Arney H-D, 10-year cycle | Complete |
 | **CS** | Central States | 96 | ln(DDS) = f(D, CR, RELDBH, SI, BA, BAL) | Same equation form as LS, Curtis-Arney H-D, 10-year cycle | Complete |
 | **CA** | Inland California | 50 | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, PCCF, elev, slope, aspect) | 13 equation sets, special RW/GS equation, topographic effects | Complete |
+| **OP** | ORGANON Pacific NW | 18 | ln(DG) = f(D, CR, SI, BA, BAL) | Direct diameter growth (not DDS), ORGANON-based, 5-year cycle | Complete |
+| **OC** | ORGANON Southwest | 50 | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, PCCF, elev, slope, aspect) | 13 equation sets, uses ln(DDS) not ln(DG), 5-year cycle | Complete |
+| **WS** | Western Sierra Nevada | 43 | ln(DDS) = f(D, CR, RELHT, SI, BA, BAL, PCCF, elev, slope, aspect) | 14 equation sets, special GS/RW equation, topographic effects, 10-year cycle | Complete |
 
 ### In Progress 🔄
 
@@ -62,7 +65,6 @@ None currently.
 
 | Code | Name | Species | Priority | Notes |
 |------|------|---------|----------|-------|
-| **WS** | Western Sierra Nevada | 41 | Medium | California Sierra coverage |
 | **CR** | Central Rockies | ~25 | Medium | Colorado/Wyoming coverage |
 
 ### Not Started ❌
@@ -77,8 +79,6 @@ None currently.
 | IE | Inland Empire | Low | Overlap with other western |
 | KT | Kootenai-Kaniksu | Low | Specialized region |
 | NC | Klamath Mountains | Medium | Unique CA/OR interface |
-| OC | ORGANON Southwest | Low | ORGANON-based (different model) |
-| OP | ORGANON Pacific NW | Low | ORGANON-based (different model) |
 | SO | South Central OR/NE CA | Low | Small region (31 species) |
 | TT | Tetons | Low | Small region (16 species) |
 | UT | Utah | Low | Small region (22 species) |
@@ -89,11 +89,11 @@ None currently.
 
 | Metric | Official FVS | PyFVS | Coverage |
 |--------|-------------|-------|----------|
-| Total Variants | 22 | 7 | 32% |
+| Total Variants | 22 | 10 | 45% |
 | Eastern Variants | 4 | 4 (SN, LS, NE, CS) | 100% |
-| Western Variants | 18 | 3 (PN, WC, CA) | 17% |
-| Species (deduplicated est.) | ~400 unique | 487 | ~100% |
-| US Forest Area Coverage | 100% | ~75% | By commercial timber volume |
+| Western Variants | 18 | 6 (PN, WC, CA, OP, OC, WS) | 33% |
+| Species (deduplicated est.) | ~400 unique | 598 | ~100% |
+| US Forest Area Coverage | 100% | ~88% | By commercial timber volume |
 
 ---
 
@@ -144,6 +144,38 @@ Special: Giant Sequoia/Redwood use ln(DDS) = -3.502444 + 0.415435*ln(SI)
 Special: Tanoak uses 5-year model scaled to 10-year
 ```
 
+**Type 7: ORGANON Direct Diameter Growth (OP)**
+```
+ln(DG) = B0 + B1*ln(DBH+K1) + B2*DBH^K2 + B3*ln((CR+0.2)/1.2)
+       + B4*ln(SI-4.5) + B5*(BAL^K3/ln(DBH+K4)) + B6*sqrt(BA)
+DG = exp(ln(DG))  # Direct diameter growth, not DDS
+Based on Hann et al. (2006) ORGANON model from Oregon State University
+```
+
+**Type 8: ORGANON Southwest Oregon ln(DDS) (OC)**
+```
+ln(DDS) = DGFOR + DGLD*ln(D) + DGCR*CR + DGCRSQ*CR² + DGDS*D²
+        + DGSITE*ln(SI) + DGDBAL*BAL/ln(D+1) + DGLBA*ln(BA)
+        + DGBAL*BAL + DGPCCF*PCCF + DGHAH*RELHT
+        + DGEL*ELEV + DGELSQ*ELEV² + DGSLOP*SLOPE
+        + DGCASP*SLOPE*cos(ASP) + DGSASP*SLOPE*sin(ASP)
+DDS = exp(ln(DDS))  # Uses ln(DDS), unlike OP which uses ln(DG)
+Special: Giant Sequoia/Redwood use separate equation form
+Based on Hann and Hanus (2002) Southwest Oregon FIRS data
+```
+
+**Type 9: WS Western Sierra Nevada ln(DDS) (14 equation sets)**
+```
+ln(DDS) = DGFOR + DGLD*ln(D) + DGCR*CR + DGCRSQ*CR² + DGDS*D²
+        + DGSITE*ln(SI) + DGDBAL*BAL/ln(D+1) + DGBA*ln(BA)
+        + DGPCCF*PCCF + DGHAH*RELHT
+        + DGEL*ELEV + DGELSQ*ELEV² + DGSLOP*SLOPE + DGSLSQ*SLOPE²
+        + DGCASP*SLOPE*cos(ASP) + DGSASP*SLOPE*sin(ASP)
+DDS = exp(ln(DDS))
+Special: Giant Sequoia/Redwood use ln(DDS) = -3.502444 + 0.415435*ln(SI)
+43 species including Sugar Pine (SP), Giant Sequoia (GS), and California oaks
+```
+
 ### Height-Diameter Relationships
 
 | Variant | Equation Type | Key Parameters |
@@ -155,6 +187,9 @@ Special: Tanoak uses 5-year model scaled to 10-year
 | NE | Curtis-Arney | P2, P3, P4 species-specific |
 | CS | Curtis-Arney | P2, P3, P4 species-specific |
 | CA | Curtis-Arney | P2, P3, P4, Z (breakpoint) species-specific |
+| OP | Curtis-Arney | P2, P3, P4 species-specific |
+| OC | Wykoff | B1, B2 species-specific (50 species) |
+| WS | Wykoff | B1, B2 species-specific (43 species) |
 
 ### Crown Ratio Models
 
@@ -174,19 +209,23 @@ where X = relative position in stand
 3. ✅ NE - Northeast (complete)
 4. ✅ CS - Central States (complete)
 
-### Phase 2: California Variants (In Progress)
+### Phase 2: California Variants (Complete) ✅
 5. ✅ CA - Inland California (complete)
-6. WS - Western Sierra Nevada
+6. ✅ WS - Western Sierra Nevada (complete)
 7. NC - Klamath Mountains (if needed)
 
-### Phase 3: Rocky Mountain Variants
-8. CR - Central Rockies
-9. UT - Utah
-10. TT - Tetons
+### Phase 3: ORGANON Variants (Complete) ✅
+8. ✅ OP - ORGANON Pacific Northwest (complete)
+9. ✅ OC - ORGANON Southwest Oregon (complete)
 
-### Phase 4: Remaining Western (as needed)
-11. BM, CI, EC, EM, IE, KT, SO
-12. AK - Alaska (specialized)
+### Phase 4: Rocky Mountain Variants
+10. CR - Central Rockies
+11. UT - Utah
+12. TT - Tetons
+
+### Phase 5: Remaining Western (as needed)
+13. BM, CI, EC, EM, IE, KT, SO
+14. AK - Alaska (specialized)
 
 ---
 
@@ -243,4 +282,4 @@ src/pyfvs/cfg/{variant}/
 - ORGANON variants (OC, OP) use a different underlying model architecture
 - Canadian variants (BC, ON) are maintained externally and not included
 
-Last updated: 2026-01-19
+Last updated: 2026-01-19 (WS variant added)

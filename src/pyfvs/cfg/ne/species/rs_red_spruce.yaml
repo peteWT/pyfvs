@@ -1,0 +1,26 @@
+metadata:
+  code: RS
+  fia_code: 97
+  scientific_name: Picea rubens
+  common_name: red spruce
+  valid_site_species: true
+  fvs_index: 4
+site_index:
+  min: 40
+  max: 80
+density:
+  sdi_max: 500
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 2163.947
+    p3: 6.269
+    p4: -0.216
+    dbw: 0.1
+diameter_growth:
+  model: ne_twigs
+  coefficients:
+    B1: 0.0009500
+    B2: 0.0850000
+mortality:
+  shade_tolerance: 0.9

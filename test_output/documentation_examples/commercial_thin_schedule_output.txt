@@ -1,3 +1,3 @@
-Pre-thin: 655 TPA, 8.6" QMD
+Pre-thin: 658 TPA, 7.9" QMD
 Post-thin: 350 TPA
-Final: 7833 ft³/acre, 16.0" QMD
+Final: 4651 ft³/acre, 12.3" QMD

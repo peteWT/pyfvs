@@ -4,6 +4,7 @@ Crown ratio relationship functions for FVS-Python.
 Supports multiple FVS variants:
 - SN (Southern): Weibull-based crown model
 - LS (Lake States): TWIGS model from Belcher et al. (1982)
+- NE (Northeast): TWIGS model (same as LS, different coefficients)
 - PN (Pacific Northwest Coast): Weibull with linear mean CR from crown.f
 """
 import math
@@ -16,6 +17,7 @@ from .config_loader import load_coefficient_file, get_default_variant
 __all__ = [
     'CrownRatioModel',
     'LSCrownRatioModel',
+    'NECrownRatioModel',
     'PNCrownRatioModel',
     'create_crown_ratio_model',
     'calculate_average_crown_ratio',
@@ -355,9 +357,15 @@ class LSCrownRatioModel:
         BA = stand basal area (sq ft/acre)
         D = tree DBH (inches)
         BCR1-BCR4 = species-specific coefficients
+
+    Subclasses (e.g., NECrownRatioModel) override class attributes to
+    load variant-specific coefficient files.
     """
 
-    # Fallback TWIGS coefficients for common LS species
+    # Coefficient file path (relative to cfg/), overridden by subclasses
+    _COEFFICIENT_FILE = 'ls/ls_crown_ratio_coefficients.json'
+
+    # Fallback TWIGS coefficients for common species
     FALLBACK_COEFFICIENTS = {
         'JP':  {'BCR1': 1.447, 'BCR2': 0.00328, 'BCR3': 5.302, 'BCR4': -0.05726},
         'RN':  {'BCR1': 2.310, 'BCR2': 0.00619, 'BCR3': 4.310, 'BCR4': -0.03059},
@@ -379,9 +387,9 @@ class LSCrownRatioModel:
         self._load_coefficients()
 
     def _load_coefficients(self):
-        """Load TWIGS coefficients from LS crown ratio config."""
+        """Load TWIGS coefficients from crown ratio config."""
         try:
-            data = load_coefficient_file('ls/ls_crown_ratio_coefficients.json')
+            data = load_coefficient_file(self._COEFFICIENT_FILE)
             species_coeffs = data.get('species_coefficients', {})
             if self.species_code in species_coeffs:
                 self.coefficients = species_coeffs[self.species_code]
@@ -480,6 +488,37 @@ class LSCrownRatioModel:
 
         new_cr = current_cr + bounded_change
         return max(0.05, min(0.95, new_cr))
+
+
+class NECrownRatioModel(LSCrownRatioModel):
+    """Crown ratio model for the Northeast (NE) variant.
+
+    NE uses the TWIGS model (same equation as LS), with NE-specific coefficients.
+    Inherits all calculation methods from LSCrownRatioModel; only overrides
+    coefficient file path and fallback coefficients.
+    """
+
+    _COEFFICIENT_FILE = 'ne/ne_crown_ratio_coefficients.json'
+
+    FALLBACK_COEFFICIENTS = {
+        'RM':  {'BCR1': 2.750, 'BCR2': 0.01050, 'BCR3': 6.250, 'BCR4': -0.01950},
+        'SM':  {'BCR1': 3.111, 'BCR2': 0.01534, 'BCR3': 6.251, 'BCR4': -0.01552},
+        'WP':  {'BCR1': 1.891, 'BCR2': 0.00430, 'BCR3': 5.560, 'BCR4': -0.04500},
+        'RO':  {'BCR1': 2.380, 'BCR2': 0.00780, 'BCR3': 5.950, 'BCR4': -0.02450},
+        'BF':  {'BCR1': 4.185, 'BCR2': 0.01710, 'BCR3': 6.162, 'BCR4': -0.01875},
+        'WO':  {'BCR1': 2.450, 'BCR2': 0.00820, 'BCR3': 6.120, 'BCR4': -0.02150},
+        'YB':  {'BCR1': 2.520, 'BCR2': 0.00920, 'BCR3': 5.890, 'BCR4': -0.02210},
+    }
+
+    DEFAULT_COEFFICIENTS = {'BCR1': 2.300, 'BCR2': 0.00700, 'BCR3': 5.800, 'BCR4': -0.02800}
+
+    def __init__(self, species_code: str = "RM"):
+        """Initialize with NE species-specific TWIGS coefficients.
+
+        Args:
+            species_code: Species code (e.g., "RM", "SM", "WP", etc.)
+        """
+        super().__init__(species_code)
 
 
 class PNCrownRatioModel:
@@ -763,6 +802,8 @@ def create_crown_ratio_model(species_code: str = "LP", variant: Optional[str] = 
 
     if variant == 'LS':
         return LSCrownRatioModel(species_code)
+    elif variant == 'NE':
+        return NECrownRatioModel(species_code)
     elif variant in ('PN', 'WC'):
         return PNCrownRatioModel(species_code)
     else:
