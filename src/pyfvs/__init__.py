@@ -1,26 +1,27 @@
 """
 PyFVS: Forest Vegetation Simulator for Python
 
-A Python implementation of forest growth models based on the
-Forest Vegetation Simulator (FVS) Southern variant.
+A Python implementation of the USDA Forest Vegetation Simulator (FVS)
+supporting 10 regional variants with taper-based volume calculations
+and 500+ species configurations across the United States.
 
-Part of the FIA Python Ecosystem:
-- PyFIA: Survey/plot data analysis (https://github.com/mihiarc/pyfia)
-- GridFIA: Spatial raster analysis (https://github.com/mihiarc/gridfia)
-- PyFVS: Growth/yield simulation (this package)
-- AskFIA: AI conversational interface (https://github.com/mihiarc/askfia)
+Variants: SN, LS, PN, WC, NE, CS, OP, CA, OC, WS
 
 Quick Start:
     >>> from pyfvs import Stand
     >>> stand = Stand.initialize_planted(trees_per_acre=500, site_index=70, species='LP')
     >>> stand.grow(years=25)
     >>> print(stand.get_metrics())
+
+Multi-variant:
+    >>> stand = Stand.initialize_planted(400, 120, 'DF', variant='PN')
+    >>> stand.grow(years=50)
 """
 
 # =============================================================================
 # Package Metadata
 # =============================================================================
-__version__ = "0.2.4"
+__version__ = "0.3.0"
 __author__ = "PyFVS Development Team"
 
 # =============================================================================

@@ -1,0 +1,115 @@
+metadata:
+  variant: OP
+  variant_name: ORGANON Pacific Northwest
+  description: "FVS variant based on ORGANON growth model for Pacific Northwest"
+  region: "Western Oregon, Western Washington, Southwest British Columbia"
+  source: "Oregon State University ORGANON model (Hann et al.)"
+  default_site_species: DF
+  default_site_index: 120
+  base_cycle: 5
+
+coefficient_files:
+  diameter_growth: "op_diameter_growth_coefficients.json"
+  height_diameter: "op_height_diameter_coefficients.json"
+
+functional_forms_file: "functional_forms.yaml"
+
+species:
+  # Major Conifers
+  DF:
+    name: "Douglas-fir"
+    file: "species/df_douglas_fir.yaml"
+    fvs_index: 1
+    fia_code: 202
+  GF:
+    name: "Grand fir"
+    file: "species/gf_grand_fir.yaml"
+    fvs_index: 2
+    fia_code: 17
+  WF:
+    name: "White fir"
+    file: "species/wf_white_fir.yaml"
+    fvs_index: 2
+    fia_code: 15
+  PP:
+    name: "Ponderosa pine"
+    file: "species/pp_ponderosa_pine.yaml"
+    fvs_index: 3
+    fia_code: 122
+  SP:
+    name: "Sugar pine"
+    file: "species/sp_sugar_pine.yaml"
+    fvs_index: 4
+    fia_code: 117
+  IC:
+    name: "Incense cedar"
+    file: "species/ic_incense_cedar.yaml"
+    fvs_index: 5
+    fia_code: 81
+  WH:
+    name: "Western hemlock"
+    file: "species/wh_western_hemlock.yaml"
+    fvs_index: 6
+    fia_code: 263
+  RC:
+    name: "Western red cedar"
+    file: "species/rc_western_red_cedar.yaml"
+    fvs_index: 7
+    fia_code: 242
+  PY:
+    name: "Pacific yew"
+    file: "species/py_pacific_yew.yaml"
+    fvs_index: 8
+    fia_code: 231
+  MH:
+    name: "Mountain hemlock"
+    file: "species/mh_mountain_hemlock.yaml"
+    fvs_index: 9
+    fia_code: 264
+  GC:
+    name: "Giant chinkapin"
+    file: "species/gc_giant_chinkapin.yaml"
+    fvs_index: 10
+    fia_code: 431
+
+  # Hardwoods
+  TA:
+    name: "Tanoak"
+    file: "species/ta_tanoak.yaml"
+    fvs_index: 11
+    fia_code: 631
+  CL:
+    name: "California laurel"
+    file: "species/cl_california_laurel.yaml"
+    fvs_index: 12
+    fia_code: 981
+  BL:
+    name: "Black cottonwood"
+    file: "species/bl_black_cottonwood.yaml"
+    fvs_index: 13
+    fia_code: 747
+  WO:
+    name: "Oregon white oak"
+    file: "species/wo_oregon_white_oak.yaml"
+    fvs_index: 14
+    fia_code: 815
+  BO:
+    name: "Bigleaf maple"
+    file: "species/bo_bigleaf_maple.yaml"
+    fvs_index: 15
+    fia_code: 312
+  RA:
+    name: "Red alder"
+    file: "species/ra_red_alder.yaml"
+    fvs_index: 16
+    fia_code: 351
+  PD:
+    name: "Pacific dogwood"
+    file: "species/pd_pacific_dogwood.yaml"
+    fvs_index: 17
+    fia_code: 492
+  WI:
+    name: "Willow"
+    file: "species/wi_willow.yaml"
+    fvs_index: 18
+    fia_code: 920

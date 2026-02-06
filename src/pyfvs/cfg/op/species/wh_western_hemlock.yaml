@@ -1,0 +1,69 @@
+# Western Hemlock (Tsuga heterophylla) - OP Variant
+
+species_code: WH
+common_name: Western hemlock
+scientific_name: Tsuga heterophylla
+fia_code: "263"
+plants_code: TSHE
+variant: OP
+
+# Tree size characteristics
+max_dbh: 80.0
+max_height: 250.0
+max_age: 500
+
+# Growth model parameters
+growth_model:
+  xmin: 1.0
+  xmax: 3.0
+  coefficient_index: 6
+
+# Site index configuration (Barnes 1962)
+site_index:
+  base_age: 50
+  typical_range: [80, 150]
+  max_si: 170
+  default: 110
+
+# Density parameters
+density:
+  sdi_max: 700
+  normal_stocking: 0.55
+  crown_closure_tpa: 300
+
+# Species characteristics
+shade_tolerance: tolerant
+tolerance_class: 5
+
+# Crown parameters
+crown:
+  form: conical
+  typical_ratio: 0.40
+  seedling_ratio: 0.85
+  min_ratio: 0.10
+  max_ratio: 0.95
+
+# Bark parameters
+bark:
+  young_color: "brown, scaly"
+  mature_color: "reddish-brown, furrowed"
+  thickness_factor: 0.92
+
+# Wood properties
+wood:
+  specific_gravity: 0.45
+  uses: ["pulpwood", "lumber", "plywood"]
+
+# Ecological characteristics
+ecology:
+  fire_regime: infrequent_high_severity
+  succession: late_seral
+  preferred_sites: "moist, cool slopes"
+  elevation_range: [0, 5000]
+  precipitation_range: [40, 150]
+
+# ORGANON-specific parameters
+organon:
+  growth_adj: 0.95
+  mortality_adj: 1.0
+  versions: [1, 2, 3]

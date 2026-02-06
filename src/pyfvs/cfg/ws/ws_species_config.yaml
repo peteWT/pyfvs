@@ -1,0 +1,239 @@
+# Western Sierra Nevada (WS) Variant Species Configuration
+# 43 species recognized in the WS variant
+# Source: FVS WS variant blkdat.f
+
+metadata:
+  variant: WS
+  variant_name: "Western Sierra Nevada"
+  description: "FVS variant for California Sierra Nevada mountain forests"
+  region: "California Sierra Nevada"
+  source: "USDA Forest Service FMSC"
+  default_site_species: SP
+  default_site_index: 90
+  base_cycle: 10
+
+coefficient_files:
+  diameter_growth: "ws_diameter_growth_coefficients.json"
+  height_diameter: "ws_height_diameter_coefficients.json"
+
+functional_forms_file: "functional_forms.yaml"
+
+species:
+  # Softwoods
+  SP:
+    name: "Sugar Pine"
+    file: "species/sp.yaml"
+    fvs_index: 1
+    fia_code: 117
+  DF:
+    name: "Douglas-fir"
+    file: "species/sp.yaml"
+    fvs_index: 2
+    fia_code: 202
+  WF:
+    name: "White Fir"
+    file: "species/sp.yaml"
+    fvs_index: 3
+    fia_code: 015
+  GS:
+    name: "Giant Sequoia"
+    file: "species/sp.yaml"
+    fvs_index: 4
+    fia_code: 212
+  IC:
+    name: "Incense Cedar"
+    file: "species/sp.yaml"
+    fvs_index: 5
+    fia_code: 081
+  JP:
+    name: "Jeffrey Pine"
+    file: "species/sp.yaml"
+    fvs_index: 6
+    fia_code: 116
+  RF:
+    name: "Red Fir"
+    file: "species/sp.yaml"
+    fvs_index: 7
+    fia_code: 020
+  PP:
+    name: "Ponderosa Pine"
+    file: "species/sp.yaml"
+    fvs_index: 8
+    fia_code: 122
+  LP:
+    name: "Lodgepole Pine"
+    file: "species/sp.yaml"
+    fvs_index: 9
+    fia_code: 108
+  WB:
+    name: "Whitebark Pine"
+    file: "species/sp.yaml"
+    fvs_index: 10
+    fia_code: 101
+  WP:
+    name: "Western White Pine"
+    file: "species/sp.yaml"
+    fvs_index: 11
+    fia_code: 119
+  PM:
+    name: "Pacific Silver Fir"
+    file: "species/sp.yaml"
+    fvs_index: 12
+    fia_code: 133
+  SF:
+    name: "Subalpine Fir"
+    file: "species/sp.yaml"
+    fvs_index: 13
+    fia_code: 011
+  KP:
+    name: "Knobcone Pine"
+    file: "species/sp.yaml"
+    fvs_index: 14
+    fia_code: 103
+  FP:
+    name: "Foxtail Pine"
+    file: "species/sp.yaml"
+    fvs_index: 15
+    fia_code: 104
+  CP:
+    name: "Coulter Pine"
+    file: "species/sp.yaml"
+    fvs_index: 16
+    fia_code: 109
+  LM:
+    name: "Limber Pine"
+    file: "species/sp.yaml"
+    fvs_index: 17
+    fia_code: 113
+  MP:
+    name: "Monterey Pine"
+    file: "species/sp.yaml"
+    fvs_index: 18
+    fia_code: 124
+  GP:
+    name: "California Foothill Pine"
+    file: "species/sp.yaml"
+    fvs_index: 19
+    fia_code: 127
+  WE:
+    name: "Washoe Pine"
+    file: "species/sp.yaml"
+    fvs_index: 20
+    fia_code: 137
+  GB:
+    name: "Great Basin Bristlecone Pine"
+    file: "species/sp.yaml"
+    fvs_index: 21
+    fia_code: 142
+  BD:
+    name: "Bigcone Douglas-fir"
+    file: "species/sp.yaml"
+    fvs_index: 22
+    fia_code: 201
+  RW:
+    name: "Redwood"
+    file: "species/sp.yaml"
+    fvs_index: 23
+    fia_code: 211
+  MH:
+    name: "Mountain Hemlock"
+    file: "species/sp.yaml"
+    fvs_index: 24
+    fia_code: 264
+  WJ:
+    name: "Western Juniper"
+    file: "species/sp.yaml"
+    fvs_index: 25
+    fia_code: 064
+  UJ:
+    name: "Utah Juniper"
+    file: "species/sp.yaml"
+    fvs_index: 26
+    fia_code: 065
+  CJ:
+    name: "California Juniper"
+    file: "species/sp.yaml"
+    fvs_index: 27
+    fia_code: 062
+  OS:
+    name: "Other Softwood"
+    file: "species/sp.yaml"
+    fvs_index: 42
+    fia_code: 299
+
+  # Hardwoods
+  LO:
+    name: "Coast Live Oak"
+    file: "species/sp.yaml"
+    fvs_index: 28
+    fia_code: 801
+  CY:
+    name: "Canyon Live Oak"
+    file: "species/sp.yaml"
+    fvs_index: 29
+    fia_code: 805
+  BL:
+    name: "Blue Oak"
+    file: "species/sp.yaml"
+    fvs_index: 30
+    fia_code: 807
+  BO:
+    name: "California Black Oak"
+    file: "species/sp.yaml"
+    fvs_index: 31
+    fia_code: 818
+  VO:
+    name: "Valley Oak"
+    file: "species/sp.yaml"
+    fvs_index: 32
+    fia_code: 821
+  IO:
+    name: "Interior Live Oak"
+    file: "species/sp.yaml"
+    fvs_index: 33
+    fia_code: 839
+  TO:
+    name: "Tanoak"
+    file: "species/sp.yaml"
+    fvs_index: 34
+    fia_code: 631
+  GC:
+    name: "Giant Chinquapin"
+    file: "species/sp.yaml"
+    fvs_index: 35
+    fia_code: 431
+  AS:
+    name: "Quaking Aspen"
+    file: "species/sp.yaml"
+    fvs_index: 36
+    fia_code: 746
+  CL:
+    name: "California Laurel"
+    file: "species/sp.yaml"
+    fvs_index: 37
+    fia_code: 981
+  MA:
+    name: "Pacific Madrone"
+    file: "species/sp.yaml"
+    fvs_index: 38
+    fia_code: 361
+  DG:
+    name: "Pacific Dogwood"
+    file: "species/sp.yaml"
+    fvs_index: 39
+    fia_code: 492
+  BM:
+    name: "Bigleaf Maple"
+    file: "species/sp.yaml"
+    fvs_index: 40
+    fia_code: 312
+  MC:
+    name: "Mountain Mahogany"
+    file: "species/sp.yaml"
+    fvs_index: 41
+    fia_code: 475
+  OH:
+    name: "Other Hardwood"
+    file: "species/sp.yaml"
+    fvs_index: 43
+    fia_code: 998

@@ -1,3 +1,3 @@
-Pre-thin: 661 TPA
+Pre-thin: 657 TPA
 Post-thin: 300 TPA
-Final volume: 6896 ft³/acre
+Final volume: 5747 ft³/acre

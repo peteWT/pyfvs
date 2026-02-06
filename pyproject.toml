@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fvs-python"
-version = "0.2.4"
-description = "Python implementation of the Forest Vegetation Simulator - Part of the FIA Python Ecosystem"
+version = "0.3.0"
+description = "Python implementation of the USDA Forest Vegetation Simulator (FVS) with 10 regional variants, taper-based volume, and 500+ species configurations"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
@@ -21,20 +21,26 @@ keywords = [
     "growth-simulation",
     "yield-tables",
     "forestry",
-    # Species & regions
-    "southern-pine",
+    "timber-volume",
+    "taper-equations",
+    # Regional variants
+    "southern-variant",
+    "lake-states",
+    "pacific-northwest",
+    "northeast",
+    "central-states",
+    "organon",
+    # Species groups
+    "douglas-fir",
     "loblolly-pine",
-    "longleaf-pine",
-    "slash-pine",
-    "shortleaf-pine",
+    "red-maple",
     # Methods
-    "chapman-richards",
     "individual-tree-growth",
     "stand-projection",
-    "timber-volume",
+    "chapman-richards",
+    "nvel",
     # Ecosystem
     "fia",
-    "fiatools",
     "forest-inventory",
     "usda",
     "forest-service",
@@ -53,6 +59,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 requires-python = ">=3.12"
 dependencies = [

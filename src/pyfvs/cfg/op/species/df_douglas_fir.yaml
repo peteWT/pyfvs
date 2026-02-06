@@ -1,0 +1,70 @@
+# Douglas-fir (Pseudotsuga menziesii) - OP Variant
+# Primary species for ORGANON Pacific Northwest model
+
+species_code: DF
+common_name: Douglas-fir
+scientific_name: Pseudotsuga menziesii
+fia_code: "202"
+plants_code: PSME
+variant: OP
+
+# Tree size characteristics
+max_dbh: 120.0
+max_height: 330.0
+max_age: 1000
+
+# Growth model parameters
+growth_model:
+  xmin: 1.0
+  xmax: 3.0
+  coefficient_index: 1
+
+# Site index configuration (King 1966)
+site_index:
+  base_age: 50
+  typical_range: [80, 180]
+  max_si: 200
+  default: 120
+
+# Density parameters
+density:
+  sdi_max: 595
+  normal_stocking: 0.55
+  crown_closure_tpa: 250
+
+# Species characteristics
+shade_tolerance: intermediate
+tolerance_class: 3
+
+# Crown parameters
+crown:
+  form: conical
+  typical_ratio: 0.35
+  seedling_ratio: 0.80
+  min_ratio: 0.10
+  max_ratio: 0.95
+
+# Bark parameters
+bark:
+  young_color: "gray-green, smooth"
+  mature_color: "dark brown, deeply furrowed"
+  thickness_factor: 0.90
+
+# Wood properties
+wood:
+  specific_gravity: 0.48
+  uses: ["structural lumber", "plywood", "veneer"]
+
+# Ecological characteristics
+ecology:
+  fire_regime: mixed_severity
+  succession: early_to_mid_seral
+  preferred_sites: "well-drained, moist slopes"
+  elevation_range: [0, 6000]
+  precipitation_range: [20, 100]
+
+# ORGANON-specific parameters
+organon:
+  growth_adj: 1.0
+  mortality_adj: 1.0
+  versions: [1, 2, 3]

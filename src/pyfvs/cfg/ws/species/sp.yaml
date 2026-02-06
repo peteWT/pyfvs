@@ -1,0 +1,33 @@
+# Western Sierra Nevada (WS) Variant Species Template
+# Sugar Pine (SP) - Default species for WS variant
+
+metadata:
+  species_code: SP
+  common_name: "Sugar Pine"
+  scientific_name: "Pinus lambertiana"
+  variant: WS
+  fia_code: 117
+
+growth_model:
+  diameter_growth_equation: "ln_dds_california"
+  height_diameter_equation: "wykoff"
+  base_cycle: 10
+
+# WS variant uses Wykoff height-diameter model
+# Height = 4.5 + exp(B1 + B2 / (DBH + 1))
+height_diameter:
+  model: wykoff
+  b1: 4.86039
+  b2: -9.32795
+
+# Crown ratio defaults (Weibull model)
+crown_ratio:
+  model: weibull
+  a: 1.0
+  b: 2.0
+  c: 0.3
+
+# Small/large tree transition zone
+transition:
+  xmin: 1.0
+  xmax: 3.0

@@ -1,0 +1,69 @@
+# Western Red Cedar (Thuja plicata) - OP Variant
+
+species_code: RC
+common_name: Western red cedar
+scientific_name: Thuja plicata
+fia_code: "242"
+plants_code: THPL
+variant: OP
+
+# Tree size characteristics
+max_dbh: 100.0
+max_height: 220.0
+max_age: 1400
+
+# Growth model parameters
+growth_model:
+  xmin: 1.0
+  xmax: 3.0
+  coefficient_index: 7
+
+# Site index configuration
+site_index:
+  base_age: 50
+  typical_range: [60, 120]
+  max_si: 140
+  default: 90
+
+# Density parameters
+density:
+  sdi_max: 650
+  normal_stocking: 0.50
+  crown_closure_tpa: 200
+
+# Species characteristics
+shade_tolerance: tolerant
+tolerance_class: 5
+
+# Crown parameters
+crown:
+  form: irregular
+  typical_ratio: 0.45
+  seedling_ratio: 0.85
+  min_ratio: 0.15
+  max_ratio: 0.95
+
+# Bark parameters
+bark:
+  young_color: "reddish-brown, fibrous"
+  mature_color: "gray-brown, stringy"
+  thickness_factor: 0.88
+
+# Wood properties
+wood:
+  specific_gravity: 0.32
+  uses: ["shingles", "siding", "decking", "fencing"]
+
+# Ecological characteristics
+ecology:
+  fire_regime: infrequent_high_severity
+  succession: late_seral
+  preferred_sites: "wet, poorly drained soils"
+  elevation_range: [0, 4000]
+  precipitation_range: [50, 180]
+
+# ORGANON-specific parameters
+organon:
+  growth_adj: 0.90
+  mortality_adj: 1.0
+  versions: [1, 2, 3]

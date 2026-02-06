@@ -1,0 +1,71 @@
+# Red Alder (Alnus rubra) - OP Variant
+# Primary hardwood species with dedicated ORGANON RAP variant
+
+species_code: RA
+common_name: Red alder
+scientific_name: Alnus rubra
+fia_code: "351"
+plants_code: ALRU
+variant: OP
+
+# Tree size characteristics
+max_dbh: 36.0
+max_height: 130.0
+max_age: 100
+
+# Growth model parameters
+growth_model:
+  xmin: 0.5
+  xmax: 2.0
+  coefficient_index: 16
+
+# Site index configuration (Worthington et al. 1960)
+site_index:
+  base_age: 50
+  typical_range: [60, 110]
+  max_si: 120
+  default: 85
+
+# Density parameters
+density:
+  sdi_max: 450
+  normal_stocking: 0.50
+  crown_closure_tpa: 150
+
+# Species characteristics
+shade_tolerance: intolerant
+tolerance_class: 1
+
+# Crown parameters
+crown:
+  form: rounded
+  typical_ratio: 0.50
+  seedling_ratio: 0.90
+  min_ratio: 0.15
+  max_ratio: 0.95
+
+# Bark parameters
+bark:
+  young_color: "gray, smooth"
+  mature_color: "gray, scaly patches"
+  thickness_factor: 0.95
+
+# Wood properties
+wood:
+  specific_gravity: 0.41
+  uses: ["furniture", "pulp", "firewood"]
+
+# Ecological characteristics
+ecology:
+  fire_regime: high_severity_stand_replacing
+  succession: early_seral_pioneer
+  preferred_sites: "disturbed areas, riparian zones"
+  elevation_range: [0, 2500]
+  precipitation_range: [30, 150]
+  nitrogen_fixer: true
+
+# ORGANON-specific parameters
+organon:
+  growth_adj: 1.0
+  mortality_adj: 1.0
+  versions: [4]  # RAP (Red Alder Plantation) version

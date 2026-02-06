@@ -1,0 +1,35 @@
+metadata:
+  code: SH
+  fia_code: 407
+  scientific_name: Carya ovata
+  common_name: shagbark hickory
+  valid_site_species: false
+  fvs_index: 15
+site_index:
+  min: 40
+  max: 90
+density:
+  sdi_max: 380
+height_diameter:
+  model: curtis_arney
+  curtis_arney:
+    p2: 337.668
+    p3: 3.627
+    p4: -0.321
+    dbw: 0.1
+diameter_growth:
+  model: cs_linear_dds
+  coefficients:
+    INTERC: 1.0827
+    VDBHC: -5.4695
+    DBHC: 0.12337
+    DBH2C: 0.0
+    RDBHC: 0.40029
+    RDBHSQC: -0.03136
+    CRWNC: 0.02491
+    CRSQC: -0.00017
+    SBAC: -0.0016
+    BALC: 0.0
+    SITEC: 0.00543
+mortality:
+  shade_tolerance: 0.4
