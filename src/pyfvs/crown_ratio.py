@@ -836,7 +836,7 @@ def create_crown_ratio_model(species_code: str = "LP", variant: Optional[str] = 
         return NECrownRatioModel(species_code)
     elif variant == 'CS':
         return CSCrownRatioModel(species_code)
-    elif variant in ('PN', 'WC'):
+    elif variant in ('PN', 'WC', 'OP'):
         return PNCrownRatioModel(species_code)
     else:
         return CrownRatioModel(species_code)

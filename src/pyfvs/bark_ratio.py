@@ -696,7 +696,7 @@ def create_bark_ratio_model(species_code: str = "LP", variant: Optional[str] = N
         return NEBarkRatioModel(species_code)
     elif variant == 'CS':
         return CSBarkRatioModel(species_code)
-    elif variant in ('PN', 'WC'):
+    elif variant in ('PN', 'WC', 'OP'):
         return PNBarkRatioModel(species_code)
     else:
         return BarkRatioModel(species_code)

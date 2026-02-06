@@ -156,6 +156,15 @@ class StandMetricsCalculator:
         'KC': 350,
     }
 
+    # OP SDI maximums for ORGANON Pacific Northwest variant
+    # Values based on PN/WC typical ranges for intensively managed plantations
+    OP_SDI_MAXIMUMS = {
+        'DF': 850, 'GF': 700, 'WF': 650, 'PP': 450, 'SP': 500,
+        'IC': 500, 'WH': 900, 'RC': 850, 'PY': 300, 'MH': 550,
+        'GC': 450, 'TA': 600, 'CL': 400, 'BL': 400,
+        'WO': 450, 'BO': 500, 'RA': 650, 'PD': 300, 'WI': 300,
+    }
+
     # WC SDI maximums for West Cascades variant (interior Cascades, generally
     # lower than coastal PN due to drier conditions)
     WC_SDI_MAXIMUMS = {
@@ -206,6 +215,10 @@ class StandMetricsCalculator:
         if self.variant == 'CS':
             self._sdi_cache['CS'] = self.CS_SDI_MAXIMUMS
             return self.CS_SDI_MAXIMUMS
+
+        if self.variant == 'OP':
+            self._sdi_cache['OP'] = self.OP_SDI_MAXIMUMS
+            return self.OP_SDI_MAXIMUMS
 
         # Default: load SN SDI maximums
         sdi_maximums = self._load_sn_sdi_maximums()

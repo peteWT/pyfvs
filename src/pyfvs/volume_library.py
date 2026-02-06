@@ -190,6 +190,8 @@ VOLUME_COEFFICIENTS_OUTSIDE_BARK: Dict[str, Dict[str, float]] = {
     'RD': {'a': 0.06000, 'b': 0.00200},   # Redbud (small tree)
     'KC': {'a': 0.08000, 'b': 0.00225},   # Kentucky Coffeetree
     'MB': {'a': 0.08000, 'b': 0.00215},   # Mulberry
+    # OP-unique species - from Chambers & Foltz (1979), PNW hardwood estimates
+    'CL': {'a': 0.06000, 'b': 0.00215},   # California Laurel (medium broadleaf)
     # Default for other softwoods
     'DEFAULT_SOFTWOOD': {'a': 0.15, 'b': 0.00245},
     'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': 0.10, 'b': 0.00240},
@@ -300,6 +302,8 @@ VOLUME_COEFFICIENTS_INSIDE_BARK: Dict[str, Dict[str, float]] = {
     'RD': {'a': -0.05000, 'b': 0.00168},  # Redbud
     'KC': {'a': -0.06000, 'b': 0.00190},  # Kentucky Coffeetree
     'MB': {'a': -0.06000, 'b': 0.00180},  # Mulberry
+    # OP-unique species (inside bark)
+    'CL': {'a': -0.05000, 'b': 0.00180},  # California Laurel
     'DEFAULT_SOFTWOOD': {'a': -0.08, 'b': 0.00205},
     'DEFAULT_LAKE_STATES_SOFTWOOD': {'a': -0.07, 'b': 0.00205},
     'DEFAULT_PNW_SOFTWOOD': {'a': -0.07, 'b': 0.00212},
@@ -329,6 +333,8 @@ HARDWOOD_SPECIES = {
     'TL', 'TS', 'HS', 'PE', 'BI', 'UA', 'SG', 'WE', 'SI', 'RL',
     'BJ', 'DO', 'NK', 'QS', 'OV', 'UH', 'OB', 'CA', 'HL', 'OL',
     'NC', 'RD', 'KC', 'MB',
+    # OP additional hardwoods
+    'CL',
 }
 
 # FVS merchantability specifications
