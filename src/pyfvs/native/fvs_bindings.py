@@ -168,10 +168,9 @@ class FVSBindings:
     def get_tree_attr(self, attr_name: str, ntrees: Optional[int] = None) -> np.ndarray:
         """Get a tree-level attribute array from FVS.
 
-        Corresponds to: SUBROUTINE FVSTREEATTR(ESSION, ATTRNAME, IATTRL,
-                                                NVALS, VALS, IRTNCD)
+        Corresponds to: SUBROUTINE FVSTREEATTR(NAME, NCH, ACTION, NTREES, ATTR, RTNCODE)
 
-        Common attribute names:
+        Common attribute names (case sensitive):
             - 'dbh'   : Diameter at breast height (inches)
             - 'ht'    : Total height (feet)
             - 'tpa'   : Trees per acre
@@ -183,7 +182,7 @@ class FVSBindings:
             - 'age'   : Tree age (years)
 
         Args:
-            attr_name: Attribute name string.
+            attr_name: Attribute name string (case sensitive).
             ntrees: Number of trees (if None, queries dim sizes first).
 
         Returns:
@@ -198,21 +197,31 @@ class FVSBindings:
 
         func = self._get_func("fvstreeattr")
 
-        attr_bytes = attr_name.encode("ascii")
-        attr_len = len(attr_bytes)
-        attr_buf = ctypes.create_string_buffer(attr_bytes, attr_len)
-        attr_len_c = ctypes.c_int(attr_len)
+        # Name parameter
+        name_bytes = attr_name.encode("ascii")
+        name_len = len(name_bytes)
+        name_buf = ctypes.create_string_buffer(name_bytes, name_len)
+        nch = ctypes.c_int(name_len)
+
+        # Action parameter - "get"
+        action_bytes = b"get"
+        action_len = len(action_bytes)
+        action_buf = ctypes.create_string_buffer(action_bytes, action_len)
+
         nvals = ctypes.c_int(ntrees)
         vals = (ctypes.c_double * ntrees)()
         return_code = ctypes.c_int(0)
 
+        # GCC Fortran: hidden string lengths at end of arg list
         func(
-            attr_buf,
-            ctypes.byref(attr_len_c),
+            name_buf,
+            ctypes.byref(nch),
+            action_buf,
             ctypes.byref(nvals),
             vals,
             ctypes.byref(return_code),
-            ctypes.c_int(attr_len),  # hidden string length
+            ctypes.c_int(name_len),    # hidden length for name
+            ctypes.c_int(action_len),  # hidden length for action
         )
 
         self._check_return_code(return_code.value, f"fvsTreeAttr('{attr_name}')")
@@ -221,33 +230,42 @@ class FVSBindings:
     def set_tree_attr(self, attr_name: str, values: np.ndarray) -> None:
         """Set a tree-level attribute array in FVS.
 
-        Corresponds to: SUBROUTINE FVSSETATTRDB(ATTRNAME, IATTRL,
-                                                 NVALS, VALS, IRTNCD)
+        Uses fvsTreeAttr with action="set" to modify tree attributes.
 
         Args:
             attr_name: Attribute name string (e.g., 'dbh', 'ht', 'tpa').
             values: numpy array of values to set.
         """
-        func = self._get_func("fvssetattrdb")
+        func = self._get_func("fvstreeattr")
 
-        attr_bytes = attr_name.encode("ascii")
-        attr_len = len(attr_bytes)
-        attr_buf = ctypes.create_string_buffer(attr_bytes, attr_len)
-        attr_len_c = ctypes.c_int(attr_len)
+        # Name parameter
+        name_bytes = attr_name.encode("ascii")
+        name_len = len(name_bytes)
+        name_buf = ctypes.create_string_buffer(name_bytes, name_len)
+        nch = ctypes.c_int(name_len)
+
+        # Action parameter - "set"
+        action_bytes = b"set"
+        action_len = len(action_bytes)
+        action_buf = ctypes.create_string_buffer(action_bytes, action_len)
+
         nvals = ctypes.c_int(len(values))
         vals = (ctypes.c_double * len(values))(*values)
         return_code = ctypes.c_int(0)
 
+        # GCC Fortran: hidden string lengths at end of arg list
         func(
-            attr_buf,
-            ctypes.byref(attr_len_c),
+            name_buf,
+            ctypes.byref(nch),
+            action_buf,
             ctypes.byref(nvals),
             vals,
             ctypes.byref(return_code),
-            ctypes.c_int(attr_len),
+            ctypes.c_int(name_len),    # hidden length for name
+            ctypes.c_int(action_len),  # hidden length for action
         )
 
-        self._check_return_code(return_code.value, f"fvsSetAttrDb('{attr_name}')")
+        self._check_return_code(return_code.value, f"fvsTreeAttr('{attr_name}', set)")
 
     # =========================================================================
     # Species attributes
@@ -256,15 +274,14 @@ class FVSBindings:
     def get_species_attr(self, attr_name: str) -> np.ndarray:
         """Get a species-level attribute array from FVS.
 
-        Corresponds to: SUBROUTINE FVSSPECIESATTR(ATTRNAME, IATTRL,
-                                                   NVALS, VALS, IRTNCD)
+        Corresponds to: SUBROUTINE FVSSPECIESATTR(NAME, NCH, ACTION, ATTR, RTNCODE)
 
-        Common attribute names:
+        Common attribute names (case sensitive):
             - 'spmcdbh' : Species minimum merchantable DBH
             - 'sptpa'   : Species trees per acre
 
         Args:
-            attr_name: Attribute name string.
+            attr_name: Attribute name string (case sensitive).
 
         Returns:
             numpy array of species attribute values.
@@ -274,25 +291,33 @@ class FVSBindings:
 
         func = self._get_func("fvsspeciesattr")
 
-        attr_bytes = attr_name.encode("ascii")
-        attr_len = len(attr_bytes)
-        attr_buf = ctypes.create_string_buffer(attr_bytes, attr_len)
-        attr_len_c = ctypes.c_int(attr_len)
-        nvals = ctypes.c_int(nspecies)
+        # Name parameter
+        name_bytes = attr_name.encode("ascii")
+        name_len = len(name_bytes)
+        name_buf = ctypes.create_string_buffer(name_bytes, name_len)
+        nch = ctypes.c_int(name_len)
+
+        # Action parameter - "get"
+        action_bytes = b"get"
+        action_len = len(action_bytes)
+        action_buf = ctypes.create_string_buffer(action_bytes, action_len)
+
         vals = (ctypes.c_double * nspecies)()
         return_code = ctypes.c_int(0)
 
+        # GCC Fortran: hidden string lengths at end of arg list
         func(
-            attr_buf,
-            ctypes.byref(attr_len_c),
-            ctypes.byref(nvals),
+            name_buf,
+            ctypes.byref(nch),
+            action_buf,
             vals,
             ctypes.byref(return_code),
-            ctypes.c_int(attr_len),
+            ctypes.c_int(name_len),    # hidden length for name
+            ctypes.c_int(action_len),  # hidden length for action
         )
 
         self._check_return_code(return_code.value, f"fvsSpeciesAttr('{attr_name}')")
-        return np.array(vals[:nvals.value], dtype=np.float64)
+        return np.array(vals[:nspecies], dtype=np.float64)
 
     # =========================================================================
     # Stand-level / Event Monitor attributes
@@ -301,44 +326,55 @@ class FVSBindings:
     def get_evmon_attr(self, attr_name: str) -> float:
         """Get a stand-level attribute from the FVS Event Monitor.
 
-        Corresponds to: SUBROUTINE FVSEVMONATTR(ATTRNAME, IATTRL,
-                                                  NVALS, VALS, IRTNCD)
+        Corresponds to: SUBROUTINE FVSEVMONATTR(NAME, NCH, ACTION, ATTR, RTNCODE)
 
-        Common attribute names:
+        Common attribute names (case sensitive):
             - 'bba'    : Before-growth basal area (sq ft/acre)
             - 'btpa'   : Before-growth trees per acre
             - 'bsdi'   : Before-growth Stand Density Index
             - 'btopht' : Before-growth top height (feet)
-            - 'bqmd'   : Before-growth QMD (inches)
+            - 'badbh'  : Before-growth average DBH (inches)
             - 'aba'    : After-growth basal area
             - 'atpa'   : After-growth trees per acre
             - 'asdi'   : After-growth SDI
             - 'atopht' : After-growth top height
-            - 'aqmd'   : After-growth QMD
+            - 'aadbh'  : After-growth average DBH
+            - 'age'    : Stand age
+            - 'year'   : Calendar year
+            - 'cycle'  : Current cycle number
+            - 'site'   : Site index
 
         Args:
-            attr_name: Attribute name string.
+            attr_name: Attribute name string (case sensitive).
 
         Returns:
             Scalar float value.
         """
         func = self._get_func("fvsevmonattr")
 
-        attr_bytes = attr_name.encode("ascii")
-        attr_len = len(attr_bytes)
-        attr_buf = ctypes.create_string_buffer(attr_bytes, attr_len)
-        attr_len_c = ctypes.c_int(attr_len)
-        nvals = ctypes.c_int(1)
+        # Name parameter
+        name_bytes = attr_name.encode("ascii")
+        name_len = len(name_bytes)
+        name_buf = ctypes.create_string_buffer(name_bytes, name_len)
+        nch = ctypes.c_int(name_len)
+
+        # Action parameter - "get"
+        action_bytes = b"get"
+        action_len = len(action_bytes)
+        action_buf = ctypes.create_string_buffer(action_bytes, action_len)
+
         val = ctypes.c_double(0.0)
         return_code = ctypes.c_int(0)
 
+        # GCC Fortran hidden string lengths go at the end of the arg list
         func(
-            attr_buf,
-            ctypes.byref(attr_len_c),
-            ctypes.byref(nvals),
+            name_buf,
+            ctypes.byref(nch),
+            action_buf,
             ctypes.byref(val),
             ctypes.byref(return_code),
-            ctypes.c_int(attr_len),
+            ctypes.c_int(name_len),    # hidden length for name
+            ctypes.c_int(action_len),  # hidden length for action
         )
 
         self._check_return_code(return_code.value, f"fvsEvmonAttr('{attr_name}')")
@@ -351,60 +387,75 @@ class FVSBindings:
     def get_summary(self, cycle: int) -> dict:
         """Get summary output data for a given cycle.
 
-        Corresponds to: SUBROUTINE FVSSUMMARY(ICYC, ISUMARY, OSUMARY, IRTNCD)
+        Corresponds to: SUBROUTINE FVSSUMMARY(SUMMARY, ICYCLE, NCYCLES,
+                                               MAXROW, MAXCOL, RTNCODE)
 
-        The summary array contains standard FVS output table values
-        for the specified cycle.
+        The summary array is INTEGER*4(22) from IOSUM in OUTCOM.F77.
+        Values are integer-encoded (e.g., BA in sq ft, TPA as integer).
+
+        Summary columns (from FVS source sumout.f):
+            1: Year, 2: Age, 3: TPA (begin), 4: Total cuft (begin),
+            5: Merch cuft (begin), 6: BdFt (begin), 7: BA (begin),
+            8: CCF (begin), 9: Top Ht (begin), 10: QMD*10 (begin),
+            11: TPA removed, 12: Merch cuft removed, 13: BdFt removed,
+            14: BA (after), 15: SDI (after), 16: Top Ht (after),
+            17: QMD*10 (after), 18: AccCuft, 19: MortCuft,
+            20: MAI, 21: ForTyp, 22: SizCls
 
         Args:
-            cycle: Cycle number (0 = initial conditions, 1+ = growth cycles).
+            cycle: Cycle number (1 = initial conditions, 2+ = growth cycles).
+                   Range: 1 to ncycles+1.
 
         Returns:
             Dictionary with summary metrics for the cycle.
         """
         func = self._get_func("fvssummary")
 
-        icyc = ctypes.c_int(cycle)
-        # FVS summary has ~20 output values
-        nsumary = 20
-        isumary = ctypes.c_int(nsumary)
-        osumary = (ctypes.c_double * nsumary)()
+        # summary is INTEGER*4(22) output array
+        summary = (ctypes.c_int * 22)()
+        icycle = ctypes.c_int(cycle)
+        ncycles = ctypes.c_int(0)
+        maxrow = ctypes.c_int(0)
+        maxcol = ctypes.c_int(0)
         return_code = ctypes.c_int(0)
 
         func(
-            ctypes.byref(icyc),
-            ctypes.byref(isumary),
-            osumary,
+            summary,
+            ctypes.byref(icycle),
+            ctypes.byref(ncycles),
+            ctypes.byref(maxrow),
+            ctypes.byref(maxcol),
             ctypes.byref(return_code),
         )
 
         self._check_return_code(return_code.value, f"fvsSummary(cycle={cycle})")
 
-        # Map summary array positions to named fields
-        # Positions based on FVS summary table output (sumary.f)
-        vals = list(osumary)
+        vals = [summary[i] for i in range(22)]
         return {
             "cycle": cycle,
-            "year": int(vals[0]) if len(vals) > 0 else 0,
-            "age": int(vals[1]) if len(vals) > 1 else 0,
-            "tpa": vals[2] if len(vals) > 2 else 0.0,
-            "ba": vals[3] if len(vals) > 3 else 0.0,
-            "sdi": vals[4] if len(vals) > 4 else 0.0,
-            "ccf": vals[5] if len(vals) > 5 else 0.0,
-            "top_height": vals[6] if len(vals) > 6 else 0.0,
-            "qmd": vals[7] if len(vals) > 7 else 0.0,
-            "total_cuft": vals[8] if len(vals) > 8 else 0.0,
-            "merch_cuft": vals[9] if len(vals) > 9 else 0.0,
-            "merch_bdft": vals[10] if len(vals) > 10 else 0.0,
-            "removed_tpa": vals[11] if len(vals) > 11 else 0.0,
-            "removed_cuft": vals[12] if len(vals) > 12 else 0.0,
-            "removed_bdft": vals[13] if len(vals) > 13 else 0.0,
-            "mortality_tpa": vals[14] if len(vals) > 14 else 0.0,
-            "mortality_cuft": vals[15] if len(vals) > 15 else 0.0,
-            "mai_cuft": vals[16] if len(vals) > 16 else 0.0,
-            "forest_type": int(vals[17]) if len(vals) > 17 else 0,
-            "size_class": int(vals[18]) if len(vals) > 18 else 0,
-            "stocking_class": int(vals[19]) if len(vals) > 19 else 0,
+            "ncycles": ncycles.value,
+            "year": vals[0],
+            "age": vals[1],
+            "begin_tpa": vals[2],
+            "begin_tcuft": vals[3],
+            "begin_mcuft": vals[4],
+            "begin_bdft": vals[5],
+            "begin_ba": vals[6],
+            "begin_ccf": vals[7],
+            "begin_top_ht": vals[8],
+            "begin_qmd": vals[9] / 10.0,  # stored as QMD*10
+            "removed_tpa": vals[10],
+            "removed_mcuft": vals[11],
+            "removed_bdft": vals[12],
+            "after_ba": vals[13],
+            "after_sdi": vals[14],
+            "after_top_ht": vals[15],
+            "after_qmd": vals[16] / 10.0,  # stored as QMD*10
+            "accretion_cuft": vals[17],
+            "mortality_cuft": vals[18],
+            "mai": vals[19],
+            "forest_type": vals[20],
+            "size_class": vals[21],
         }
 
     # =========================================================================

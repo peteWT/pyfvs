@@ -46,12 +46,20 @@ class NativeStand:
             directory is created and cleaned up on close().
     """
 
+    # FVS default cycle lengths per variant (from variant source code)
+    # SN and OP use 5-year cycles; all others use 10-year cycles
+    _VARIANT_CYCLE_LENGTHS = {
+        "SN": 5, "LS": 10, "PN": 10, "WC": 10,
+        "NE": 10, "CS": 10, "CA": 10, "OC": 10,
+        "WS": 10, "OP": 5,
+    }
+
     def __init__(self, variant: str = "SN", work_dir: Optional[str] = None):
         self.variant = variant.upper()
         self._bindings = FVSBindings(self.variant)
         self._initialized = False
         self._years_grown = 0
-        self._cycle_length = 5 if self.variant in ("SN", "OP") else 10
+        self._cycle_length = self._VARIANT_CYCLE_LENGTHS.get(self.variant, 10)
 
         # Working directory for keyword files
         if work_dir:
@@ -155,54 +163,50 @@ class NativeStand:
     ) -> Path:
         """Generate an FVS keyword file for the simulation.
 
+        Uses ESTAB/PLANT keywords to establish planted trees on bare ground,
+        avoiding complex TREEFMT/TREEIN formatting issues.
+
         Returns:
             Path to the generated .key file.
         """
         key_path = self._work_dir / "stand.key"
-        tree_path = self._work_dir / "stand.tre"
-
-        # Write tree data file (FVS free-format tree list)
-        # Format: Plot Tree Species DBH Height TPA CrownRatio
-        with open(tree_path, "w") as tree_file:
-            tree_file.write(
-                f"   1    1  {species_index:3d}  {dbh:6.1f}  {height:6.1f}"
-                f"  {trees_per_acre:8.1f}    0\n"
-            )
 
         # Build keyword file
         lines = []
-        lines.append(f"STDIDENT")
+        lines.append("STDIDENT")
         lines.append(f"PYFVS_NATIVE_{self.variant}_{self._species}")
 
-        # Site index
-        lines.append(f"SITECODE")
+        # Site index - field 1 is species index, field 2 is site index
+        lines.append("SITECODE")
         lines.append(f"         {species_index:3d}  {site_index:6.1f}")
 
-        # Design (1 plot, no sampling weight adjustments)
-        lines.append(f"DESIGN")
-        lines.append(f"       0       1       1     1.0     1.0     1.0")
+        # No initial tree data — bare ground planting
+        lines.append("NOTREES")
+        lines.append("NOTRIPLE")
 
-        # Stand age
-        lines.append(f"STDINFO")
+        # Stand info
+        lines.append("STDINFO")
         lines.append(f"         0  {age:4d}       0       0       0")
 
-        # Number of cycles
-        lines.append(f"NUMCYCLE")
-        lines.append(f"  {num_cycles:8d}")
+        # Inventory year
+        lines.append("INVYEAR         2000")
 
-        # Time interval (cycle length)
-        lines.append(f"TIMEINT")
-        lines.append(f"       0  {self._cycle_length:8d}")
+        # Suppress automatic establishment
+        lines.append("NOAUTOES")
 
-        # Tree data input
-        lines.append(f"TREEFMT")
-        lines.append(f"(I4,T1,I7,F3.0,I1,A3,F4.1,F3.1,2F3.0,F4.1,I1,3F2.0,2I1,I2,2I3,2I1,F3.0)")
-        lines.append(f"TREEIN")
-        lines.append(f"{tree_path}")
+        # Number of cycles (value in columns 11-20 of keyword record)
+        lines.append(f"NUMCYCLE  {num_cycles:10d}")
 
-        # FVS PROCESS keyword (starts simulation)
-        lines.append(f"PROCESS")
-        lines.append(f"STOP")
+        # Plant trees using ESTAB/PLANT keywords
+        # PLANT: year, species_index, TPA
+        tpa_int = int(round(trees_per_acre))
+        lines.append("ESTAB           2000")
+        lines.append(f"PLANT           2000{species_index:10d}{tpa_int:10d}")
+        lines.append("END")
+
+        # Process
+        lines.append("PROCESS")
+        lines.append("STOP")
 
         with open(key_path, "w") as key_file:
             key_file.write("\n".join(lines) + "\n")
@@ -243,8 +247,9 @@ class NativeStand:
             num_cycles=num_cycles,
         )
 
-        # Initialize FVS with keyword file
-        self._bindings.set_cmd_line(str(self._keyword_file))
+        # Initialize FVS with keyword file (FVS expects --keywordfile=<path> format)
+        cmd_line = f"--keywordfile={self._keyword_file}"
+        self._bindings.set_cmd_line(cmd_line)
 
         # Run simulation - FVS returns 2 when simulation is complete
         return_code = self._bindings.run()
@@ -270,37 +275,63 @@ class NativeStand:
     def get_metrics(self) -> Dict[str, float]:
         """Get current stand metrics in the same format as Stand.get_metrics().
 
-        Uses fvsEvmonAttr() for stand-level metrics — no reimplementation
-        of SDI, BA, or other formulas.
+        Computes metrics directly from tree-level attributes via fvsTreeAttr,
+        which provides reliable final-state data after simulation completes.
 
         Returns:
             Dictionary with keys: tpa, basal_area, qmd, top_height,
             sdi, volume, age.
         """
-        try:
-            tpa = self._bindings.get_evmon_attr("atpa")
-            basal_area = self._bindings.get_evmon_attr("aba")
-            top_height = self._bindings.get_evmon_attr("atopht")
-            sdi = self._bindings.get_evmon_attr("asdi")
-            qmd = self._bindings.get_evmon_attr("aqmd")
-        except FVSNativeError:
-            # Fall back to before-growth values if after-growth not available
-            tpa = self._bindings.get_evmon_attr("btpa")
-            basal_area = self._bindings.get_evmon_attr("bba")
-            top_height = self._bindings.get_evmon_attr("btopht")
-            sdi = self._bindings.get_evmon_attr("bsdi")
-            qmd = self._bindings.get_evmon_attr("bqmd")
+        import math
 
-        # Get volume from tree attributes
+        dims = self._bindings.get_dim_sizes()
+        ntrees = dims["ntrees"]
+
+        if ntrees <= 0:
+            return {
+                "tpa": 0.0,
+                "basal_area": 0.0,
+                "qmd": 0.0,
+                "top_height": 0.0,
+                "sdi": 0.0,
+                "volume": 0.0,
+                "age": self._years_grown,
+            }
+
+        # Get tree-level arrays
+        dbh = self._bindings.get_tree_attr("dbh", ntrees)
+        ht = self._bindings.get_tree_attr("ht", ntrees)
+        tpa_arr = self._bindings.get_tree_attr("tpa", ntrees)
+
         try:
-            tcuft_array = self._bindings.get_tree_attr("tcuft")
-            tpa_array = self._bindings.get_tree_attr("tpa")
-            volume = float(sum(tcuft_array * tpa_array)) if len(tcuft_array) > 0 else 0.0
+            tcuft = self._bindings.get_tree_attr("tcuft", ntrees)
         except FVSNativeError:
+            tcuft = None
+
+        # Compute stand metrics from tree arrays
+        import numpy as np
+
+        total_tpa = float(np.sum(tpa_arr))
+        basal_area = float(np.sum(0.005454 * dbh**2 * tpa_arr))
+
+        if total_tpa > 0 and basal_area > 0:
+            qmd = math.sqrt(basal_area / (0.005454 * total_tpa))
+        else:
+            qmd = 0.0
+
+        top_height = float(np.max(ht)) if len(ht) > 0 else 0.0
+
+        # Volume: sum of per-tree cubic foot volume * TPA
+        if tcuft is not None:
+            volume = float(np.sum(tcuft * tpa_arr))
+        else:
             volume = 0.0
 
+        # SDI = sum(TPA_i * (DBH_i / 10)^1.605) — Reineke's formula
+        sdi = float(np.sum(tpa_arr * (dbh / 10.0) ** 1.605))
+
         return {
-            "tpa": tpa,
+            "tpa": total_tpa,
             "basal_area": basal_area,
             "qmd": qmd,
             "top_height": top_height,
@@ -354,7 +385,12 @@ class NativeStand:
         """Get the complete yield table from the FVS simulation.
 
         Returns cycle-by-cycle summary data in a format compatible with
-        the pyfvs validation system.
+        the pyfvs validation system. FVS summary uses 1-based indexing:
+        cycle 1 = initial conditions, cycle ncycles+1 = final state.
+
+        Note: IOSUM summary values are integer-encoded. The begin_tpa and
+        begin_tcuft fields are reliable, but after_ba/after_qmd/after_top_ht
+        may have limited precision.
 
         Returns:
             List of dictionaries, one per cycle, with keys matching
@@ -363,8 +399,17 @@ class NativeStand:
         dims = self._bindings.get_dim_sizes()
         ncycles = dims["ncycles"]
 
+        # If dims doesn't have ncycles, try to get it from summary
+        if ncycles <= 0:
+            try:
+                s = self._bindings.get_summary(1)
+                ncycles = s["ncycles"]
+            except FVSNativeError:
+                return []
+
         yield_table = []
-        for cycle in range(ncycles + 1):  # Include initial conditions (cycle 0)
+        # FVS summary is 1-indexed: cycle 1 through ncycles+1
+        for cycle in range(1, ncycles + 2):
             try:
                 summary = self._bindings.get_summary(cycle)
                 yield_table.append(summary)

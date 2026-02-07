@@ -78,5 +78,9 @@ docs/FVSsn_Overview_chunks.json
 # External source code
 fvs-source/
 
+# FVS output files (produced by native FVS library)
+FVSOut.db
+fort.*
+
 # Build outputs
 site/

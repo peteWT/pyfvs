@@ -79,12 +79,18 @@ def _find_library_path(variant: str) -> Optional[Path]:
         Path to the library file, or None if not found.
     """
     ext = _get_platform_extension()
-    # Try both cases: FVSsn and FVSSn
-    lib_names = [
-        f"FVS{variant.lower()}{ext}",
-        f"FVS{variant.upper()}{ext}",
-        f"fvs{variant.lower()}{ext}",
-    ]
+    # On macOS, also try .so since the FVS makefile produces .so on all Unix
+    extensions = [ext]
+    if platform.system() == "Darwin" and ".so" not in extensions:
+        extensions.append(".so")
+
+    lib_names = []
+    for e in extensions:
+        lib_names.extend([
+            f"FVS{variant.lower()}{e}",
+            f"FVS{variant.upper()}{e}",
+            f"fvs{variant.lower()}{e}",
+        ])
 
     for search_dir in _get_search_paths():
         if not search_dir.is_dir():

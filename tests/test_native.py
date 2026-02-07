@@ -28,6 +28,7 @@ from pyfvs.native.species_map import (
 from pyfvs.native.library_loader import (
     fvs_library_available,
     get_library_info,
+    clear_library_cache,
     _get_platform_extension,
     _get_search_paths,
 )
@@ -255,7 +256,16 @@ class TestLibraryLoader:
 # =============================================================================
 @requires_fvs_sn
 class TestNativeStandSN:
-    """Integration tests for NativeStand with the SN variant."""
+    """Integration tests for NativeStand with the SN variant.
+
+    Note: FVS uses Fortran COMMON blocks for global state. The library
+    cache must be cleared between tests to avoid state contamination.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _clear_fvs_state(self):
+        """Clear the library cache before each test for clean Fortran state."""
+        clear_library_cache()
 
     def test_native_stand_init(self):
         """NativeStand should initialize without error."""
@@ -271,13 +281,14 @@ class TestNativeStandSN:
 
         with NativeStand(variant="SN") as ns:
             ns.initialize_planted(500, 70, "LP")
-            ns.grow(25)
+            ns.grow(50)
             metrics = ns.get_metrics()
 
-            assert metrics["tpa"] > 0
-            assert metrics["basal_area"] > 0
-            assert metrics["qmd"] > 0
-            assert metrics["top_height"] > 0
+            # 50 years of LP growth at SI=70 should produce substantial metrics
+            assert metrics["tpa"] > 100
+            assert metrics["basal_area"] > 50
+            assert metrics["qmd"] > 5
+            assert metrics["top_height"] > 50
 
     def test_native_stand_yield_table(self):
         """NativeStand should produce a multi-cycle yield table."""
@@ -285,13 +296,14 @@ class TestNativeStandSN:
 
         with NativeStand(variant="SN") as ns:
             ns.initialize_planted(500, 70, "LP")
-            ns.grow(25)
+            ns.grow(50)
             yield_table = ns.get_yield_table()
 
-            assert len(yield_table) > 1  # At least initial + 1 cycle
+            # 50 years / 10-year cycles = 5 cycles + initial = 6 rows
+            assert len(yield_table) >= 3  # At least initial + 2 cycles
             for row in yield_table:
-                assert "tpa" in row
-                assert "ba" in row
+                assert "year" in row
+                assert "begin_tpa" in row
 
     def test_native_stand_tree_list(self):
         """NativeStand should produce a tree list."""
@@ -299,7 +311,7 @@ class TestNativeStandSN:
 
         with NativeStand(variant="SN") as ns:
             ns.initialize_planted(500, 70, "LP")
-            ns.grow(25)
+            ns.grow(50)
             tree_list = ns.get_tree_list()
 
             assert len(tree_list) > 0
@@ -312,6 +324,10 @@ class TestNativeStandSN:
 @requires_fvs_pn
 class TestNativeStandPN:
     """Integration tests for NativeStand with the PN variant."""
+
+    @pytest.fixture(autouse=True)
+    def _clear_fvs_state(self):
+        clear_library_cache()
 
     def test_pn_douglas_fir_growth(self):
         """PN variant should grow Douglas-fir with reasonable metrics."""
@@ -331,6 +347,10 @@ class TestNativeStandPN:
 class TestNativeStandLS:
     """Integration tests for NativeStand with the LS variant."""
 
+    @pytest.fixture(autouse=True)
+    def _clear_fvs_state(self):
+        clear_library_cache()
+
     def test_ls_red_pine_growth(self):
         """LS variant should grow Red Pine with reasonable metrics."""
         from pyfvs.native import NativeStand
@@ -347,6 +367,10 @@ class TestNativeStandLS:
 @requires_fvs_sn
 class TestFVSBindings:
     """Low-level FVSBindings integration tests."""
+
+    @pytest.fixture(autouse=True)
+    def _clear_fvs_state(self):
+        clear_library_cache()
 
     def test_bindings_init(self):
         """FVSBindings should initialize with the SN variant."""

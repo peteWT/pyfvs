@@ -99,24 +99,27 @@ def compare_stand_growth(
             "volume": metrics.get("volume", 0.0),
         })
 
-    # --- Run native FVS simulation ---
-    with NativeStand(variant=variant) as ns:
-        ns.initialize_planted(trees_per_acre, site_index, species)
-        ns.grow(years)
-        native_yield = ns.get_yield_table()
+    # --- Run native FVS simulation at each checkpoint ---
+    # Run separate native simulations for each cycle endpoint to get
+    # accurate tree-level metrics (the IOSUM summary has limited precision).
+    from pyfvs.native.library_loader import clear_library_cache
 
-    # Convert native yield table to comparable format
     native_cycles = []
-    for row in native_yield:
-        if row.get("cycle", 0) > 0:  # Skip initial conditions
+    for cycle_num in range(1, num_cycles + 1):
+        cycle_years = cycle_num * cycle_length
+        clear_library_cache()
+        with NativeStand(variant=variant) as ns:
+            ns.initialize_planted(trees_per_acre, site_index, species)
+            ns.grow(cycle_years)
+            metrics = ns.get_metrics()
             native_cycles.append({
-                "cycle": row["cycle"],
-                "age": row.get("age", 0),
-                "tpa": row.get("tpa", 0.0),
-                "basal_area": row.get("ba", 0.0),
-                "qmd": row.get("qmd", 0.0),
-                "top_height": row.get("top_height", 0.0),
-                "volume": row.get("total_cuft", 0.0),
+                "cycle": cycle_num,
+                "age": cycle_years,
+                "tpa": metrics["tpa"],
+                "basal_area": metrics["basal_area"],
+                "qmd": metrics["qmd"],
+                "top_height": metrics["top_height"],
+                "volume": metrics["volume"],
             })
 
     # --- Compute validation metrics ---
