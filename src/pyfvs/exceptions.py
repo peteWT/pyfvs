@@ -91,3 +91,12 @@ class InvalidDataError(DataError):
         self.data_description = data_description
         self.reason = reason
         super().__init__(f"Invalid {data_description}: {reason}")
+
+
+class FVSNativeError(FVSError):
+    """Raised when native FVS library operations fail.
+
+    This includes library loading failures, Fortran API errors,
+    and symbol resolution issues.
+    """
+    pass

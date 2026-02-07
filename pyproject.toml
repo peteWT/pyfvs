@@ -195,6 +195,7 @@ markers = [
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
     "benchmark: marks tests as performance benchmarks",
+    "native: marks tests that require the native FVS shared library (skip with '-m \"not native\"')",
 ]
 
 # Coverage configuration

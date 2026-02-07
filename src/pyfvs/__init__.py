@@ -173,6 +173,7 @@ from .utils import normalize_code, normalize_species_code, normalize_ecounit
 # =============================================================================
 from .exceptions import (
     FVSError,
+    FVSNativeError,
     ConfigurationError,
     SpeciesNotFoundError,
     ParameterError,
@@ -184,6 +185,11 @@ from .exceptions import (
     DataError,
     InvalidDataError,
 )
+
+# =============================================================================
+# Native FVS Bindings (optional - requires FVS shared library)
+# =============================================================================
+from . import native
 
 # =============================================================================
 # Base Classes (for extension)
@@ -353,6 +359,7 @@ __all__ = [
     "normalize_ecounit",
     # Exceptions
     "FVSError",
+    "FVSNativeError",
     "ConfigurationError",
     "SpeciesNotFoundError",
     "ParameterError",
@@ -363,6 +370,8 @@ __all__ = [
     "EmptyStandError",
     "DataError",
     "InvalidDataError",
+    # Native FVS Bindings
+    "native",
     # Base Classes
     "ParameterizedModel",
     # Variant-Specific Growth Models
