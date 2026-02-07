@@ -54,6 +54,18 @@ uv run python -c "from pyfvs import Stand; s = Stand.initialize_planted(400, 60,
 
 # Run example simulation
 uv run python -m pyfvs.main
+
+# Check if native FVS library is available
+uv run python -c "from pyfvs.native import fvs_library_available; print(fvs_library_available('SN'))"
+
+# Run native FVS comparison example (works with or without FVS library)
+uv run python examples/native_fvs_comparison.py
+
+# Run native FVS validation (requires FVS shared library)
+uv run python -m validation.native.compare_native
+
+# Run only native tests
+uv run pytest tests/test_native.py -v
 ```
 
 ## Architecture Overview
@@ -108,6 +120,14 @@ stand.py (composition)
   ├── stand_output.py (StandOutputGenerator)
   └── tree.py
 
+native/ (optional - ctypes bindings to USDA FVS Fortran library)
+  ├── __init__.py (lazy exports, fvs_library_available())
+  ├── library_loader.py (platform-aware .dylib/.so/.dll discovery)
+  ├── species_map.py (per-variant species code ↔ Fortran index maps)
+  ├── fvs_bindings.py (low-level ctypes declarations for FVS API)
+  ├── native_stand.py (NativeStand - mirrors Stand API using native FVS)
+  └── BUILD.md (instructions for building FVS shared libraries)
+
 config_loader.py
   └── All coefficient modules use load_coefficient_file() with caching
 
@@ -149,8 +169,11 @@ src/pyfvs/cfg/
 - Unit tests in `/tests/` for individual modules
 - Comprehensive integration tests in `test_tree_comprehensive.py`
 - **Shared fixtures** in `tests/conftest.py` - 30+ fixtures for trees, stands, and growth parameters
+- **Native FVS tests** in `tests/test_native.py` - 40 always-pass tests (species maps, imports) + 7 skip-when-absent (NativeStand integration)
 - Test outputs and plots saved to `/test_output/` for manual verification
 - Run `uv run pytest` to execute all tests (validation tests are pending calibration)
+- Run `uv run pytest -m native` to run only native FVS tests
+- Run `uv run pytest -m "not native"` to exclude native tests
 
 ## Known Issues
 
@@ -243,6 +266,18 @@ src/pyfvs/cfg/
     - `stand_metrics.py`: Added `OP_SDI_MAXIMUMS` dict (19 species, range 300-900)
     - 33 tests in `tests/test_op_variant.py`
     - Smoke test: 400 TPA DF SI=120 50yr → 323 TPA, 18.5" QMD, 601 BA, 28,395 cuft (highest yield variant)
+
+32. **Native FVS Validation System** - Added `pyfvs.native` subpackage for validating Python growth models against the official USDA FVS Fortran shared library via ctypes bindings:
+    - `native/species_map.py`: Complete species code-to-Fortran-index maps for all 10 variants (SN:85, LS:68, PN:39, WC:37, NE:108, CS:96, OP:19, CA:50, OC:50, WS:43 species) derived from FVS `blkdat.f`
+    - `native/library_loader.py`: Platform-aware discovery of `.dylib`/`.so`/`.dll` files with search order: `FVS_LIB_PATH` env → `~/.fvs/lib/` → `/usr/local/lib/` → `./lib/`
+    - `native/fvs_bindings.py`: Low-level ctypes declarations for FVS API (`fvsSetCmdLine`, `fvsTreeAttr`, `fvsEvmonAttr`, `fvsSummary`, `fvsAddTrees`, etc.) with auto-detection of GCC vs Intel Fortran symbol conventions
+    - `native/native_stand.py`: `NativeStand` class mirroring `Stand` API — generates FVS keyword files, runs simulation through native library, returns metrics in same format as `Stand.get_metrics()`
+    - `native/BUILD.md`: Build instructions for FVS shared libraries from USDA Fortran source
+    - `validation/native/compare_native.py`: Side-by-side pyfvs vs native FVS comparison with `ValidationMetrics` integration
+    - `examples/native_fvs_comparison.py`: Example demonstrating library discovery and comparison
+    - `tests/test_native.py`: 47 tests (40 pass always, 7 skip gracefully when library absent)
+    - All imports are lazy — `import pyfvs` never fails when the Fortran library is absent
+    - `FVSNativeError` exception class added to `exceptions.py`
 
 ## Recent Refactoring (2025)
 
@@ -499,6 +534,92 @@ To add a new FVS variant:
 9. Add variant mortality dispatch in `mortality.py:create_mortality_model()`
 10. Add variant species volume coefficients to `volume_library.py`
 
+## Native FVS Validation System
+
+The `pyfvs.native` subpackage provides ctypes bindings to the official USDA FVS Fortran shared libraries for ground-truth validation. All native imports are lazy — `import pyfvs` never fails when the library is absent.
+
+### Architecture
+
+```
+pyfvs.native/
+├── species_map.py     # Pure data: species code ↔ Fortran index (all 10 variants)
+├── library_loader.py  # Platform-aware .dylib/.so/.dll discovery + singleton cache
+├── fvs_bindings.py    # Low-level ctypes (FVS API from apisubs.f)
+├── native_stand.py    # High-level NativeStand (mirrors Stand API)
+└── BUILD.md           # Build instructions for FVS shared libraries
+
+validation/native/
+└── compare_native.py  # Side-by-side pyfvs vs native comparison
+
+tests/test_native.py   # 40 always-pass + 7 skip-when-absent
+```
+
+### Checking Library Availability
+
+```python
+from pyfvs.native import fvs_library_available, get_library_info
+
+# Quick check
+fvs_library_available('SN')  # True/False
+
+# Detailed info
+get_library_info('SN')
+# {'variant': 'SN', 'available': True, 'path': '~/.fvs/lib/FVSsn.dylib', ...}
+```
+
+### Using NativeStand
+
+```python
+from pyfvs.native import NativeStand
+
+# Same API as pyfvs.Stand
+with NativeStand(variant='SN') as ns:
+    ns.initialize_planted(500, 70, 'LP')
+    ns.grow(50)
+    metrics = ns.get_metrics()  # Same keys as Stand.get_metrics()
+    yield_table = ns.get_yield_table()
+    tree_list = ns.get_tree_list()
+```
+
+### Running Validation Comparisons
+
+```python
+from validation.native.compare_native import compare_stand_growth, generate_validation_report
+
+results = compare_stand_growth(
+    trees_per_acre=500, site_index=70, species='LP',
+    variant='SN', years=50
+)
+generate_validation_report(results, output_dir='validation/results/native')
+```
+
+### Species Code Mapping
+
+Species maps translate pyfvs 2-letter codes to FVS Fortran integer indices:
+
+```python
+from pyfvs.native import get_species_index, get_species_code
+
+get_species_index('LP', 'SN')  # → 7 (Loblolly Pine in Southern variant)
+get_species_index('DF', 'PN')  # → 12 (Douglas-fir in Pacific Northwest)
+get_species_code(7, 'SN')      # → 'LP'
+```
+
+### Library Search Order
+
+1. `FVS_LIB_PATH` environment variable (directory path)
+2. `~/.fvs/lib/`
+3. `/usr/local/lib/`
+4. `./lib/` (relative to working directory)
+
+Library naming: `FVS{variant}.{ext}` (e.g., `FVSsn.dylib`, `FVSpn.so`)
+
+### Key Limitations
+
+- **Fortran COMMON blocks**: Only ONE simulation per variant at a time (use context manager)
+- **FVS library required**: Must be built from USDA Fortran source (see `native/BUILD.md`)
+- **GCC Fortran convention**: Hidden string length args; auto-detected vs Intel convention
+
 ## Ecological Unit Effects on Growth
 
 The FVS growth model includes ecological unit adjustments that apply to **both small-tree and large-tree models**. Province 232 (Georgia) is the BASE for loblolly pine (LP), with coefficient 0.0. Other provinces have significant effects:
@@ -608,8 +729,10 @@ See `test_output/manuscript_validation/` for validation reports
 2. ~~Investigate yield gap vs manuscript~~ **RESOLVED** - PyFVS exceeds historical yield tables by 2x; manuscript expectations appear unusually high
 3. ~~Validate thinned stands~~ **DONE** - Thinning produces larger individual trees but lower total volume
 4. ~~Consolidate test fixtures~~ **DONE** - Created `tests/conftest.py` with 30+ shared fixtures
-5. Add regression tests with known good outputs
-6. Test with large stands (1000+ trees) for performance
+5. ~~**Native FVS Validation System**~~ **DONE** - ctypes bindings to USDA FVS Fortran library for ground-truth validation. 10-variant species maps, NativeStand API, side-by-side comparison (47 tests, 40 pass always)
+6. Add regression tests with known good outputs
+7. Test with large stands (1000+ trees) for performance
+8. Build FVS shared libraries and run native validation comparisons
 
 ### Growth Model Calibration
 1. ~~Investigate diameter growth rates~~ **RESOLVED** - Use appropriate ecounit for region
