@@ -283,10 +283,11 @@ class LargeTreeHeightGrowthModel(ParameterizedModel):
         tree_age = max(5.0, min(150.0, tree_age))
         
         # Calculate potential height using Chapman-Richards equation
-        # POTHT = c1 * SI^c2 * (1 - exp(-c3 * AGET))^(c4 * SI^c5)
+        # POTHT = BH + c1 * SI^c2 * (1 - exp(-c3 * AGET))^(c4 * SI^c5)
         c1, c2, c3, c4, c5 = (small_tree_coeffs['c1'], small_tree_coeffs['c2'],
                               small_tree_coeffs['c3'], small_tree_coeffs['c4'],
                               small_tree_coeffs['c5'])
+        bh = small_tree_coeffs.get('bh', 0.0)
 
         # Site index base age for southern pines
         base_age = 25
@@ -295,7 +296,7 @@ class LargeTreeHeightGrowthModel(ParameterizedModel):
             """Calculate unscaled Chapman-Richards height."""
             if age <= 0:
                 return 1.0
-            return c1 * (site_index ** c2) * (1.0 - math.exp(c3 * age)) ** (c4 * (site_index ** c5))
+            return bh + c1 * (site_index ** c2) * (1.0 - math.exp(c3 * age)) ** (c4 * (site_index ** c5))
 
         try:
             # Calculate scaling factor to ensure Height(base_age=25) = SI
@@ -372,32 +373,41 @@ class LargeTreeHeightGrowthModel(ParameterizedModel):
         # Bound to reasonable range
         return max(0.1, min(3.0, fallback_growth))
     
-    def _get_small_tree_coefficients(self) -> Dict[str, float]:
+    def _get_small_tree_coefficients(self, variant: str = 'SN') -> Dict[str, float]:
         """Get small tree height growth coefficients for the species.
+
+        Loads from variant-specific NC-128 coefficient file first, then falls
+        back to SN file, then to hardcoded LP defaults.
+
+        Args:
+            variant: FVS variant code (e.g., 'SN', 'LS', 'CS', 'NE')
 
         Returns:
             Dictionary with Chapman-Richards coefficients
         """
-        try:
-            # Try to load from small tree height growth configuration
-            small_tree_data = load_coefficient_file('sn_small_tree_height_growth.json')
+        variant_lower = variant.lower()
+        filenames = [
+            f'{variant_lower}_small_tree_height_growth.json',
+            'sn_small_tree_height_growth.json',
+        ]
+        for filename in filenames:
+            try:
+                small_tree_data = load_coefficient_file(filename, variant=variant)
+                if 'nc128_height_growth_coefficients' in small_tree_data:
+                    coeffs = small_tree_data['nc128_height_growth_coefficients']
+                    if self.species_code in coeffs:
+                        return coeffs[self.species_code]
+                    elif 'LP' in coeffs:
+                        return coeffs['LP']
+            except (FileNotFoundError, Exception):
+                continue
 
-            if 'nc128_height_growth_coefficients' in small_tree_data:
-                coeffs = small_tree_data['nc128_height_growth_coefficients']
-                if self.species_code in coeffs:
-                    return coeffs[self.species_code]
-                else:
-                    # Fallback to LP if species not found
-                    return coeffs.get('LP', self._get_fallback_small_tree_coefficients())
-        except FileNotFoundError:
-            pass
-
-        # Fallback coefficients if file not available
+        # Fallback coefficients if no file available
         return self._get_fallback_small_tree_coefficients()
     
     def _get_fallback_small_tree_coefficients(self) -> Dict[str, float]:
         """Get fallback small tree coefficients.
-        
+
         Returns:
             Dictionary with default LP coefficients
         """
@@ -406,7 +416,8 @@ class LargeTreeHeightGrowthModel(ParameterizedModel):
             'c2': 0.9947,
             'c3': -0.0269,
             'c4': 1.1344,
-            'c5': -0.0109
+            'c5': -0.0109,
+            'bh': 0.0
         }
     
     def _estimate_height_from_dbh(self, dbh: float) -> float:

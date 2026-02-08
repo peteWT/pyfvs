@@ -281,6 +281,10 @@ class Tree:
         # The species config has the correct NC-128 coefficients for each species
         p = self.species_params.get('small_tree_height_growth', {})
         if not p:
+            # Try variant-specific NC-128 coefficient file
+            variant = getattr(self, '_variant', 'SN')
+            p = self._load_variant_small_tree_coefficients(variant)
+        if not p:
             # Fallback to growth_params if species config doesn't have it
             small_tree_params = self.growth_params.get('small_tree_growth', {})
             if self.species in small_tree_params:
@@ -291,7 +295,8 @@ class Tree:
                     'c2': 1.0042,
                     'c3': -0.0374,
                     'c4': 0.7632,
-                    'c5': 0.0358
+                    'c5': 0.0358,
+                    'bh': 0.0
                 })
         
         # Chapman-Richards predicts cumulative height at age t
@@ -313,12 +318,15 @@ class Tree:
         else:
             base_age = 25
 
+        # Breast height offset (BH) from NC-128 curves — some curves add 4.5 ft
+        bh = p.get('bh', 0.0)
+
         def _raw_chapman_richards(age):
             """Calculate unscaled Chapman-Richards height."""
             if age <= 0:
                 return 1.0
             return (
-                p['c1'] * (site_index ** p['c2']) *
+                bh + p['c1'] * (site_index ** p['c2']) *
                 (1.0 - math.exp(p['c3'] * age)) **
                 (p['c4'] * (site_index ** p['c5']))
             )
@@ -378,6 +386,36 @@ class Tree:
             dbh_increment = self.dbh - original_dbh
             adjusted_increment = dbh_increment * ecounit_multiplier
             self.dbh = original_dbh + adjusted_increment
+
+    def _load_variant_small_tree_coefficients(self, variant: str) -> dict:
+        """Load variant-specific NC-128 small tree height growth coefficients.
+
+        Looks for {variant}_small_tree_height_growth.json in the variant's
+        config directory (via load_coefficient_file). Falls back to the SN
+        file if variant-specific file not found.
+
+        Args:
+            variant: FVS variant code (e.g., 'LS', 'CS', 'NE', 'SN')
+
+        Returns:
+            Coefficient dict with keys c1-c5 and bh, or empty dict if not found.
+        """
+        from .config_loader import load_coefficient_file
+        variant_lower = variant.lower()
+        # Try variant-specific file first
+        filenames = [
+            f'{variant_lower}_small_tree_height_growth.json',
+            'sn_small_tree_height_growth.json',
+        ]
+        for filename in filenames:
+            try:
+                data = load_coefficient_file(filename, variant=variant)
+                coeffs = data.get('nc128_height_growth_coefficients', {})
+                if self.species in coeffs:
+                    return coeffs[self.species]
+            except (FileNotFoundError, Exception):
+                continue
+        return {}
 
     def _apply_dds_to_dbh(self, dds: float, use_bark_ratio: bool = True) -> float:
         """Apply DDS (diameter squared increment) to DBH with optional bark ratio conversion.
