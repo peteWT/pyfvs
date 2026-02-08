@@ -400,15 +400,16 @@ class LSMortalityModel:
     1. 4-group background mortality with halved logistic rates
     2. SDI-based density mortality with VARADJ shade tolerance adjustment
 
-    The 4 mortality groups have different logistic coefficients (P0, P1):
-    - Group 1 (Pines/Spruce): P0=5.59, P1=-0.0054
-    - Group 2 (Firs/Cedars): P0=4.20, P1=-0.0040
-    - Group 3 (Hardwoods): P0=3.80, P1=-0.0035
-    - Group 4 (Misc/Other): P0=4.50, P1=-0.0048
+    The 4 mortality groups have different logistic coefficients (PMSC, PMD)
+    from morts.f:
+    - Group 1: PMSC=5.1677, PMD=-0.00777
+    - Group 2: PMSC=9.6943, PMD=-0.01273
+    - Group 3: PMSC=5.5877, PMD=-0.00535
+    - Group 4: PMSC=5.9617, PMD=-0.03401
 
-    Background rates are halved compared to SN (LS has lower natural mortality).
-    Density mortality uses VARADJ (shade tolerance): tolerant trees survive
-    longer under density stress.
+    Background rates are halved compared to the logistic.
+    Density mortality selects EITHER background OR density-based (never both),
+    matching Fortran varmrt.f behavior.
 
     Subclasses (e.g., NEMortalityModel) override class attributes to use
     variant-specific coefficient files, species-group mappings, and SDI maximums.
@@ -421,33 +422,33 @@ class LSMortalityModel:
     LOWER_THRESHOLD = 0.55
     UPPER_THRESHOLD = 0.85
 
-    # 4-group background mortality coefficients (P0, P1) from morts.f
-    # Groups are mapped by species category
+    # 4-group background mortality coefficients (PMSC, PMD) from morts.f lines 99-100
+    # PMSC = [5.1677, 9.6943, 5.5877, 5.9617]
+    # PMD  = [-0.00777, -0.01273, -0.00535, -0.03401]
     MORTALITY_GROUPS = {
-        1: {'P0': 5.59, 'P1': -0.0054, 'desc': 'Pines/Spruce'},
-        2: {'P0': 4.20, 'P1': -0.0040, 'desc': 'Firs/Cedars'},
-        3: {'P0': 3.80, 'P1': -0.0035, 'desc': 'Hardwoods'},
-        4: {'P0': 4.50, 'P1': -0.0048, 'desc': 'Misc/Other'},
+        1: {'P0': 5.1677, 'P1': -0.00777},
+        2: {'P0': 9.6943, 'P1': -0.01273},
+        3: {'P0': 5.5877, 'P1': -0.00535},
+        4: {'P0': 5.9617, 'P1': -0.03401},
     }
 
-    # Species-to-mortality-group mapping from morts.f (overridden by subclasses)
+    # Species-to-mortality-group mapping from IMAPLS in morts.f (68 species)
     SPECIES_MORTALITY_GROUP = {
-        # Group 1: Pines and spruces
-        'JP': 1, 'SC': 1, 'RN': 1, 'RP': 1, 'WP': 1, 'NP': 1,
-        'WS': 1, 'NS': 1, 'BS': 1,
-        # Group 2: Firs, cedars, hemlock
-        'BF': 2, 'TA': 2, 'WC': 2, 'EH': 2, 'OS': 2, 'RC': 2,
-        # Group 3: Hardwoods (majority)
-        'BA': 3, 'GA': 3, 'EC': 3, 'SV': 3, 'RM': 3, 'BC': 3,
-        'AE': 3, 'RL': 3, 'RE': 3, 'YB': 3, 'BW': 3, 'SM': 3,
-        'BM': 3, 'AB': 3, 'WA': 3, 'WO': 3, 'SW': 3, 'BR': 3,
-        'CK': 3, 'RO': 3, 'BO': 3, 'BH': 3, 'PH': 3, 'SH': 3,
-        'BT': 3, 'QA': 3, 'BP': 3, 'PB': 3, 'BN': 3, 'WN': 3,
-        # Group 4: Misc/understory
-        'HH': 4, 'BK': 4, 'OH': 4, 'BE': 4, 'ST': 4, 'MM': 4,
-        'AH': 4, 'AC': 4, 'HK': 4, 'DW': 4, 'HT': 4, 'AP': 4,
-        'BG': 4, 'SY': 4, 'PR': 4, 'CC': 4, 'PL': 4, 'WI': 4,
-        'BL': 4, 'DM': 4, 'SS': 4, 'MA': 4,
+        # Group 1 (28 species)
+        'JP': 1, 'RN': 1, 'RP': 1, 'WS': 1, 'NS': 1, 'BF': 1,
+        'BS': 1, 'TA': 1, 'WC': 1, 'EH': 1, 'GA': 1, 'SV': 1,
+        'RM': 1, 'AE': 1, 'RL': 1, 'RE': 1, 'BW': 1, 'SM': 1,
+        'BM': 1, 'AB': 1, 'HH': 1, 'BK': 1, 'AH': 1, 'DW': 1,
+        'BG': 1, 'WI': 1, 'BL': 1, 'SS': 1,
+        # Group 3 (4 species)
+        'SC': 3, 'WP': 3, 'OS': 3, 'RC': 3,
+        # Group 4 (35 species)
+        'BA': 4, 'EC': 4, 'BC': 4, 'YB': 4, 'WA': 4, 'WO': 4,
+        'SW': 4, 'BR': 4, 'CK': 4, 'RO': 4, 'BO': 4, 'NP': 4,
+        'BH': 4, 'PH': 4, 'SH': 4, 'BT': 4, 'QA': 4, 'BP': 4,
+        'PB': 4, 'BN': 4, 'WN': 4, 'OH': 4, 'BE': 4, 'ST': 4,
+        'MM': 4, 'AC': 4, 'HK': 4, 'HT': 4, 'AP': 4, 'SY': 4,
+        'PR': 4, 'CC': 4, 'PL': 4, 'DM': 4, 'MA': 4,
     }
 
     # Default SDI maximums (overridden by subclasses)
@@ -578,21 +579,23 @@ class LSMortalityModel:
             rip = self._get_background_rate(tree, cycle_length)
 
             # Density-dependent mortality component
-            mort = 0.0
             if density_removal_fraction > 0:
                 # Mortality distribution by size (same equation as SN)
                 mr = 0.84525 - (0.01074 * pct) + (0.0000002 * (pct ** 3))
                 mr = max(0.01, min(1.0, mr))
 
-                # VARADJ shade tolerance adjustment: tolerant trees survive better
+                # VARADJ shade tolerance adjustment from varmrt.f:
+                # EFFTR(I) = PEFF * (1.0 - VARADJ(JSPC)) * 0.1
                 varadj = self._shade_tolerance.get(tree.species, 0.30)
-                # Tolerant species (high VARADJ) have lower density mortality
-                shade_modifier = 1.0 - 0.3 * varadj
+                shade_modifier = (1.0 - varadj) * 0.1
 
-                mort = mr * shade_modifier * 0.1 * density_removal_fraction * (cycle_length / 5.0)
+                mort = mr * shade_modifier * density_removal_fraction * (cycle_length / 5.0)
+            else:
+                mort = 0.0
 
-            # Combined mortality probability (independent events)
-            total_mort_prob = 1.0 - (1.0 - mort) * (1.0 - rip)
+            # Select mortality rate (Fortran uses one or the other, never both)
+            # varmrt.f: IF(T .LE. TEM .OR. RN .LE. 0.0) RIP = RI
+            total_mort_prob = mort if density_removal_fraction > 0 else rip
 
             if random.random() > total_mort_prob:
                 survivors.append(tree)
@@ -645,32 +648,32 @@ class NEMortalityModel(LSMortalityModel):
 
     _COEFFICIENT_FILE = 'ne/ne_mortality_coefficients.json'
 
-    # NE species-to-mortality-group mapping (108 species)
+    # NE species-to-mortality-group mapping from IMAPNE in morts.f (108 species)
     SPECIES_MORTALITY_GROUP = {
-        # Group 1: Pines and spruces
-        'RN': 1, 'WP': 1, 'LP': 1, 'VP': 1, 'OP': 1, 'JP': 1,
-        'SP': 1, 'TM': 1, 'PP': 1, 'PD': 1, 'SC': 1,
-        'WS': 1, 'RS': 1, 'NS': 1, 'BS': 1, 'PI': 1,
-        # Group 2: Firs, cedars, hemlock
-        'BF': 2, 'TA': 2, 'WC': 2, 'AW': 2, 'RC': 2, 'JU': 2,
-        'EH': 2, 'HM': 2, 'OS': 2,
-        # Group 3: Major hardwoods
-        'RM': 3, 'SM': 3, 'BM': 3, 'SV': 3, 'YB': 3, 'SB': 3,
-        'RB': 3, 'PB': 3, 'HI': 3, 'PH': 3, 'SL': 3, 'SH': 3,
-        'MH': 3, 'AB': 3, 'AS': 3, 'WA': 3, 'BA': 3, 'GA': 3,
-        'PA': 3, 'YP': 3, 'SU': 3, 'CT': 3, 'QA': 3, 'BP': 3,
-        'EC': 3, 'BT': 3, 'PY': 3, 'BC': 3, 'WO': 3, 'BR': 3,
-        'CK': 3, 'PO': 3, 'SW': 3, 'SN': 3, 'CO': 3, 'OK': 3,
-        'SO': 3, 'QI': 3, 'WK': 3, 'PN': 3, 'RO': 3, 'SK': 3,
-        'BO': 3, 'CB': 3, 'WL': 3, 'BU': 3, 'YY': 3, 'BN': 3,
-        'WN': 3, 'MG': 3, 'MV': 3, 'SY': 3, 'BW': 3, 'WB': 3,
-        'AE': 3, 'RL': 3, 'EL': 3,
-        # Group 4: Misc/understory/small trees
-        'BE': 4, 'ST': 4, 'GB': 4, 'WR': 4, 'HK': 4, 'PS': 4,
-        'HY': 4, 'OO': 4, 'AP': 4, 'WT': 4, 'BG': 4, 'SD': 4,
-        'PW': 4, 'BK': 4, 'BL': 4, 'SS': 4, 'OH': 4, 'AI': 4,
-        'SE': 4, 'AH': 4, 'DW': 4, 'HT': 4, 'HH': 4, 'PL': 4,
-        'PR': 4,
+        # Group 1 (38 species)
+        'BF': 1, 'TA': 1, 'WS': 1, 'RS': 1, 'NS': 1, 'BS': 1,
+        'PI': 1, 'RN': 1, 'WC': 1, 'AW': 1, 'EH': 1, 'HM': 1,
+        'JP': 1, 'RM': 1, 'SM': 1, 'BM': 1, 'SV': 1, 'SB': 1,
+        'AB': 1, 'AS': 1, 'GA': 1, 'PA': 1, 'BU': 1, 'YY': 1,
+        'MG': 1, 'BG': 1, 'SD': 1, 'BK': 1, 'BL': 1, 'SS': 1,
+        'BW': 1, 'WB': 1, 'EL': 1, 'AE': 1, 'RL': 1, 'AH': 1,
+        'DW': 1, 'HH': 1,
+        # Group 2 (1 species)
+        'OS': 2,
+        # Group 3 (11 species)
+        'WP': 3, 'LP': 3, 'VP': 3, 'RC': 3, 'JU': 3, 'OP': 3,
+        'SP': 3, 'TM': 3, 'PP': 3, 'PD': 3, 'SC': 3,
+        # Group 4 (57 species)
+        'YB': 4, 'RB': 4, 'PB': 4, 'GB': 4, 'HI': 4, 'PH': 4,
+        'SL': 4, 'SH': 4, 'MH': 4, 'WA': 4, 'BA': 4, 'YP': 4,
+        'SU': 4, 'CT': 4, 'QA': 4, 'BP': 4, 'EC': 4, 'BT': 4,
+        'PY': 4, 'BC': 4, 'WO': 4, 'BR': 4, 'CK': 4, 'PO': 4,
+        'OK': 4, 'SO': 4, 'QI': 4, 'WK': 4, 'PN': 4, 'CO': 4,
+        'SW': 4, 'SN': 4, 'RO': 4, 'SK': 4, 'BO': 4, 'CB': 4,
+        'WR': 4, 'HK': 4, 'PS': 4, 'HY': 4, 'BN': 4, 'WN': 4,
+        'OO': 4, 'MV': 4, 'AP': 4, 'WT': 4, 'PW': 4, 'SY': 4,
+        'WL': 4, 'OH': 4, 'BE': 4, 'ST': 4, 'AI': 4, 'SE': 4,
+        'HT': 4, 'PL': 4, 'PR': 4,
     }
 
     # NE SDI maximums (references StandMetricsCalculator.NE_SDI_MAXIMUMS)
@@ -712,29 +715,29 @@ class CSMortalityModel(LSMortalityModel):
 
     _COEFFICIENT_FILE = 'cs/cs_mortality_coefficients.json'
 
-    # CS species-to-mortality-group mapping (96 species)
+    # CS species-to-mortality-group mapping from IMAPCS in morts.f (96 species)
     SPECIES_MORTALITY_GROUP = {
-        # Group 1: Conifers (8 species)
-        'RC': 1, 'JU': 1, 'SP': 1, 'VP': 1, 'LP': 1, 'OS': 1, 'WP': 1, 'BY': 1,
-        # Group 3: Major hardwoods (~60 species)
-        'WN': 3, 'BN': 3, 'TL': 3, 'TS': 3, 'WT': 3,
-        'HS': 3, 'SH': 3, 'SL': 3, 'MH': 3, 'PH': 3, 'HI': 3,
-        'WH': 3, 'BH': 3, 'PE': 3, 'BI': 3,
-        'AB': 3, 'BA': 3, 'PA': 3, 'UA': 3,
-        'RM': 3, 'BE': 3, 'SV': 3, 'BC': 3,
-        'AE': 3, 'SG': 3, 'WE': 3, 'EL': 3, 'SI': 3, 'RL': 3, 'RE': 3,
-        'YP': 3, 'BW': 3, 'SM': 3, 'AS': 3, 'WA': 3, 'GA': 3,
-        'WO': 3, 'RO': 3, 'SK': 3, 'BO': 3, 'SO': 3, 'BJ': 3,
-        'CK': 3, 'SW': 3, 'BR': 3, 'SN': 3, 'PO': 3, 'DO': 3,
-        'CO': 3, 'PN': 3, 'CB': 3, 'QI': 3, 'OV': 3, 'WK': 3,
-        'NK': 3, 'WL': 3, 'QS': 3, 'HL': 3, 'SY': 3,
-        'BK': 3, 'RB': 3, 'SU': 3, 'OB': 3, 'CT': 3, 'MV': 3,
-        # Group 4: Misc/understory/small trees (~28 species)
-        'BG': 4, 'UH': 4, 'SS': 4, 'CA': 4, 'PS': 4,
-        'EC': 4, 'BP': 4, 'BT': 4, 'QA': 4, 'OL': 4,
-        'WI': 4, 'BL': 4, 'NC': 4, 'AH': 4, 'RD': 4,
-        'DW': 4, 'HT': 4, 'KC': 4, 'OO': 4, 'MB': 4,
-        'HH': 4, 'SD': 4, 'HK': 4,
+        # Group 1 (30 species)
+        'TL': 1, 'BG': 1, 'AB': 1, 'PA': 1, 'UA': 1, 'RM': 1,
+        'SV': 1, 'AE': 1, 'WE': 1, 'EL': 1, 'SI': 1, 'RL': 1,
+        'RE': 1, 'BW': 1, 'SM': 1, 'AS': 1, 'GA': 1, 'SS': 1,
+        'OB': 1, 'BK': 1, 'WI': 1, 'BL': 1, 'AH': 1, 'RD': 1,
+        'DW': 1, 'KC': 1, 'OO': 1, 'MB': 1, 'HH': 1, 'SD': 1,
+        # Group 2 (2 species)
+        'JU': 2, 'OS': 2,
+        # Group 3 (6 species)
+        'RC': 3, 'SP': 3, 'VP': 3, 'LP': 3, 'WP': 3, 'BY': 3,
+        # Group 4 (55 species)
+        'WN': 4, 'BN': 4, 'TS': 4, 'WT': 4, 'SH': 4, 'SL': 4,
+        'MH': 4, 'PH': 4, 'HI': 4, 'WH': 4, 'BH': 4, 'PE': 4,
+        'BI': 4, 'BA': 4, 'EC': 4, 'BE': 4, 'BC': 4, 'SG': 4,
+        'HK': 4, 'YP': 4, 'WA': 4, 'WO': 4, 'RO': 4, 'SK': 4,
+        'BO': 4, 'SO': 4, 'BJ': 4, 'CK': 4, 'SW': 4, 'BR': 4,
+        'SN': 4, 'PO': 4, 'DO': 4, 'CO': 4, 'PN': 4, 'CB': 4,
+        'QI': 4, 'OV': 4, 'WK': 4, 'NK': 4, 'WL': 4, 'QS': 4,
+        'CA': 4, 'PS': 4, 'HL': 4, 'BP': 4, 'BT': 4, 'QA': 4,
+        'SY': 4, 'RB': 4, 'SU': 4, 'OH': 4, 'CT': 4, 'MV': 4,
+        'HT': 4,
     }
 
     # CS SDI maximums (references StandMetricsCalculator.CS_SDI_MAXIMUMS)

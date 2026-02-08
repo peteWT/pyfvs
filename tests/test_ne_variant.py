@@ -208,17 +208,20 @@ class TestNEMortality:
             assert group is not None, f"{species}: no mortality group"
             assert group in (1, 2, 3, 4), f"{species}: invalid group {group}"
 
-    def test_ne_mortality_conifers_in_groups_1_2(self):
-        """NE conifers should be in groups 1 (pines/spruce) or 2 (firs/cedar)."""
-        for species in NE_CONIFERS:
+    def test_ne_mortality_group_assignments_match_fortran(self):
+        """NE species groups match IMAPNE from morts.f (groups don't follow taxonomy)."""
+        # Group 1: BF, WS, RS, BS, EH, WC, RM, SM, AB (per Fortran IMAPNE)
+        for species in ['BF', 'WS', 'RS', 'BS', 'EH', 'WC', 'RM', 'SM', 'AB']:
             group = NEMortalityModel.SPECIES_MORTALITY_GROUP.get(species)
-            assert group in (1, 2), f"{species}: expected group 1 or 2, got {group}"
-
-    def test_ne_mortality_hardwoods_in_groups_3_4(self):
-        """NE hardwoods should be in groups 3 (major) or 4 (misc)."""
-        for species in NE_HARDWOODS:
+            assert group == 1, f"{species}: expected group 1, got {group}"
+        # Group 3: WP, RN, LP, RC, JU (pines and cedar)
+        for species in ['WP', 'LP', 'RC', 'JU']:
             group = NEMortalityModel.SPECIES_MORTALITY_GROUP.get(species)
-            assert group in (3, 4), f"{species}: expected group 3 or 4, got {group}"
+            assert group == 3, f"{species}: expected group 3, got {group}"
+        # Group 4: WO, RO, YB, WA, BC, YP, WN
+        for species in ['WO', 'RO', 'YB', 'WA', 'BC', 'YP', 'WN']:
+            group = NEMortalityModel.SPECIES_MORTALITY_GROUP.get(species)
+            assert group == 4, f"{species}: expected group 4, got {group}"
 
     def test_ne_background_mortality_rate(self):
         """Background mortality rate should be reasonable for NE trees."""

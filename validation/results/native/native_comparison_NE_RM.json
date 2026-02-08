@@ -1,0 +1,183 @@
+{
+  "scenario": {
+    "species": "RM",
+    "variant": "NE",
+    "trees_per_acre": 500,
+    "site_index": 60,
+    "years": 50
+  },
+  "n_cycles_compared": 5,
+  "pyfvs": [
+    {
+      "cycle": 1,
+      "age": 10,
+      "tpa": 481,
+      "basal_area": 3.6427459430213354,
+      "qmd": 1.178360588839026,
+      "top_height": 14.382579546396267,
+      "volume": 33.718146885834294
+    },
+    {
+      "cycle": 2,
+      "age": 20,
+      "tpa": 470,
+      "basal_area": 16.111242723311264,
+      "qmd": 2.506985930597754,
+      "top_height": 25.059735166387817,
+      "volume": 145.12554580645948
+    },
+    {
+      "cycle": 3,
+      "age": 30,
+      "tpa": 460,
+      "basal_area": 34.71171853712703,
+      "qmd": 3.7195932192959575,
+      "top_height": 30.19001324416059,
+      "volume": 354.60817050717094
+    },
+    {
+      "cycle": 4,
+      "age": 40,
+      "tpa": 446,
+      "basal_area": 57.21315351471577,
+      "qmd": 4.849721718447783,
+      "top_height": 39.01987179988442,
+      "volume": 728.8610492928563
+    },
+    {
+      "cycle": 5,
+      "age": 50,
+      "tpa": 439,
+      "basal_area": 82.60729283479279,
+      "qmd": 5.8737200043307345,
+      "top_height": 46.518422045307986,
+      "volume": 1217.3307016951233
+    }
+  ],
+  "native": [
+    {
+      "cycle": 1,
+      "age": 10,
+      "tpa": 500.0,
+      "basal_area": 1.7946241044386007,
+      "qmd": 0.8112303296591723,
+      "top_height": 14.817534446716309,
+      "volume": 0.0
+    },
+    {
+      "cycle": 2,
+      "age": 20,
+      "tpa": 485.92905378341675,
+      "basal_area": 11.057732664941373,
+      "qmd": 2.042626881577697,
+      "top_height": 28.095571517944336,
+      "volume": 159.49259376094693
+    },
+    {
+      "cycle": 3,
+      "age": 30,
+      "tpa": 472.1252498626709,
+      "basal_area": 30.950110681999263,
+      "qmd": 3.4669287992465647,
+      "top_height": 39.214149475097656,
+      "volume": 538.9912435111929
+    },
+    {
+      "cycle": 4,
+      "age": 40,
+      "tpa": 458.5672791004181,
+      "basal_area": 56.780915762832045,
+      "qmd": 4.764771717149095,
+      "top_height": 48.49513244628906,
+      "volume": 1148.5983635709304
+    },
+    {
+      "cycle": 5,
+      "age": 50,
+      "tpa": 445.2677173614502,
+      "basal_area": 77.49487663905614,
+      "qmd": 5.648957719779811,
+      "top_height": 56.434696197509766,
+      "volume": 1747.5384575139462
+    }
+  ],
+  "metrics": {
+    "tpa": {
+      "n": 5,
+      "bias": -13.1779,
+      "mae": 13.1779,
+      "rmse": 13.849,
+      "mape": 2.76,
+      "r_squared": 0.4878,
+      "max_error": -6.2677,
+      "min_error": -19.0,
+      "equivalence_test_passed": false
+    },
+    "basal_area": {
+      "n": 5,
+      "bias": 3.2416,
+      "mae": 3.2416,
+      "rmse": 3.7263,
+      "mape": 33.64,
+      "r_squared": 0.9825,
+      "max_error": 5.1124,
+      "min_error": 0.4322,
+      "equivalence_test_passed": false
+    },
+    "qmd": {
+      "n": 5,
+      "bias": 0.2788,
+      "mae": 0.2788,
+      "rmse": 0.3072,
+      "mape": 16.21,
+      "r_squared": 0.9695,
+      "max_error": 0.4644,
+      "min_error": 0.085,
+      "equivalence_test_passed": false
+    },
+    "top_height": {
+      "n": 5,
+      "bias": -6.3773,
+      "mae": 6.3773,
+      "rmse": 7.4693,
+      "mape": 14.77,
+      "r_squared": 0.743,
+      "max_error": -0.435,
+      "min_error": -9.9163,
+      "equivalence_test_passed": false
+    },
+    "volume": {
+      "n": 5,
+      "bias": -222.9954,
+      "mae": 236.4827,
+      "rmse": 313.8917,
+      "mape": 27.53,
+      "r_squared": 0.766,
+      "max_error": 33.7181,
+      "min_error": -530.2078,
+      "equivalence_test_passed": false
+    }
+  },
+  "acceptance": {
+    "tpa": {
+      "passed": false,
+      "message": "tpa MAPE 2.8% exceeds threshold of 2.0%"
+    },
+    "basal_area": {
+      "passed": false,
+      "message": "basal_area MAPE 33.6% exceeds threshold of 3.0%"
+    },
+    "qmd": {
+      "passed": false,
+      "message": "diameter MAPE 16.2% exceeds threshold of 5.0%"
+    },
+    "top_height": {
+      "passed": false,
+      "message": "height MAPE 14.8% exceeds threshold of 5.0%"
+    },
+    "volume": {
+      "passed": false,
+      "message": "volume MAPE 27.5% exceeds threshold of 10.0%"
+    }
+  }
+}

@@ -204,17 +204,24 @@ class TestCSMortality:
             assert group is not None, f"{species}: no mortality group"
             assert group in (1, 2, 3, 4), f"{species}: invalid group {group}"
 
-    def test_cs_mortality_conifers_in_group_1(self):
-        """CS conifers should be in group 1."""
-        for species in CS_CONIFERS:
+    def test_cs_mortality_group_assignments_match_fortran(self):
+        """CS species groups match IMAPCS from morts.f (groups don't follow taxonomy)."""
+        # Group 1: SM, RM, AB, AE, BW, GA, etc. (per Fortran IMAPCS)
+        for species in ['SM', 'RM', 'AB', 'AE', 'BW', 'GA', 'BK', 'DW']:
             group = CSMortalityModel.SPECIES_MORTALITY_GROUP.get(species)
             assert group == 1, f"{species}: expected group 1, got {group}"
-
-    def test_cs_mortality_hardwoods_in_groups_3_4(self):
-        """CS hardwoods should be in groups 3 (major) or 4 (misc)."""
-        for species in CS_HARDWOODS:
+        # Group 2: JU, OS
+        for species in ['JU', 'OS']:
             group = CSMortalityModel.SPECIES_MORTALITY_GROUP.get(species)
-            assert group in (3, 4), f"{species}: expected group 3 or 4, got {group}"
+            assert group == 2, f"{species}: expected group 2, got {group}"
+        # Group 3: RC, SP, VP, LP, WP, BY (conifers)
+        for species in ['RC', 'SP', 'VP', 'LP', 'WP', 'BY']:
+            group = CSMortalityModel.SPECIES_MORTALITY_GROUP.get(species)
+            assert group == 3, f"{species}: expected group 3, got {group}"
+        # Group 4: WO, RO, BO, WN, YP, WA, BC
+        for species in ['WO', 'RO', 'BO', 'WN', 'YP', 'WA', 'BC']:
+            group = CSMortalityModel.SPECIES_MORTALITY_GROUP.get(species)
+            assert group == 4, f"{species}: expected group 4, got {group}"
 
     def test_cs_background_mortality_rate(self):
         """Background mortality rate should be reasonable for CS trees."""

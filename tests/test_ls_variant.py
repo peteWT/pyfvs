@@ -251,19 +251,20 @@ class TestLSMortality:
         assert isinstance(model, MortalityModel)
 
     def test_ls_mortality_groups(self):
-        """Test species are mapped to correct mortality groups."""
+        """Test species are mapped to correct mortality groups per IMAPLS in morts.f."""
         model = LSMortalityModel()
-        # Group 1: Pines/Spruce
+        # Group 1: Pines, firs, maples, birches, etc. (Fortran IMAPLS)
         assert model.SPECIES_MORTALITY_GROUP['RN'] == 1
         assert model.SPECIES_MORTALITY_GROUP['JP'] == 1
-        assert model.SPECIES_MORTALITY_GROUP['WP'] == 1
-        # Group 2: Firs/Cedars
-        assert model.SPECIES_MORTALITY_GROUP['BF'] == 2
-        assert model.SPECIES_MORTALITY_GROUP['WC'] == 2
-        # Group 3: Hardwoods
-        assert model.SPECIES_MORTALITY_GROUP['SM'] == 3
-        assert model.SPECIES_MORTALITY_GROUP['RO'] == 3
-        # Group 4: Misc
+        assert model.SPECIES_MORTALITY_GROUP['BF'] == 1
+        assert model.SPECIES_MORTALITY_GROUP['WC'] == 1
+        assert model.SPECIES_MORTALITY_GROUP['SM'] == 1
+        assert model.SPECIES_MORTALITY_GROUP['RM'] == 1
+        # Group 3: WP, SC, OS, RC
+        assert model.SPECIES_MORTALITY_GROUP['WP'] == 3
+        assert model.SPECIES_MORTALITY_GROUP['SC'] == 3
+        # Group 4: Oaks, elms, walnuts, etc.
+        assert model.SPECIES_MORTALITY_GROUP['RO'] == 4
         assert model.SPECIES_MORTALITY_GROUP['OH'] == 4
 
     def test_ls_mortality_low_density(self, ls_red_pine_stand):
