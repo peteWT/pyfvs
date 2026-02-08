@@ -155,54 +155,76 @@ class NativeStand:
     ) -> Path:
         """Generate an FVS keyword file for the simulation.
 
+        Uses PLANT keyword for simple planted stand initialization.
+
         Returns:
             Path to the generated .key file.
         """
         key_path = self._work_dir / "stand.key"
         tree_path = self._work_dir / "stand.tre"
 
-        # Write tree data file (FVS free-format tree list)
-        # Format: Plot Tree Species DBH Height TPA CrownRatio
-        with open(tree_path, "w") as tree_file:
-            tree_file.write(
-                f"   1    1  {species_index:3d}  {dbh:6.1f}  {height:6.1f}"
-                f"  {trees_per_acre:8.1f}    0\n"
+        # Get species code (2-letter) for the tree file
+        from .species_map import get_species_code
+        species_code = get_species_code(species_index, self.variant)
+
+        # Write tree data file with all fields intree.f expects
+        # Format: (I4,I4,F6.0,I1,A2,F5.1,F4.1,F4.0,F4.0,F4.1,I3,6I2,2I2,5I2,F4.0)
+        with open(tree_path, "w") as f:
+            tree_line = (
+                f"{1:4d}"           # Plot (I4)
+                f"{1:4d}"           # Tree ID (I4)
+                f"{trees_per_acre:6.0f}"  # TPA (F6.0)
+                f"0"                # History (I1)
+                f"{species_code:>2s}"  # Species (A2)
+                f"{dbh:5.1f}"       # DBH (F5.1)
+                f" 0.0"             # DG (F4.1)
+                f"{height:4.0f}"    # HT (F4.0)
+                f"   0"             # THT (F4.0)
+                f" 0.0"             # HTG (F4.1)
+                f"  0"              # ICR (I3)
+                f" 0 0 0 0 0 0"     # IDAMCD 1-6 (6I2)
+                f" 0 0"             # IMC1, KUTKOD (2I2)
+                f" 0 0 0 0 0"       # IPVARS 1-5 (5I2)
+                f"   0"             # ABIRTH (F4.0)
             )
+            f.write(tree_line + "\n")
 
-        # Build keyword file
+        # Build keyword file - FVS format: parameters go ON SAME LINE as keyword
         lines = []
-        lines.append(f"STDIDENT")
-        lines.append(f"PYFVS_NATIVE_{self.variant}_{self._species}")
+        
+        # STDIDENT takes its value on the next line
+        lines.append("STDIDENT")
+        lines.append(f"PYFVS_{self.variant}_{self._species}")
+        
+        # SITECODE: species_index, site_index (on same line)
+        lines.append(f"SITECODE          {species_index:2d}     {site_index:.1f}")
 
-        # Site index
-        lines.append(f"SITECODE")
-        lines.append(f"         {species_index:3d}  {site_index:6.1f}")
+        # STDINFO: forest code, age, aspect, slope, elevation (on same line)
+        lines.append(f"STDINFO                         {age:4.0f}     0.0     5.0     10.0")
 
-        # Design (1 plot, no sampling weight adjustments)
-        lines.append(f"DESIGN")
-        lines.append(f"       0       1       1     1.0     1.0     1.0")
+        # DESIGN: BAF, inv_plot_area, breakpoint_dbh, num_plots, non_stock, samp_weight
+        lines.append("DESIGN                                         1.0      1.0")
 
-        # Stand age
-        lines.append(f"STDINFO")
-        lines.append(f"         0  {age:4d}       0       0       0")
+        # INVYEAR on same line
+        lines.append("INVYEAR         2024")
 
-        # Number of cycles
-        lines.append(f"NUMCYCLE")
-        lines.append(f"  {num_cycles:8d}")
+        # NUMCYCLE on same line
+        lines.append(f"NUMCYCLE          {num_cycles:2d}")
 
-        # Time interval (cycle length)
-        lines.append(f"TIMEINT")
-        lines.append(f"       0  {self._cycle_length:8d}")
+        # TIMEINT on same line: start_cycle, length
+        lines.append(f"TIMEINT            0         {self._cycle_length}")
 
-        # Tree data input
-        lines.append(f"TREEFMT")
-        lines.append(f"(I4,T1,I7,F3.0,I1,A3,F4.1,F3.1,2F3.0,F4.1,I1,3F2.0,2I1,I2,2I3,2I1,F3.0)")
-        lines.append(f"TREEIN")
-        lines.append(f"{tree_path}")
+        # TREEFMT - include all fields intree.f reads
+        # Uses two lines with Fortran continuation
+        lines.append("TREEFMT")
+        lines.append("(I4,I4,F6.0,I1,A2,F5.1,F4.1,F4.0,F4.0,F4.1,I3,6I2,2I2,5I2,F4.0)")
+        
+        # TREEIN reads from external file - path on same line
+        lines.append(f"TREEIN          {tree_path}")
 
-        # FVS PROCESS keyword (starts simulation)
-        lines.append(f"PROCESS")
-        lines.append(f"STOP")
+        # PROCESS starts simulation
+        lines.append("PROCESS")
+        lines.append("STOP")
 
         with open(key_path, "w") as key_file:
             key_file.write("\n".join(lines) + "\n")
@@ -244,7 +266,7 @@ class NativeStand:
         )
 
         # Initialize FVS with keyword file
-        self._bindings.set_cmd_line(str(self._keyword_file))
+        self._bindings.set_cmd_line(f"--keywordfile={self._keyword_file}")
 
         # Run simulation - FVS returns 2 when simulation is complete
         return_code = self._bindings.run()
@@ -270,34 +292,40 @@ class NativeStand:
     def get_metrics(self) -> Dict[str, float]:
         """Get current stand metrics in the same format as Stand.get_metrics().
 
-        Uses fvsEvmonAttr() for stand-level metrics — no reimplementation
-        of SDI, BA, or other formulas.
+        Uses fvsSummary for end-of-simulation values, with fvsEvmonAttr for
+        stand metrics not available in summary (BA, SDI, TopHt).
 
         Returns:
             Dictionary with keys: tpa, basal_area, qmd, top_height,
             sdi, volume, age.
         """
+        import math
+        
+        # Get final cycle summary for TPA, volume, age
+        summary = self._bindings.get_summary(1)
+        ncycles = summary.get("ncycles", 1)
+        final = self._bindings.get_summary(ncycles + 1)
+        
+        tpa = final["tpa"]
+        volume = final["total_cuft"]
+        age = final["age"]
+        
+        # Get stand metrics from evmon (more accurate than IOSUM)
         try:
-            tpa = self._bindings.get_evmon_attr("atpa")
             basal_area = self._bindings.get_evmon_attr("aba")
             top_height = self._bindings.get_evmon_attr("atopht")
             sdi = self._bindings.get_evmon_attr("asdi")
-            qmd = self._bindings.get_evmon_attr("aqmd")
         except FVSNativeError:
-            # Fall back to before-growth values if after-growth not available
-            tpa = self._bindings.get_evmon_attr("btpa")
             basal_area = self._bindings.get_evmon_attr("bba")
             top_height = self._bindings.get_evmon_attr("btopht")
             sdi = self._bindings.get_evmon_attr("bsdi")
-            qmd = self._bindings.get_evmon_attr("bqmd")
-
-        # Get volume from tree attributes
-        try:
-            tcuft_array = self._bindings.get_tree_attr("tcuft")
-            tpa_array = self._bindings.get_tree_attr("tpa")
-            volume = float(sum(tcuft_array * tpa_array)) if len(tcuft_array) > 0 else 0.0
-        except FVSNativeError:
-            volume = 0.0
+        
+        # Calculate QMD from BA and TPA: QMD = sqrt(BA / TPA * 576 / pi)
+        # BA = TPA * pi * (DBH/24)^2, so DBH = sqrt(BA/TPA * 576/pi)
+        if tpa > 0 and basal_area > 0:
+            qmd = math.sqrt(basal_area / tpa * 576.0 / math.pi)
+        else:
+            qmd = 0.0
 
         return {
             "tpa": tpa,
@@ -306,7 +334,7 @@ class NativeStand:
             "top_height": top_height,
             "sdi": sdi,
             "volume": volume,
-            "age": self._years_grown,
+            "age": age,
         }
 
     def get_tree_list(self) -> List[Dict[str, float]]:

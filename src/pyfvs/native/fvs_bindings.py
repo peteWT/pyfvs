@@ -198,25 +198,33 @@ class FVSBindings:
 
         func = self._get_func("fvstreeattr")
 
-        attr_bytes = attr_name.encode("ascii")
-        attr_len = len(attr_bytes)
-        attr_buf = ctypes.create_string_buffer(attr_bytes, attr_len)
-        attr_len_c = ctypes.c_int(attr_len)
-        nvals = ctypes.c_int(ntrees)
+        # Fortran signature: fvsTreeAttr(name, nch, action, ntrees, attr, rtnCode)
+        name_bytes = attr_name.encode("ascii")
+        name_len = len(name_bytes)
+        name_buf = ctypes.create_string_buffer(name_bytes, name_len)
+        nch = ctypes.c_int(name_len)
+        
+        action_bytes = b"get"
+        action_len = len(action_bytes)
+        action_buf = ctypes.create_string_buffer(action_bytes, action_len)
+        
+        ntrees_c = ctypes.c_int(ntrees)
         vals = (ctypes.c_double * ntrees)()
         return_code = ctypes.c_int(0)
 
         func(
-            attr_buf,
-            ctypes.byref(attr_len_c),
-            ctypes.byref(nvals),
+            name_buf,
+            ctypes.byref(nch),
+            action_buf,
+            ctypes.byref(ntrees_c),
             vals,
             ctypes.byref(return_code),
-            ctypes.c_int(attr_len),  # hidden string length
+            ctypes.c_int(name_len),    # hidden: name string length
+            ctypes.c_int(action_len),  # hidden: action string length
         )
 
         self._check_return_code(return_code.value, f"fvsTreeAttr('{attr_name}')")
-        return np.array(vals[:nvals.value], dtype=np.float64)
+        return np.array(vals[:ntrees_c.value], dtype=np.float64)
 
     def set_tree_attr(self, attr_name: str, values: np.ndarray) -> None:
         """Set a tree-level attribute array in FVS.
@@ -301,48 +309,55 @@ class FVSBindings:
     def get_evmon_attr(self, attr_name: str) -> float:
         """Get a stand-level attribute from the FVS Event Monitor.
 
-        Corresponds to: SUBROUTINE FVSEVMONATTR(ATTRNAME, IATTRL,
-                                                  NVALS, VALS, IRTNCD)
+        Corresponds to: SUBROUTINE FVSEVMONATTR(NAME, NCH, ACTION, ATTR, RTNCODE)
 
         Common attribute names:
             - 'bba'    : Before-growth basal area (sq ft/acre)
             - 'btpa'   : Before-growth trees per acre
             - 'bsdi'   : Before-growth Stand Density Index
             - 'btopht' : Before-growth top height (feet)
-            - 'bqmd'   : Before-growth QMD (inches)
             - 'aba'    : After-growth basal area
             - 'atpa'   : After-growth trees per acre
             - 'asdi'   : After-growth SDI
             - 'atopht' : After-growth top height
-            - 'aqmd'   : After-growth QMD
+            - 'year'   : Current simulation year
+            - 'cycle'  : Current cycle number
+            - 'age'    : Stand age
 
         Args:
-            attr_name: Attribute name string.
+            attr_name: Attribute name string (case sensitive).
 
         Returns:
             Scalar float value.
         """
         func = self._get_func("fvsevmonattr")
 
-        attr_bytes = attr_name.encode("ascii")
-        attr_len = len(attr_bytes)
-        attr_buf = ctypes.create_string_buffer(attr_bytes, attr_len)
-        attr_len_c = ctypes.c_int(attr_len)
-        nvals = ctypes.c_int(1)
-        val = ctypes.c_double(0.0)
+        # Fortran signature: fvsEvmonAttr(name, nch, action, attr, rtnCode)
+        # With gcc, hidden string lengths come at end
+        name_bytes = attr_name.encode("ascii")
+        name_len = len(name_bytes)
+        name_buf = ctypes.create_string_buffer(name_bytes, name_len)
+        nch = ctypes.c_int(name_len)
+        
+        action_bytes = b"get"
+        action_len = len(action_bytes)
+        action_buf = ctypes.create_string_buffer(action_bytes, action_len)
+        
+        attr = ctypes.c_double(0.0)
         return_code = ctypes.c_int(0)
 
         func(
-            attr_buf,
-            ctypes.byref(attr_len_c),
-            ctypes.byref(nvals),
-            ctypes.byref(val),
+            name_buf,
+            ctypes.byref(nch),
+            action_buf,
+            ctypes.byref(attr),
             ctypes.byref(return_code),
-            ctypes.c_int(attr_len),
+            ctypes.c_int(name_len),    # hidden: name string length
+            ctypes.c_int(action_len),  # hidden: action string length
         )
 
         self._check_return_code(return_code.value, f"fvsEvmonAttr('{attr_name}')")
-        return val.value
+        return attr.value
 
     # =========================================================================
     # Summary output
@@ -351,60 +366,64 @@ class FVSBindings:
     def get_summary(self, cycle: int) -> dict:
         """Get summary output data for a given cycle.
 
-        Corresponds to: SUBROUTINE FVSSUMMARY(ICYC, ISUMARY, OSUMARY, IRTNCD)
+        Corresponds to: SUBROUTINE FVSSUMMARY(SUMMARY, ICYCLE, NCYCLES,
+                                               MAXROW, MAXCOL, RTNCODE)
 
         The summary array contains standard FVS output table values
-        for the specified cycle.
+        for the specified cycle (integer array of 22 elements).
 
         Args:
-            cycle: Cycle number (0 = initial conditions, 1+ = growth cycles).
+            cycle: Cycle number (1 = first cycle, etc.).
 
         Returns:
             Dictionary with summary metrics for the cycle.
         """
         func = self._get_func("fvssummary")
 
-        icyc = ctypes.c_int(cycle)
-        # FVS summary has ~20 output values
-        nsumary = 20
-        isumary = ctypes.c_int(nsumary)
-        osumary = (ctypes.c_double * nsumary)()
+        # Correct signature: summary(22), icycle, ncycles, maxrow, maxcol, rtnCode
+        # All integers, all by reference
+        summary = (ctypes.c_int * 22)()
+        icycle = ctypes.c_int(cycle)
+        ncycles = ctypes.c_int(0)
+        maxrow = ctypes.c_int(0)
+        maxcol = ctypes.c_int(0)
         return_code = ctypes.c_int(0)
 
         func(
-            ctypes.byref(icyc),
-            ctypes.byref(isumary),
-            osumary,
+            summary,
+            ctypes.byref(icycle),
+            ctypes.byref(ncycles),
+            ctypes.byref(maxrow),
+            ctypes.byref(maxcol),
             ctypes.byref(return_code),
         )
 
         self._check_return_code(return_code.value, f"fvsSummary(cycle={cycle})")
 
         # Map summary array positions to named fields
-        # Positions based on FVS summary table output (sumary.f)
-        vals = list(osumary)
+        # IOSUM layout based on actual FVS output observation:
+        # [0]=Year, [1]=Age, [2]=TPA, [3]=TotalCuFt, [4]=MerchCuFt, 
+        # [5]=MerchBdFt, etc.
+        # Note: BA, SDI, CCF, TopHt, QMD are NOT in IOSUM - use get_evmon_attr
+        vals = list(summary)
         return {
             "cycle": cycle,
-            "year": int(vals[0]) if len(vals) > 0 else 0,
-            "age": int(vals[1]) if len(vals) > 1 else 0,
-            "tpa": vals[2] if len(vals) > 2 else 0.0,
-            "ba": vals[3] if len(vals) > 3 else 0.0,
-            "sdi": vals[4] if len(vals) > 4 else 0.0,
-            "ccf": vals[5] if len(vals) > 5 else 0.0,
-            "top_height": vals[6] if len(vals) > 6 else 0.0,
-            "qmd": vals[7] if len(vals) > 7 else 0.0,
-            "total_cuft": vals[8] if len(vals) > 8 else 0.0,
-            "merch_cuft": vals[9] if len(vals) > 9 else 0.0,
-            "merch_bdft": vals[10] if len(vals) > 10 else 0.0,
-            "removed_tpa": vals[11] if len(vals) > 11 else 0.0,
-            "removed_cuft": vals[12] if len(vals) > 12 else 0.0,
-            "removed_bdft": vals[13] if len(vals) > 13 else 0.0,
-            "mortality_tpa": vals[14] if len(vals) > 14 else 0.0,
-            "mortality_cuft": vals[15] if len(vals) > 15 else 0.0,
-            "mai_cuft": vals[16] if len(vals) > 16 else 0.0,
-            "forest_type": int(vals[17]) if len(vals) > 17 else 0,
-            "size_class": int(vals[18]) if len(vals) > 18 else 0,
-            "stocking_class": int(vals[19]) if len(vals) > 19 else 0,
+            "year": vals[0],
+            "age": vals[1],
+            "tpa": float(vals[2]),
+            "total_cuft": float(vals[3]),
+            "merch_cuft": float(vals[4]),
+            "merch_bdft": float(vals[5]),
+            # Stand metrics not in IOSUM (use get_evmon_attr for these)
+            "ba": 0.0,  # Not in IOSUM
+            "sdi": 0.0,  # Not in IOSUM
+            "top_height": 0.0,  # Not in IOSUM
+            "qmd": 0.0,  # Not in IOSUM
+            # Remaining fields
+            "removed_tpa": float(vals[11]) if vals[11] else 0.0,
+            "removed_cuft": float(vals[12]) if vals[12] else 0.0,
+            "ncycles": ncycles.value,
+            "maxrow": maxrow.value,
         }
 
     # =========================================================================
