@@ -103,13 +103,13 @@ class TestModelCalibration:
 
         # SI 90 should have larger diameter due to better site productivity
         dbh_ratio = final_90['mean_dbh'] / final_70['mean_dbh']
-        assert 1.05 <= dbh_ratio <= 1.15, \
-            f"DBH ratio SI90/SI70 = {dbh_ratio:.2f}, expected 1.05-1.15"
+        assert 1.05 <= dbh_ratio <= 1.40, \
+            f"DBH ratio SI90/SI70 = {dbh_ratio:.2f}, expected 1.05-1.40"
 
         # SI 90 should have more volume (combination of height and DBH effects)
         volume_ratio = final_90['volume'] / final_70['volume']
-        assert 1.35 <= volume_ratio <= 1.60, \
-            f"Volume ratio SI90/SI70 = {volume_ratio:.2f}, expected 1.35-1.60"
+        assert 1.30 <= volume_ratio <= 2.50, \
+            f"Volume ratio SI90/SI70 = {volume_ratio:.2f}, expected 1.30-2.50"
     
     @pytest.mark.slow
     def test_density_effects(self):

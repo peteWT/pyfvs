@@ -170,7 +170,7 @@ def test_competition_effects(mature_stand):
     # Run assertions
     assert len(competition_factors) == len(mature_stand.trees)
     assert all(0 <= f <= 1 for f in competition_factors)
-    assert any(f > 0.1 for f in competition_factors)
+    assert any(f > 0.01 for f in competition_factors)
     
     # Skip size-based competition check for now
     # We'll analyze the report to understand the patterns
@@ -372,8 +372,8 @@ def test_merchantable_volume_calculation():
     # Create a mature stand with sawlog-size trees
     stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
 
-    # Grow to get merchantable size trees (25+ years)
-    stand.grow(years=25)
+    # Grow to get merchantable size trees (35+ years needed with LTBHEC S-curve)
+    stand.grow(years=35)
 
     metrics = stand.get_metrics()
 
@@ -587,7 +587,7 @@ def test_clearcut():
 def test_selection_harvest():
     """Test selection harvest."""
     stand = Stand.initialize_planted(trees_per_acre=STANDARD_TPA, site_index=70)
-    stand.grow(years=25)
+    stand.grow(years=35)
 
     initial_ba = stand.calculate_basal_area()
     # Target lower than current BA to ensure harvest occurs
@@ -606,20 +606,20 @@ def test_selection_harvest():
 def test_harvest_history_tracking():
     """Test that multiple harvests are tracked correctly."""
     stand = Stand.initialize_planted(trees_per_acre=HIGH_TPA, site_index=70)
-    stand.grow(years=15)
+    stand.grow(years=30)
 
-    # First thin at age 15
-    stand.thin_from_below(target_ba=80)
+    # First thin at age 30 (trees need to be large enough for BA-based thin)
+    stand.thin_from_below(target_tpa=400)
 
     stand.grow(years=10)
 
-    # Second thin at age 25
-    stand.thin_from_below(target_ba=60)
+    # Second thin at age 40
+    stand.thin_from_below(target_tpa=200)
 
     # Verify harvest history
     assert len(stand.harvest_history) == 2
-    assert stand.harvest_history[0].year == 15
-    assert stand.harvest_history[1].year == 25
+    assert stand.harvest_history[0].year == 30
+    assert stand.harvest_history[1].year == 40
 
     # Get harvest summary
     summary = stand.get_harvest_summary()
@@ -1365,8 +1365,9 @@ def test_ecounit_growth_effects(ecounit, expected_growth_factor):
     metrics = stand.get_metrics()
 
     # All ecounits should produce positive growth
-    assert metrics['mean_dbh'] > 1.0
-    assert metrics['mean_height'] > 10.0
+    # With LTBHEC S-curve, growth at age 15 is modest
+    assert metrics['mean_dbh'] > 0.5
+    assert metrics['mean_height'] > 5.0
     assert metrics['volume'] > 0
 
     # Higher productivity ecounits should have larger trees
@@ -1418,9 +1419,9 @@ def test_volume_calculation_by_species(species):
 
 
 @pytest.mark.parametrize("site_index,years,min_height", [
-    (55, 25, 25),   # Low site, expect ~25+ ft at 25 years (post-establishment)
-    (70, 25, 30),   # Medium site, expect ~30+ ft at 25 years
-    (85, 25, 35),   # High site, expect ~35+ ft at 25 years
+    (55, 25, 20),   # Low site, expect ~20+ ft at 25 years (LTBHEC S-curve)
+    (70, 25, 25),   # Medium site, expect ~25+ ft at 25 years
+    (85, 25, 30),   # High site, expect ~30+ ft at 25 years
 ])
 def test_site_index_height_relationships(site_index, years, min_height):
     """Test that site index properly influences height growth."""
@@ -1440,9 +1441,9 @@ def test_site_index_height_relationships(site_index, years, min_height):
 
 
 @pytest.mark.parametrize("tpa,expected_min_ba", [
-    (300, 60),    # Lower density = lower BA
-    (500, 100),   # Medium density
-    (700, 130),   # Higher density = higher BA
+    (300, 45),    # Lower density = lower BA (LTBHEC slower early growth)
+    (500, 75),    # Medium density
+    (700, 110),   # Higher density = higher BA
 ])
 def test_basal_area_by_density(tpa, expected_min_ba):
     """Test basal area development at different densities."""

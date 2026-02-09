@@ -69,10 +69,10 @@ class TestCoefficientFileLoading:
         assert len(coeffs) == 107
 
     def test_sn_species_count(self):
-        """SN file has 90 species."""
+        """SN file has 85 species (mapped via SN_SPECIES_MAP -> LTBHEC rows)."""
         data = load_coefficient_file('sn_small_tree_height_growth.json', variant='SN')
         coeffs = data['nc128_height_growth_coefficients']
-        assert len(coeffs) == 90
+        assert len(coeffs) == 85
 
     @pytest.mark.parametrize("variant,filename", [
         ('LS', 'ls_small_tree_height_growth.json'),
@@ -156,14 +156,14 @@ class TestExactCoefficientValues:
         assert bf['bh'] == pytest.approx(0.0, abs=1e-4)
 
     def test_sn_loblolly_pine_coefficients(self):
-        """SN Loblolly Pine (LP) has correct NC-128 curve 22 coefficients."""
+        """SN Loblolly Pine (LP) has correct LTBHEC row 7 coefficients."""
         data = load_coefficient_file('sn_small_tree_height_growth.json', variant='SN')
         lp = data['nc128_height_growth_coefficients']['LP']
-        assert lp['c1'] == pytest.approx(1.1421, rel=1e-4)
-        assert lp['c2'] == pytest.approx(1.0042, rel=1e-4)
-        assert lp['c3'] == pytest.approx(-0.0374, rel=1e-4)
-        assert lp['c4'] == pytest.approx(0.7632, rel=1e-4)
-        assert lp['c5'] == pytest.approx(0.0358, rel=1e-4)
+        assert lp['c1'] == pytest.approx(1.3307, rel=1e-4)
+        assert lp['c2'] == pytest.approx(1.0442, rel=1e-4)
+        assert lp['c3'] == pytest.approx(-0.0496, rel=1e-4)
+        assert lp['c4'] == pytest.approx(3.5829, rel=1e-4)
+        assert lp['c5'] == pytest.approx(0.0945, rel=1e-4)
         assert lp['bh'] == pytest.approx(0.0, abs=1e-4)
 
 
@@ -196,11 +196,11 @@ class TestVariantCoefficientLoading:
         assert coeffs['c1'] == pytest.approx(2.9435, rel=1e-4)
 
     def test_sn_tree_loads_sn_coefficients(self):
-        """SN Loblolly Pine tree loads SN-specific coefficients (c3=-0.0374)."""
+        """SN Loblolly Pine tree loads SN LTBHEC row 7 coefficients (c3=-0.0496)."""
         tree = Tree(dbh=0.5, height=4.5, species='LP', age=2, variant='SN')
         coeffs = tree._load_variant_small_tree_coefficients('SN')
-        assert coeffs['c3'] == pytest.approx(-0.0374, rel=1e-4)
-        assert coeffs['c1'] == pytest.approx(1.1421, rel=1e-4)
+        assert coeffs['c3'] == pytest.approx(-0.0496, rel=1e-4)
+        assert coeffs['c1'] == pytest.approx(1.3307, rel=1e-4)
 
     def test_unknown_species_returns_empty(self):
         """Tree with nonexistent species returns empty dict from coefficient loading."""
@@ -269,7 +269,7 @@ class TestBreastHeightOffset:
         assert height_bh_4_5 - height_bh_0 == pytest.approx(4.5, abs=1e-10)
 
     def test_all_sn_species_bh_zero(self):
-        """All 90 SN species have bh=0.0."""
+        """All 85 SN species have bh=0.0."""
         data = load_coefficient_file('sn_small_tree_height_growth.json', variant='SN')
         coeffs = data['nc128_height_growth_coefficients']
         for species_code, species_coeffs in coeffs.items():
@@ -313,22 +313,23 @@ class TestVariantGrowthDifferences:
     """Test that variants produce different growth trajectories."""
 
     def test_ls_slower_than_sn_early_growth(self):
-        """LS Red Pine grows slower at age 5 than SN Loblolly Pine.
+        """LS Red Pine grows slower than SN Loblolly Pine by age 12.
 
-        Northern species (LS) grow slower when young than southern species (SN).
+        Northern species (LS) grow slower than southern species (SN).
         This validates that variant-specific coefficients are being used.
+        With LTBHEC S-curves, the difference is small at age 7 but clear by age 12.
         """
         # SN Loblolly Pine: fast southern grower
         sn_tree = Tree(dbh=0.5, height=4.5, species='LP', age=2, variant='SN')
-        sn_tree.grow(site_index=70.0, competition_factor=0.0, time_step=5)
+        sn_tree.grow(site_index=70.0, competition_factor=0.0, time_step=10)
 
         # LS Red Pine: slower northern grower
         ls_tree = Tree(dbh=0.5, height=4.5, species='RN', age=2, variant='LS')
-        ls_tree.grow(site_index=65.0, competition_factor=0.0, time_step=5)
+        ls_tree.grow(site_index=65.0, competition_factor=0.0, time_step=10)
 
-        # SN LP should be taller at age 7 than LS RN
+        # SN LP should be taller at age 12 than LS RN
         assert sn_tree.height > ls_tree.height, (
-            f"Expected SN LP ({sn_tree.height:.1f}ft) > LS RN ({ls_tree.height:.1f}ft) at age 7"
+            f"Expected SN LP ({sn_tree.height:.1f}ft) > LS RN ({ls_tree.height:.1f}ft) at age 12"
         )
 
     def test_variant_specific_c3_used(self):
@@ -419,40 +420,42 @@ class TestSNRegression:
 
         These values should match the current SN behavior (with M231 ecounit
         adding +0.790 to ln(DDS), producing ~2.2x diameter growth).
+        Uses correct LTBHEC row 7 coefficients with establishment skip.
         """
         stand = Stand.initialize_planted(500, 70, 'LP', variant='SN', ecounit='M231')
         stand.grow(50)
         metrics = stand.get_metrics()
 
-        # SN LP 500 TPA SI=70 M231 50yr expected values (with establishment model)
-        assert metrics['tpa'] == pytest.approx(408, rel=0.05)
-        assert metrics['qmd'] == pytest.approx(12.4, rel=0.10)
-        assert metrics['basal_area'] == pytest.approx(342, rel=0.10)
+        # SN LP 500 TPA SI=70 M231 50yr expected values (LTBHEC coefficients)
+        assert metrics['tpa'] == pytest.approx(410, rel=0.05)
+        assert metrics['qmd'] == pytest.approx(11.4, rel=0.10)
+        assert metrics['basal_area'] == pytest.approx(293, rel=0.10)
 
     def test_sn_small_tree_height_growth_unchanged(self):
-        """SN LP small tree height at age 5 matches pre-change calculation.
+        """SN LP small tree height growth uses correct LTBHEC row 7 coefficients.
 
-        The Chapman-Richards formula with SN LP coefficients should produce
-        the same result as before the variant-specific changes were added.
+        SN uses scale_factor=1.0 (no anchoring), so the raw LTBHEC curve
+        drives height directly. H(50) ≈ SI for correctly parameterized curves.
         """
-        # SN LP coefficients
-        c1, c2, c3, c4, c5, bh = 1.1421, 1.0042, -0.0374, 0.7632, 0.0358, 0.0
+        # SN LP LTBHEC row 7 coefficients
+        c1, c2, c3, c4, c5, bh = 1.3307, 1.0442, -0.0496, 3.5829, 0.0945, 0.0
         site_index = 70.0
-        base_age = 25  # SN uses base age 25
 
         def raw_cr(age):
             if age <= 0:
-                return 1.0
+                return 0.1
             return bh + c1 * (site_index ** c2) * (1.0 - math.exp(c3 * age)) ** (c4 * (site_index ** c5))
 
-        raw_at_base = raw_cr(base_age)
-        scale_factor = site_index / raw_at_base
+        # H(50) should approximate SI for correctly calibrated curves
+        height_at_50 = raw_cr(50)
+        assert height_at_50 == pytest.approx(site_index, rel=0.02), (
+            f"SN LP H_raw(50) = {height_at_50:.1f}ft, expected ~{site_index}"
+        )
 
-        # Height at age 5
-        height_at_5 = raw_cr(5) * scale_factor
-        # This should be a reasonable height for a 5-year-old LP
-        assert 10.0 < height_at_5 < 25.0, (
-            f"SN LP height at age 5 = {height_at_5:.1f}ft"
+        # Height at age 5 should be very small (S-shaped curve)
+        height_at_5 = raw_cr(5)
+        assert height_at_5 < 1.0, (
+            f"SN LP height at age 5 = {height_at_5:.2f}ft, expected < 1.0"
         )
 
         # Verify the tree object produces consistent growth

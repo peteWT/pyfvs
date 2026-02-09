@@ -289,15 +289,16 @@ def test_long_term_growth():
     volume_growth = [metrics['volume'] for metrics in growth_metrics]
     crown_ratios = [metrics['crown_ratio'] for metrics in growth_metrics]
     
-    # Height growth should follow sigmoid pattern (faster early, slower late)
-    early_height_growth = height_growth[10] - height_growth[0]  # First 10 years
+    # Height growth should follow sigmoid pattern: slow start, peak in middle, decline late
+    # With LTBHEC S-curve, decade 1 is establishment (very slow), then growth accelerates
+    peak_height_growth = height_growth[30] - height_growth[20]  # Decade 3 (peak)
     late_height_growth = height_growth[-1] - height_growth[-11]  # Last 10 years
-    assert early_height_growth > late_height_growth, "Height growth should slow with age"
-    
-    # DBH growth should show gradual decline over time
-    early_dbh_growth = dbh_growth[10] - dbh_growth[0]  # First 10 years
+    assert peak_height_growth > late_height_growth, "Height growth should decline after peak"
+
+    # DBH growth should show gradual decline after peak (decade 2-3)
+    peak_dbh_growth = dbh_growth[30] - dbh_growth[20]  # Decade 3 (near peak)
     late_dbh_growth = dbh_growth[-1] - dbh_growth[-11]  # Last 10 years
-    assert early_dbh_growth > late_dbh_growth, "Diameter growth should slow with age"
+    assert peak_dbh_growth > late_dbh_growth, "Diameter growth should decline after peak"
     assert late_dbh_growth > 0, "Tree should continue to grow in diameter, albeit slowly"
     
     # Volume growth pattern

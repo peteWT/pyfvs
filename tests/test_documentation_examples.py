@@ -300,7 +300,7 @@ class TestHarvestOperationExamples:
         output.append(f"Final DBH: {metrics['qmd']:.1f} inches")
         output.append(f"Final volume: {metrics['volume']:.0f} ft³/acre")
 
-        assert metrics['qmd'] >= 7.5  # Large trees after establishment + thinning
+        assert metrics['qmd'] >= 6.5  # Large trees after establishment + thinning (LTBHEC S-curve)
         assert metrics['volume'] > 0
 
         self._save_example_output('sawtimber_rotation', '\n'.join(output))
