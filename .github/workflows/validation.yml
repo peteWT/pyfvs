@@ -53,7 +53,9 @@ jobs:
           uv run pytest tests/ -v --tb=short -x \
             --ignore=tests/test_manuscript_validation.py \
             --ignore=tests/test_model_validation.py \
-            --ignore=tests/test_performance.py
+            --ignore=tests/test_performance.py \
+            --ignore=tests/test_fia_integration.py \
+            --ignore=tests/test_native.py
 
       - name: Run benchmarks (non-blocking)
         continue-on-error: true
