@@ -388,9 +388,9 @@ class NativeStand:
         the pyfvs validation system. FVS summary uses 1-based indexing:
         cycle 1 = initial conditions, cycle ncycles+1 = final state.
 
-        Note: IOSUM summary values are integer-encoded. The begin_tpa and
-        begin_tcuft fields are reliable, but after_ba/after_qmd/after_top_ht
-        may have limited precision.
+        Note: IOSUM summary values are integer-encoded. Begin-of-period
+        BA, SDI, CCF, TopHt, QMD are NOT in IOSUM (they live in the
+        SUMTAB common block and are not accessible via fvsSummary).
 
         Returns:
             List of dictionaries, one per cycle, with keys matching

@@ -120,8 +120,10 @@ class FVSBindings:
         """Get FVS dimension sizes (max trees, cycles, species, etc.).
 
         Corresponds to: SUBROUTINE FVSDIMSIZES(NTREES, NCYCLES, NPLOTS,
-                                                MAXTREES, MAXSPECIES, MAXPLOTS,
-                                                MAXCYCLES, IRTNCD)
+                                                MAXTREES, MAXSPECIES,
+                                                MAXPLOTS, MAXCYCLES)
+
+        Note: fvsDimSizes has no return code parameter in the Fortran source.
 
         Returns:
             Dictionary with keys: ntrees, ncycles, nplots, maxtrees,
@@ -136,7 +138,6 @@ class FVSBindings:
         maxspecies = ctypes.c_int(0)
         maxplots = ctypes.c_int(0)
         maxcycles = ctypes.c_int(0)
-        return_code = ctypes.c_int(0)
 
         func(
             ctypes.byref(ntrees),
@@ -146,10 +147,7 @@ class FVSBindings:
             ctypes.byref(maxspecies),
             ctypes.byref(maxplots),
             ctypes.byref(maxcycles),
-            ctypes.byref(return_code),
         )
-
-        self._check_return_code(return_code.value, "fvsDimSizes")
 
         return {
             "ntrees": ntrees.value,
@@ -393,14 +391,34 @@ class FVSBindings:
         The summary array is INTEGER*4(22) from IOSUM in OUTCOM.F77.
         Values are integer-encoded (e.g., BA in sq ft, TPA as integer).
 
-        Summary columns (from FVS source sumout.f):
-            1: Year, 2: Age, 3: TPA (begin), 4: Total cuft (begin),
-            5: Merch cuft (begin), 6: BdFt (begin), 7: BA (begin),
-            8: CCF (begin), 9: Top Ht (begin), 10: QMD*10 (begin),
-            11: TPA removed, 12: Merch cuft removed, 13: BdFt removed,
-            14: BA (after), 15: SDI (after), 16: Top Ht (after),
-            17: QMD*10 (after), 18: AccCuft, 19: MortCuft,
-            20: MAI, 21: ForTyp, 22: SizCls
+        IOSUM columns (from FVS source vbase/sumout.f):
+             1: Year
+             2: Age
+             3: Trees/acre (start of period)
+             4: Total cu ft (start of period)
+             5: Merch cu ft (start of period)
+             6: Merch bd ft (start of period)
+             7: Removed trees/acre
+             8: Removed total cu ft
+             9: Removed merch cu ft
+            10: Removed merch bd ft
+            11: Basal area/acre (after treatment)
+            12: CCF (after treatment)
+            13: Avg dominant height (after treatment)
+            14: Period length (years)
+            15: Accretion (annual cu ft/acre)
+            16: Mortality (annual cu ft/acre)
+            17: Sample weight
+            18: Forest cover type code
+            19: Size class
+            20: Stocking class
+            21: Cubic saw volume (start of period)
+            22: Removed cubic saw volume
+
+        Note: Begin-of-period BA, SDI, CCF, TopHt, QMD and after-treatment
+        SDI, QMD, MAI are stored in the SUMTAB common block (IOLDBA, ISDI,
+        IBTCCF, IBTAVH, QSDBT, ISDIAT, QDBHAT, BCYMAI), NOT in IOSUM.
+        They are not accessible through fvsSummary.
 
         Args:
             cycle: Cycle number (1 = initial conditions, 2+ = growth cycles).
@@ -440,22 +458,22 @@ class FVSBindings:
             "begin_tcuft": vals[3],
             "begin_mcuft": vals[4],
             "begin_bdft": vals[5],
-            "begin_ba": vals[6],
-            "begin_ccf": vals[7],
-            "begin_top_ht": vals[8],
-            "begin_qmd": vals[9] / 10.0,  # stored as QMD*10
-            "removed_tpa": vals[10],
-            "removed_mcuft": vals[11],
-            "removed_bdft": vals[12],
-            "after_ba": vals[13],
-            "after_sdi": vals[14],
-            "after_top_ht": vals[15],
-            "after_qmd": vals[16] / 10.0,  # stored as QMD*10
-            "accretion_cuft": vals[17],
-            "mortality_cuft": vals[18],
-            "mai": vals[19],
-            "forest_type": vals[20],
-            "size_class": vals[21],
+            "removed_tpa": vals[6],
+            "removed_tcuft": vals[7],
+            "removed_mcuft": vals[8],
+            "removed_bdft": vals[9],
+            "after_ba": vals[10],
+            "after_ccf": vals[11],
+            "after_top_ht": vals[12],
+            "period_length": vals[13],
+            "accretion_cuft": vals[14],
+            "mortality_cuft": vals[15],
+            "sample_weight": vals[16],
+            "forest_type": vals[17],
+            "size_class": vals[18],
+            "stocking_class": vals[19],
+            "begin_scuft": vals[20],
+            "removed_scuft": vals[21],
         }
 
     # =========================================================================
@@ -469,11 +487,17 @@ class FVSBindings:
         height_values: np.ndarray,
         tpa_values: np.ndarray,
         crown_ratios: Optional[np.ndarray] = None,
+        plot_indices: Optional[np.ndarray] = None,
     ) -> None:
         """Add trees to the FVS simulation programmatically.
 
-        Corresponds to: SUBROUTINE FVSADDTREES(NTREES, ISPN, DBH, HT,
-                                                CRATIO, PLOT, IRTNCD)
+        Corresponds to: SUBROUTINE FVSADDTREES(IN_DBH, IN_SPECIES, IN_HT,
+                                                IN_CRATIO, IN_PLOT, IN_TPA,
+                                                NTREES, RTNCODE)
+
+        All array parameters are real(kind=8) (double precision) in Fortran,
+        including species indices and plot numbers which are converted to
+        integer internally by FVS.
 
         Args:
             species_indices: Array of integer species indices.
@@ -481,6 +505,7 @@ class FVSBindings:
             height_values: Array of total heights (feet).
             tpa_values: Array of trees per acre values.
             crown_ratios: Optional array of crown ratios (0-100 scale).
+            plot_indices: Optional array of plot numbers (default 1).
         """
         func = self._get_func("fvsaddtrees")
 
@@ -488,50 +513,64 @@ class FVSBindings:
         if not (len(dbh_values) == len(height_values) == len(tpa_values) == ntrees):
             raise ValueError("All input arrays must have the same length")
 
-        ntrees_c = ctypes.c_int(ntrees)
-        ispn = (ctypes.c_int * ntrees)(*species_indices.astype(int))
-        dbh = (ctypes.c_double * ntrees)(*dbh_values)
-        ht = (ctypes.c_double * ntrees)(*height_values)
+        # All arrays are real(kind=8) in Fortran — use c_double for everything
+        in_dbh = (ctypes.c_double * ntrees)(*dbh_values)
+        in_species = (ctypes.c_double * ntrees)(*species_indices.astype(float))
+        in_ht = (ctypes.c_double * ntrees)(*height_values)
 
         if crown_ratios is not None:
-            cr = (ctypes.c_double * ntrees)(*crown_ratios)
+            in_cratio = (ctypes.c_double * ntrees)(*crown_ratios)
         else:
-            cr = (ctypes.c_double * ntrees)(*([0.0] * ntrees))
+            in_cratio = (ctypes.c_double * ntrees)(*([0.0] * ntrees))
 
-        # Plot number (1 for single-plot stands)
-        plot = (ctypes.c_int * ntrees)(*([1] * ntrees))
+        if plot_indices is not None:
+            in_plot = (ctypes.c_double * ntrees)(*plot_indices.astype(float))
+        else:
+            in_plot = (ctypes.c_double * ntrees)(*([1.0] * ntrees))
+
+        in_tpa = (ctypes.c_double * ntrees)(*tpa_values)
+        ntrees_c = ctypes.c_int(ntrees)
         return_code = ctypes.c_int(0)
 
+        # Fortran order: in_dbh, in_species, in_ht, in_cratio,
+        #                in_plot, in_tpa, ntrees, rtnCode
         func(
+            in_dbh,
+            in_species,
+            in_ht,
+            in_cratio,
+            in_plot,
+            in_tpa,
             ctypes.byref(ntrees_c),
-            ispn,
-            dbh,
-            ht,
-            cr,
-            plot,
             ctypes.byref(return_code),
         )
 
         self._check_return_code(return_code.value, "fvsAddTrees")
 
-    def cut_trees(self, tree_indices: np.ndarray) -> None:
+    def cut_trees(self, cut_flags: np.ndarray) -> None:
         """Remove trees from the FVS simulation.
 
-        Corresponds to: SUBROUTINE FVSCUTTREES(NTREES, ITREELIST, IRTNCD)
+        Corresponds to: SUBROUTINE FVSCUTTREES(PTOCUT, NTREES, RTNCODE)
+
+        Note: This subroutine is marked "Not yet implemented" in the FVS
+        Fortran source (apisubs.f) and always returns rtnCode=1.
 
         Args:
-            tree_indices: Array of 1-based tree indices to remove.
+            cut_flags: Double precision array of length ntrees. Non-zero
+                values mark trees for cutting.
         """
         func = self._get_func("fvscuttrees")
 
-        ntrees = len(tree_indices)
+        ntrees = len(cut_flags)
+        # pToCut is double precision in Fortran
+        p_to_cut = (ctypes.c_double * ntrees)(*cut_flags.astype(float))
         ntrees_c = ctypes.c_int(ntrees)
-        indices = (ctypes.c_int * ntrees)(*tree_indices.astype(int))
         return_code = ctypes.c_int(0)
 
+        # Fortran order: pToCut, ntrees, rtnCode
         func(
+            p_to_cut,
             ctypes.byref(ntrees_c),
-            indices,
             ctypes.byref(return_code),
         )
 
