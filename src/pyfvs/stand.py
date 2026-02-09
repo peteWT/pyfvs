@@ -303,11 +303,13 @@ class Stand:
         initial_params = temp_stand.growth_params.get('initial_tree', {})
 
         dbh_params = initial_params.get('dbh', {})
-        dbh_mean = dbh_params.get('mean', 0.5)
-        dbh_sd = dbh_params.get('std_dev', 0.1)
+        # Fortran estab.f: DIAM(ISPC) = 0.1 for most species, no variation
+        dbh_mean = dbh_params.get('mean', 0.1)
+        dbh_sd = dbh_params.get('std_dev', 0.0)
         dbh_min = dbh_params.get('minimum', 0.1)
 
-        initial_height = initial_params.get('height', {}).get('planted', 1.0)
+        # Fortran: small seedling at planting (sub-breast-height)
+        initial_height = initial_params.get('height', {}).get('planted', 0.5)
 
         # Create trees with random variation
         # Get the actual variant from temp_stand to ensure consistency

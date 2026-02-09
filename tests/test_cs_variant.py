@@ -294,16 +294,19 @@ class TestCSIntegration:
         assert metrics['basal_area'] > 0
 
     def test_cs_stand_grows(self):
-        """CS stand should grow over time."""
+        """CS stand should grow over time (past establishment phase)."""
         stand = Stand.initialize_planted(
             trees_per_acre=500, site_index=70, species='WO', variant='CS'
         )
-        initial_metrics = stand.get_metrics()
+        # Grow past establishment phase where trees are sub-breast-height
+        # and volume is dominated by per-tree minimum floor
+        stand.grow(years=30)
+        post_establishment_metrics = stand.get_metrics()
         stand.grow(years=10)
         grown_metrics = stand.get_metrics()
-        # Volume and basal area should increase
-        assert grown_metrics['volume'] > initial_metrics['volume']
-        assert grown_metrics['basal_area'] > initial_metrics['basal_area']
+        # Volume and basal area should increase after establishment
+        assert grown_metrics['volume'] > post_establishment_metrics['volume']
+        assert grown_metrics['basal_area'] > post_establishment_metrics['basal_area']
 
     def test_cs_red_oak_grows(self):
         """CS Northern Red Oak stand should grow."""

@@ -1,46 +1,48 @@
 # Expected values for FVS-Python tests
 # Based on actual model output with default ecounit (232 - Georgia baseline)
-# For higher growth rates, use ecounit='M231' (see CLAUDE.md)
+# Updated for establishment model matching Fortran FVS (LSKIPH, FINDAG)
 
 metadata:
   description: "Expected test values for model validation"
-  source: "FVS Southern Variant model output"
-  updated: "2025-01-02"
+  source: "FVS Southern Variant model output with establishment physics"
+  updated: "2025-02-08"
   notes: |
-    These values reflect the actual FVS-SN model behavior with default ecounit (232).
-    The 232 ecounit is the Georgia baseline with coefficient 0.0.
-    For higher growth rates matching typical yield tables, use ecounit='M231'.
-    See CLAUDE.md for detailed ecounit effects on growth.
+    These values reflect FVS-SN model with Fortran-matching establishment:
+    - Initial tree: DBH=0.1", HT=0.5 ft (sub-breast-height seedling)
+    - First cycle: LSKIPH skip (no height growth)
+    - Effective age from height (FINDAG) for subsequent growth
+    - Establishment growth modifier for dense young stands
+    Default ecounit is 232 (Georgia baseline, coefficient 0.0).
 
 # Growth expectations by species and site index
-# Based on actual simulation results with default settings
+# Based on actual simulation results with establishment model
 growth_expectations:
   LP:  # Loblolly Pine
     site_index_70:
       age_25:
-        mean_dbh: [8.0, 9.0]  # inches - actual ~8.45
-        mean_height: [63.0, 68.0]  # feet - actual ~65.8
-        volume_per_acre: [5000, 6000]  # cubic feet per acre - actual ~5450
-        survival_rate: [0.88, 0.95]  # proportion surviving - actual ~0.91
+        mean_dbh: [4.5, 6.0]  # inches - actual ~5.2
+        mean_height: [33.0, 42.0]  # feet - actual ~37.8
+        volume_per_acre: [800, 1200]  # cubic feet per acre - actual ~960
+        survival_rate: [0.85, 0.95]  # proportion surviving - actual ~0.89
       age_50:
-        mean_dbh: [11.0, 12.5]  # inches - actual ~11.5
-        mean_height: [85.0, 92.0]  # feet - actual ~88
-        volume_per_acre: [11500, 13500]  # cubic feet - actual ~12500
-        survival_rate: [0.80, 0.88]  # proportion surviving - actual ~0.84
+        mean_dbh: [7.5, 10.0]  # inches - actual ~8.65
+        mean_height: [55.0, 66.0]  # feet - actual ~60.3
+        volume_per_acre: [3200, 4500]  # cubic feet - actual ~3810
+        survival_rate: [0.75, 0.85]  # proportion surviving - actual ~0.81
     site_index_90:
       age_25:
-        mean_dbh: [9.0, 10.0]  # larger due to better site
-        mean_height: [80.0, 86.0]  # near SI=90 at base age 25
-        volume_per_acre: [7500, 8500]  # higher volume
+        mean_dbh: [5.5, 7.5]  # larger due to better site
+        mean_height: [42.0, 55.0]  # higher site = taller
+        volume_per_acre: [1400, 2200]  # higher volume
         survival_rate: [0.85, 0.93]
 
   SP:  # Shortleaf Pine
     site_index_70:
       age_25:
-        mean_dbh: [7.5, 8.5]  # slightly smaller than LP
-        mean_height: [73.0, 78.0]  # near SI at base age 25
-        volume_per_acre: [5000, 5800]  # similar to LP
-        survival_rate: [0.88, 0.95]
+        mean_dbh: [3.0, 5.0]  # slightly smaller than LP
+        mean_height: [25.0, 38.0]  # slower grower
+        volume_per_acre: [300, 700]  # lower volume
+        survival_rate: [0.85, 0.95]
 
 # Initial planting density effects
 # DBH factors relative to 500 TPA baseline
@@ -63,18 +65,17 @@ competition_thresholds:
     low: 100
     high: 200
   # DBH ratio between low (200 TPA) and high (1000 TPA) competition stands
-  # Height differences are minimal since height is driven by SI, not competition
   dbh_ratio_low_to_high: 1.20  # Low competition trees are ~20% larger
 
 # Growth rate expectations (per 5-year period)
-# Based on actual Chapman-Richards curve behavior
+# With establishment model, early growth is delayed then accelerates
 periodic_growth:
-  young_stand:  # Age 0-15 (first 3 periods)
-    dbh_increment: [1.5, 2.5]  # inches per 5 years
-    height_increment: [12.0, 22.0]  # feet per 5 years (rapid early growth)
+  young_stand:  # Age 10-20 (periods 2-4, post-establishment)
+    dbh_increment: [0.3, 2.0]  # inches per 5 years (ramps up)
+    height_increment: [4.0, 14.0]  # feet per 5 years (gradual increase)
   mature_stand:  # Age 35-50 (last 3 periods)
-    dbh_increment: [0.4, 0.8]  # inches per 5 years (declining growth)
-    height_increment: [2.5, 5.5]  # feet per 5 years
+    dbh_increment: [0.4, 0.9]  # inches per 5 years (declining growth)
+    height_increment: [2.5, 6.0]  # feet per 5 years
 
 # Model transition validation
 model_transitions:

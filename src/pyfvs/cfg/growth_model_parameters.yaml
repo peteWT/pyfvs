@@ -82,13 +82,13 @@ mortality:
     
 # Initial tree parameters
 initial_tree:
-  description: "Parameters for newly planted trees"
+  description: "Parameters for newly planted trees (matches Fortran estab.f)"
   dbh:
-    mean: 0.5
-    std_dev: 0.1
+    mean: 0.1      # Fortran: DIAM(ISPC) = 0.1 minimum for most species
+    std_dev: 0.0    # No variation at establishment
     minimum: 0.1
   height:
-    planted: 1.0  # Initial height at planting (feet)
+    planted: 0.5  # Small seedling at planting (feet)
     
 # Validation thresholds
 validation:

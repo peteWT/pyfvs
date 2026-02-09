@@ -307,12 +307,24 @@ class Tree:
 
         # Current age (before growth) - age was already incremented in grow()
         current_age = self.age - time_step
-        future_age = self.age  # This is current_age + time_step
+
+        # First-cycle establishment skip (Fortran regent.f:118-123 LSKIPH)
+        # When trees are newly established, skip height growth in the first cycle.
+        # Fortran: IF(LESTB .AND. FINT.LE.5) LSKIPH=TRUE => HTG=0
+        variant = getattr(self, '_variant', 'SN')
+        if current_age <= 0:
+            if variant in ('SN', 'OP'):
+                # 5-year cycle variants: skip height growth entirely
+                self._update_dbh_from_height()
+                return
+            else:
+                # 10-year cycle variants: skip the first 5 years of establishment
+                # Fortran: FNT = FNT - 5.0; only grow for remaining portion
+                time_step = max(1, time_step - 5)
 
         # Site index base age varies by variant
         # SN (Southern): base age 25
         # LS (Lake States), PN (Pacific NW), WC (West Cascades), NE, CS, CA: base age 50
-        variant = getattr(self, '_variant', 'SN')
         if variant in ('LS', 'PN', 'WC', 'NE', 'CS', 'CA'):
             base_age = 50
         else:
@@ -324,7 +336,7 @@ class Tree:
         def _raw_chapman_richards(age):
             """Calculate unscaled Chapman-Richards height."""
             if age <= 0:
-                return 1.0
+                return bh + 0.1
             return (
                 bh + p['c1'] * (site_index ** p['c2']) *
                 (1.0 - math.exp(p['c3'] * age)) **
@@ -339,30 +351,68 @@ class Tree:
         else:
             scale_factor = 1.0
 
-        # Calculate scaled heights
-        if current_age <= 0:
-            current_height = 1.0  # Initial height at planting
-        else:
-            current_height = _raw_chapman_richards(current_age) * scale_factor
+        def _scaled_height(age):
+            """Calculate scaled Chapman-Richards height at given age."""
+            return _raw_chapman_richards(age) * scale_factor
 
-        future_height = _raw_chapman_richards(future_age) * scale_factor
-        
-        # Height growth is the difference
-        height_growth = future_height - current_height
+        # FINDAG: Derive effective age from current height via inverse Chapman-Richards
+        # Matches Fortran regent.f:206-208: CALL HTCALC(MODE0=0, ISPC, AGET, H, ...)
+        # This anchors growth rate to the tree's actual size, not calendar age.
+        max_height = bh + p['c1'] * (site_index ** p['c2'])
+        exponent = p['c4'] * (site_index ** p['c5'])
+
+        def _effective_age_from_height(height):
+            """Inverse Chapman-Richards: solve for age given height."""
+            # Correct for scale factor to get raw height
+            raw_height = height / scale_factor if scale_factor > 0 else height
+            if raw_height >= max_height - 0.1:
+                return 200.0  # At asymptote, return large age
+            if raw_height <= bh + 0.1:
+                return 0.1  # Minimum effective age for very small trees
+            ratio = (raw_height - bh) / (p['c1'] * (site_index ** p['c2']))
+            if ratio <= 0 or ratio >= 1.0:
+                return 0.1
+            if exponent <= 0:
+                return 0.1
+            inner = ratio ** (1.0 / exponent)
+            if inner >= 1.0:
+                return 0.1
+            age = math.log(1.0 - inner) / p['c3']
+            return max(0.1, age)
+
+        # Use effective age (from current height) instead of calendar age
+        effective_age = _effective_age_from_height(self.height)
+        future_effective_age = effective_age + time_step
+
+        # Height growth = CR(effective_age + time_step) - CR(effective_age)
+        current_height_on_curve = _scaled_height(effective_age)
+        future_height_on_curve = _scaled_height(future_effective_age)
+        height_growth = future_height_on_curve - current_height_on_curve
 
         # NOTE: No ecounit modifier is applied to height growth. Site Index
         # already incorporates regional productivity through the Chapman-Richards
         # curve. However, the ecounit effect IS applied to DIAMETER growth below.
 
-        # Apply a modifier for competition (subtle effect for small trees)
-        # Small trees are less affected by competition than large trees
+        # Establishment height growth modifier (matches Fortran PCCF effect)
+        # In Fortran FVS, small-tree height growth is reduced by point crown
+        # competition factor (PCCF). The effect is strongest for very small trees
+        # in dense stands and diminishes as trees grow above breast height.
+        # This prevents unrealistically large height jumps in early establishment.
+        #
+        # The modifier ramps from ~0.21 at height=0.5 to ~1.0 at height=20+
+        # matching the pattern observed in native FVS trajectories.
+        establishment_modifier = 1.0 - 0.85 * math.exp(-0.15 * self.height)
+
+        # Also apply the standard competition modifier
         max_reduction = self.growth_params.get('competition_effects', {}).get(
             'small_tree_competition', {}).get('max_reduction', 0.2)
         competition_modifier = 1.0 - (max_reduction * competition_factor)
-        actual_growth = height_growth * competition_modifier
+        actual_growth = height_growth * establishment_modifier * competition_modifier
 
         # Update height with bounds checking
-        self.height = max(4.5, self.height + actual_growth)
+        # Trees can exist below breast height (4.5 ft) during establishment
+        # Minimum 0.5 ft prevents degenerate zero-height trees
+        self.height = max(0.5, self.height + actual_growth)
 
         # Get ecological unit effect for DIAMETER growth (not height)
         # This matches how FVS applies ecounit to the DDS equation for large trees
@@ -911,27 +961,30 @@ class Tree:
                 self.crown_ratio * (1.0 - reduction)))
     
     def _update_dbh_from_height(self):
-        """Update DBH based on height using height-diameter model."""
-        from .height_diameter import create_height_diameter_model
-        
-        # Create height-diameter model for this species
-        hd_model = create_height_diameter_model(self.species)
-        
-        # Store original DBH to ensure we don't decrease it
+        """Update DBH based on height using height-diameter model.
+
+        Sub-breast-height behavior matches Fortran regent.f:285-287:
+        When HT <= 4.5: DG=0; DBH = D + 0.001*HK (DBH stays near initial value).
+        Above breast height: use H-D relationship to derive DBH from height.
+        """
         original_dbh = self.dbh
-        
+
         if self.height <= 4.5:
-            dbw = hd_model.hd_params['curtis_arney']['dbw']
-            self.dbh = max(original_dbh, dbw)  # Set to minimum DBH, but never decrease
+            # Sub-breast-height: freeze DBH with tiny increment
+            # Fortran: DG=0; DBH = D + 0.001*HK
+            self.dbh = original_dbh + 0.001 * self.height
         else:
-            # Solve for DBH given target height
+            # Above breast height: use H-D relationship
+            from .height_diameter import create_height_diameter_model
+            hd_model = create_height_diameter_model(self.species)
+
             dbh = hd_model.solve_dbh_from_height(
                 target_height=self.height,
                 initial_dbh=self.dbh
             )
-            
-            # Ensure DBH never decreases
-            self.dbh = max(original_dbh, dbh)
+            # Ensure minimum DBH for species (Fortran DIAM(ISPC))
+            min_dbh = hd_model.hd_params['curtis_arney'].get('dbw', 0.1)
+            self.dbh = max(original_dbh, dbh, min_dbh)
     
     def _update_height_from_dbh(self):
         """Update height based on DBH using height-diameter model."""

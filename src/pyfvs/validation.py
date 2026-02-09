@@ -12,7 +12,7 @@ class ParameterValidator:
     BOUNDS = {
         'site_index': (20.0, 150.0),  # General range for site index
         'dbh': (0.1, 60.0),  # Diameter bounds in inches
-        'height': (1.0, 200.0),  # Height bounds in feet
+        'height': (0.1, 200.0),  # Height bounds in feet (sub-BH seedlings allowed)
         'age': (0, 200),  # Age bounds in years
         'crown_ratio': (0.05, 0.95),  # Crown ratio as proportion
         'competition_factor': (0.0, 1.0),  # Competition factor normalized
