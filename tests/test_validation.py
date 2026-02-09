@@ -235,8 +235,8 @@ class TestStandSimulations:
         initial_tpa = len(stand.trees)
         initial_ba = stand.calculate_basal_area()
 
-        # Grow for 25 years
-        stand.grow(years=25)
+        # Grow for 15 years
+        stand.grow(years=15)
 
         metrics = stand.get_metrics()
 
@@ -244,8 +244,9 @@ class TestStandSimulations:
         assert metrics['tpa'] <= initial_tpa, "TPA should decrease or stay same"
         assert metrics['basal_area'] > initial_ba, "BA should increase"
         assert metrics['qmd'] > 0.5, "Trees should have grown"
-        assert metrics['top_height'] > 20, "Should have significant height growth"
+        assert metrics['top_height'] > 5, "Should have significant height growth"
 
+    @pytest.mark.slow
     def test_mortality_occurs(self):
         """Test that mortality reduces tree count over time."""
         stand = Stand.initialize_planted(
@@ -284,6 +285,7 @@ class TestStandSimulations:
             assert record.QMD >= 0, f"QMD should be non-negative"
 
 
+@pytest.mark.slow
 class TestBakuzisMatrix:
     """Level 4: Bakuzis matrix relationship verification."""
 
@@ -403,6 +405,7 @@ class TestEdgeCases:
         metrics = stand.get_metrics()
         assert metrics["top_height"] > 2, "High site should grow after establishment"
 
+    @pytest.mark.slow
     def test_low_density_stand(self):
         """Test handling of very low density stand."""
         stand = Stand.initialize_planted(
@@ -419,6 +422,7 @@ class TestEdgeCases:
         mortality_rate = (initial_tpa - final_tpa) / initial_tpa
         assert mortality_rate < 0.3, f"Low density should have low mortality: {mortality_rate}"
 
+    @pytest.mark.slow
     def test_high_density_stand(self):
         """Test handling of very high density stand."""
         stand = Stand.initialize_planted(

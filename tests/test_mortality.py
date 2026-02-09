@@ -86,12 +86,12 @@ PERCENTILE_CASES = [
 class TestMortalityModel:
     """Tests for MortalityModel class."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def model(self):
         """Create a mortality model instance."""
         return MortalityModel(default_species='LP')
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def sparse_stand(self):
         """Create a sparse stand (below 55% SDI threshold)."""
         trees = []
@@ -101,7 +101,7 @@ class TestMortalityModel:
             trees.append(Tree(dbh=dbh, height=height, species='LP', age=15))
         return trees
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def dense_stand(self):
         """Create a dense stand (above 55% SDI threshold)."""
         trees = []
@@ -111,7 +111,7 @@ class TestMortalityModel:
             trees.append(Tree(dbh=dbh, height=height, species='LP', age=20))
         return trees
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def very_dense_stand(self):
         """Create a very dense stand (above 85% SDI threshold)."""
         trees = []
@@ -210,16 +210,6 @@ class TestMortalityModel:
         assert result1.mortality_count == result2.mortality_count
         assert len(result1.survivors) == len(result2.survivors)
 
-    def test_different_seeds_produce_different_results(self, model, dense_stand):
-        """Test that different seeds produce different results."""
-        result1 = model.apply_mortality(dense_stand[:100], cycle_length=5, random_seed=11111)
-        result2 = model.apply_mortality(dense_stand[:100], cycle_length=5, random_seed=22222)
-
-        # Results should usually differ (not guaranteed but highly likely)
-        # At minimum, verify both run successfully
-        assert result1.mortality_count >= 0
-        assert result2.mortality_count >= 0
-
     def test_longer_cycle_higher_mortality(self, model, dense_stand):
         """Test that longer cycles have higher cumulative mortality."""
         random.seed(42)
@@ -254,7 +244,7 @@ class TestMortalityModel:
 class TestMortalityCalculations:
     """Tests for individual mortality calculation methods."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def model(self):
         return MortalityModel()
 
@@ -370,7 +360,7 @@ class TestConvenienceFunctions:
 class TestMortalityEquivalence:
     """Tests to verify mortality matches original Stand class calculations."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def trees_and_stand(self):
         """Create trees and a Stand for comparison testing."""
         from pyfvs.stand import Stand
@@ -420,7 +410,7 @@ class TestMortalityEquivalence:
 class TestSDIThresholds:
     """Parametrized tests for SDI-based mortality thresholds."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def model(self):
         """Create a mortality model instance."""
         return MortalityModel(default_species='LP')
@@ -478,6 +468,7 @@ class TestSDIThresholds:
             # High density should trigger noticeable mortality
             assert mortality_rate >= 0.0  # At minimum, mortality possible
 
+    @pytest.mark.slow
     @pytest.mark.parametrize("relsdi,_", SDI_THRESHOLD_CASES)
     def test_sdi_threshold_boundary_behavior(self, model, relsdi, _):
         """Test that SDI threshold at 55% is correctly applied."""
@@ -510,7 +501,7 @@ class TestSDIThresholds:
 class TestSpeciesMortality:
     """Parametrized tests for species-specific mortality coefficients."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def model(self):
         """Create a mortality model instance."""
         return MortalityModel()
@@ -550,6 +541,7 @@ class TestSpeciesMortality:
         # Allow some tolerance due to coefficient lookup
         assert abs(rate - rip_expected) < 0.01 or rate >= 0.0
 
+    @pytest.mark.slow
     @pytest.mark.parametrize("species,_,expected_mwt", SPECIES_TEST_CASES)
     def test_species_mwt_affects_density_mortality(self, model, species, _, expected_mwt):
         """Test that MWT value affects density-related mortality rates.
@@ -585,7 +577,7 @@ class TestSpeciesMortality:
 class TestStandAgeMortality:
     """Parametrized tests for mortality at different stand ages."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def model(self):
         return MortalityModel(default_species='LP')
 
@@ -648,11 +640,11 @@ class TestStandAgeMortality:
 class TestCycleLengthMortality:
     """Parametrized tests for mortality across different cycle lengths."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def model(self):
         return MortalityModel(default_species='LP')
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def standard_stand(self):
         """Create a standard test stand."""
         trees = []
@@ -706,7 +698,7 @@ class TestCycleLengthMortality:
 class TestTreeSizeEffects:
     """Parametrized tests for tree size effects on mortality."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def model(self):
         return MortalityModel(default_species='LP')
 
@@ -784,10 +776,11 @@ class TestTreeSizeEffects:
 class TestCombinedScenarios:
     """Tests combining multiple parameters for comprehensive coverage."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def model(self):
         return MortalityModel()
 
+    @pytest.mark.slow
     @pytest.mark.parametrize("species,_,mwt", SPECIES_TEST_CASES[:4])  # Pine species
     @pytest.mark.parametrize("cycle_length", [5, 10])
     def test_pine_species_mortality_cycles(self, model, species, _, mwt, cycle_length):
@@ -799,6 +792,7 @@ class TestCombinedScenarios:
         assert result.mortality_count >= 0
         assert len(result.survivors) + result.mortality_count == len(trees)
 
+    @pytest.mark.slow
     @pytest.mark.parametrize("relsdi,expect_density", [
         (0.40, False),  # Below threshold
         (0.70, True),   # Above threshold

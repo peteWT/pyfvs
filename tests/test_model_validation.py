@@ -166,6 +166,7 @@ class TestModelCalibration:
         assert 0.85 <= survival_high <= 0.98, \
             f"High density survival {survival_high:.2f} outside expected range 0.85-0.98"
     
+    @pytest.mark.slow
     def test_growth_rates_by_age(self):
         """Test that growth rates decline with age as expected.
 

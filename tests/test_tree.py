@@ -523,4 +523,35 @@ class TestCompetitionLevels:
             aspect=0
         )
 
-        assert tree.dbh > initial_dbh, f"{species} with comp={competition_factor} should grow" 
+        assert tree.dbh > initial_dbh, f"{species} with comp={competition_factor} should grow"
+
+
+def test_board_feet_sawlog_threshold():
+    """Test that board feet are only calculated for sawlog-size trees.
+
+    Softwoods need >= 9" DBH for board foot volume.
+    """
+    from pyfvs.tree import Tree
+
+    # Create trees of various sizes
+    small_tree = Tree(dbh=6.0, height=40.0, species='LP')  # Below sawlog threshold
+    medium_tree = Tree(dbh=9.0, height=60.0, species='LP')  # At threshold
+    large_tree = Tree(dbh=14.0, height=80.0, species='LP')  # Above threshold
+
+    # Small tree should have merchantable cubic but no board feet
+    small_vol = small_tree.get_volume('merchantable_cubic')
+    small_bf = small_tree.get_volume('board_foot')
+    assert small_vol > 0  # 6" > 5" minimum
+    assert small_bf == 0.0  # 6" < 9" sawlog minimum
+
+    # Medium tree at threshold should have board feet
+    medium_vol = medium_tree.get_volume('merchantable_cubic')
+    medium_bf = medium_tree.get_volume('board_foot')
+    assert medium_vol > 0
+    assert medium_bf > 0
+
+    # Large tree should have significant board feet
+    large_vol = large_tree.get_volume('merchantable_cubic')
+    large_bf = large_tree.get_volume('board_foot')
+    assert large_vol > 0
+    assert large_bf > medium_bf
