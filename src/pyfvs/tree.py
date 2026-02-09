@@ -277,13 +277,13 @@ class Tree:
             competition_factor: Competition factor (0-1)
             time_step: Number of years to grow (any positive integer)
         """
-        # Get species-specific parameters from species config
-        # The species config has the correct NC-128 coefficients for each species
-        p = self.species_params.get('small_tree_height_growth', {})
+        # Get species-specific parameters - prefer variant-specific JSON file
+        # which has Fortran LTBHEC-matched coefficients, then fall back to
+        # species config YAML (which may have older publication coefficients).
+        variant = getattr(self, '_variant', 'SN')
+        p = self._load_variant_small_tree_coefficients(variant)
         if not p:
-            # Try variant-specific NC-128 coefficient file
-            variant = getattr(self, '_variant', 'SN')
-            p = self._load_variant_small_tree_coefficients(variant)
+            p = self.species_params.get('small_tree_height_growth', {})
         if not p:
             # Fallback to growth_params if species config doesn't have it
             small_tree_params = self.growth_params.get('small_tree_growth', {})
@@ -308,24 +308,23 @@ class Tree:
         # Current age (before growth) - age was already incremented in grow()
         current_age = self.age - time_step
 
-        # First-cycle establishment skip (Fortran regent.f:118-123 LSKIPH)
-        # When trees are newly established, skip height growth in the first cycle.
-        # Fortran: IF(LESTB .AND. FINT.LE.5) LSKIPH=TRUE => HTG=0
-        variant = getattr(self, '_variant', 'SN')
+        # Fortran FVS LSKIPH (establishment skip): when trees are planted via
+        # ESTAB/PLANT, LESTB=TRUE causes LSKIPH=TRUE, which skips height
+        # growth in the first cycle. Stand.initialize_planted() models this
+        # ESTAB behavior. For SN/OP (5yr cycles), skip entirely. For other
+        # variants (10yr cycles), the ESTAB model internally grows seedlings
+        # for part of the cycle — we approximate by reducing time_step by 5.
         if current_age <= 0:
             if variant in ('SN', 'OP'):
-                # 5-year cycle variants: skip height growth entirely
                 self._update_dbh_from_height()
                 return
             else:
-                # 10-year cycle variants: skip the first 5 years of establishment
-                # Fortran: FNT = FNT - 5.0; only grow for remaining portion
                 time_step = max(1, time_step - 5)
 
         # Site index base age varies by variant
         # SN (Southern): base age 25
-        # LS (Lake States), PN (Pacific NW), WC (West Cascades), NE, CS, CA: base age 50
-        if variant in ('LS', 'PN', 'WC', 'NE', 'CS', 'CA'):
+        # LS/PN/WC/NE/CS/CA/OP: base age 50
+        if variant in ('LS', 'PN', 'WC', 'NE', 'CS', 'CA', 'OP'):
             base_age = 50
         else:
             base_age = 25
@@ -343,13 +342,19 @@ class Tree:
                 (p['c4'] * (site_index ** p['c5']))
             )
 
-        # Calculate scaling factor to ensure Height(base_age) = SI
-        # This corrects for NC-128 coefficients that may use different base ages
-        raw_height_at_base = _raw_chapman_richards(base_age)
-        if raw_height_at_base > 0:
-            scale_factor = site_index / raw_height_at_base
-        else:
+        # Scale factor anchors Height(base_age) = SI for variants whose
+        # NC-128 coefficients use a different base age than the variant's SI.
+        # SN: Fortran htcalc.f uses raw LTBHEC coefficients with NO scale
+        # factor — the SI parameter directly drives the curve magnitude.
+        # LS/NE/CS: Coefficients from LTBHEC(6,127) need SI anchoring.
+        if variant == 'SN':
             scale_factor = 1.0
+        else:
+            raw_height_at_base = _raw_chapman_richards(base_age)
+            if raw_height_at_base > 0:
+                scale_factor = site_index / raw_height_at_base
+            else:
+                scale_factor = 1.0
 
         def _scaled_height(age):
             """Calculate scaled Chapman-Richards height at given age."""
@@ -393,21 +398,18 @@ class Tree:
         # already incorporates regional productivity through the Chapman-Richards
         # curve. However, the ecounit effect IS applied to DIAMETER growth below.
 
-        # Establishment height growth modifier (matches Fortran PCCF effect)
-        # In Fortran FVS, small-tree height growth is reduced by point crown
-        # competition factor (PCCF). The effect is strongest for very small trees
-        # in dense stands and diminishes as trees grow above breast height.
-        # This prevents unrealistically large height jumps in early establishment.
-        #
-        # The modifier ramps from ~0.21 at height=0.5 to ~1.0 at height=20+
-        # matching the pattern observed in native FVS trajectories.
-        establishment_modifier = 1.0 - 0.85 * math.exp(-0.15 * self.height)
-
-        # Also apply the standard competition modifier
+        # Apply competition modifier (Fortran regent.f:233 applies CON*SCALE*HGADJ*XRHGRO)
+        # CON includes calibration; we use competition_factor as a proxy
         max_reduction = self.growth_params.get('competition_effects', {}).get(
             'small_tree_competition', {}).get('max_reduction', 0.2)
         competition_modifier = 1.0 - (max_reduction * competition_factor)
-        actual_growth = height_growth * establishment_modifier * competition_modifier
+
+        # Scale height growth to match cycle length (Fortran: SCALE = FNT/REGYR)
+        # The Chapman-Richards 5-year increment is computed via htcalc, then
+        # scaled by FNT/5 in regent.f line 233. Our effective-age method
+        # directly computes the increment for the full time_step, so no
+        # additional scaling is needed.
+        actual_growth = height_growth * competition_modifier
 
         # Update height with bounds checking
         # Trees can exist below breast height (4.5 ft) during establishment
