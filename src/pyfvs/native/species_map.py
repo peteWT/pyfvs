@@ -863,11 +863,38 @@ FIA_TO_ALPHA: Dict[int, str] = {
     999: "OH",  # other hardwood
 }
 
-# Reverse lookup: alpha code to FIA code (first match wins for duplicates)
+# Variant-aware disambiguation for alpha codes that map to multiple FIA codes.
+# Key = (alpha_code, variant), Value = FIA code.
+# Eastern variants (SN, NE, CS, LS): LP=131 (loblolly), CO=43 (atlantic white cedar),
+#   PI=831 (pin oak), EL=920 (American elm), BE=690 (American beech)
+# Western variants (PN, WC, CA, OC, WS, OP): LP=108 (lodgepole), CO=746 (chestnut oak),
+#   PI=10 (pine spp), EL=680 (elm spp), BE=693 (beech)
+_EASTERN_VARIANTS = {"SN", "NE", "CS", "LS"}
+_WESTERN_VARIANTS = {"PN", "WC", "CA", "OC", "WS", "OP"}
+
+_VARIANT_ALPHA_TO_FIA: Dict[str, Dict[str, int]] = {
+    "LP": {"eastern": 131, "western": 108},  # loblolly vs lodgepole
+    "CO": {"eastern": 43, "western": 746},    # atlantic white cedar vs chestnut oak
+    "PI": {"eastern": 831, "western": 10},    # pin oak vs pine spp
+    "EL": {"eastern": 920, "western": 680},   # American elm vs elm spp
+    "BE": {"eastern": 690, "western": 693},   # American beech vs beech
+}
+
+# Default reverse lookup (without variant context)
 ALPHA_TO_FIA: Dict[str, int] = {}
 for _fia, _alpha in sorted(FIA_TO_ALPHA.items()):
     if _alpha not in ALPHA_TO_FIA:
         ALPHA_TO_FIA[_alpha] = _fia
+
+
+def _variant_region(variant: str) -> str:
+    """Classify variant as 'eastern' or 'western'."""
+    v = variant.upper()
+    if v in _EASTERN_VARIANTS:
+        return "eastern"
+    elif v in _WESTERN_VARIANTS:
+        return "western"
+    return "eastern"  # default
 
 
 def get_species_index_from_fia(fia_code: int, variant: str = "SN") -> int:
@@ -912,11 +939,16 @@ def fia_to_alpha(fia_code: int) -> str:
     return FIA_TO_ALPHA[fia_code]
 
 
-def alpha_to_fia(code: str) -> int:
+def alpha_to_fia(code: str, variant: Optional[str] = None) -> int:
     """Convert a 2-letter FVS alpha code to an FIA numeric species code.
+
+    Uses variant to disambiguate codes that map to different species
+    in eastern vs western variants (LP, CO, PI, EL, BE).
 
     Args:
         code: Two-letter FVS species code.
+        variant: Optional FVS variant (e.g., 'SN', 'PN'). When provided,
+            resolves ambiguous codes using regional context.
 
     Returns:
         FIA 3-digit numeric species code.
@@ -930,4 +962,10 @@ def alpha_to_fia(code: str) -> int:
             f"Unknown species code '{code}'. "
             f"Valid codes: {sorted(ALPHA_TO_FIA.keys())}"
         )
+
+    # Use variant to disambiguate if available
+    if variant and code_upper in _VARIANT_ALPHA_TO_FIA:
+        region = _variant_region(variant)
+        return _VARIANT_ALPHA_TO_FIA[code_upper][region]
+
     return ALPHA_TO_FIA[code_upper]
