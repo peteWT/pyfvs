@@ -772,3 +772,162 @@ def get_species_count(variant: str) -> int:
     if variant_upper not in VARIANT_SPECIES_MAPS:
         raise ValueError(f"Unknown variant '{variant}'")
     return len(VARIANT_SPECIES_MAPS[variant_upper])
+
+
+# =============================================================================
+# FIA numeric code to FVS 2-letter alpha code mapping
+# Source: FVS variant documentation, USDA Forest Service
+# Note: Some FIA codes map to different alpha codes depending on variant.
+# This table provides the most common/default mapping.
+# =============================================================================
+FIA_TO_ALPHA: Dict[int, str] = {
+    # Softwoods
+    10: "PI",   # pine species (generic)
+    12: "FR",   # Fraser fir
+    43: "CO",   # Atlantic white cedar
+    68: "JU",   # Eastern juniper / redcedar
+    71: "TM",   # tamarack
+    90: "BF",   # balsam fir
+    93: "EH",   # eastern hemlock
+    94: "CA",   # Carolina hemlock
+    95: "WH",   # western hemlock
+    97: "MH",   # mountain hemlock
+    101: "JP",  # jack pine
+    105: "WB",  # western white pine / whitebark
+    106: "IC",  # incense cedar
+    108: "LP",  # lodgepole pine (western)
+    110: "SP",  # shortleaf pine
+    111: "SA",  # slash pine
+    117: "SU",  # sugar pine
+    119: "RP",  # red pine
+    121: "LL",  # longleaf pine
+    122: "PP",  # ponderosa pine
+    126: "PD",  # pond pine
+    127: "SD",  # sand pine
+    128: "SR",  # spruce pine
+    129: "WP",  # eastern white pine
+    131: "LP",  # loblolly pine
+    132: "VP",  # Virginia pine
+    202: "DF",  # Douglas-fir
+    211: "WF",  # white fir
+    212: "GF",  # grand fir
+    231: "SF",  # noble fir / shasta red fir
+    242: "RC",  # western redcedar
+    260: "WS",  # western white spruce / sitka
+    261: "HM",  # hemlock species
+    263: "ES",  # Engelmann spruce
+    266: "SS",  # Sitka spruce
+    299: "OS",  # other softwood
+    310: "BM",  # bigleaf maple
+    316: "RM",  # red maple
+    317: "SV",  # silver maple
+    318: "SM",  # sugar maple
+    330: "BU",  # American beech (alt: buckeye in some variants)
+    341: "PB",  # paper birch
+    371: "YB",  # yellow birch
+    375: "RB",  # river birch
+    400: "HI",  # hickory species
+    409: "WN",  # black walnut
+    421: "YP",  # yellow poplar (tuliptree)
+    461: "HL",  # honeylocust
+    491: "SY",  # sweetgum
+    500: "AB",  # ash species (generic)
+    531: "WA",  # white ash
+    541: "GA",  # green ash
+    602: "CY",  # baldcypress
+    611: "SB",  # sweetbirch
+    621: "AS",  # American sycamore
+    680: "EL",  # elm species
+    690: "BE",  # American beech
+    693: "BE",  # beech
+    694: "BB",  # black birch
+    701: "WO",  # white oak
+    711: "LO",  # swamp chestnut oak
+    731: "BO",  # bear oak / blackjack oak
+    741: "BC",  # black cherry
+    743: "BK",  # black oak
+    746: "CO",  # chestnut oak
+    762: "SO",  # southern red oak
+    802: "NR",  # northern red oak
+    812: "CK",  # cherrybark oak
+    820: "LU",  # laurel oak
+    827: "WK",  # water oak
+    830: "NU",  # Nuttall oak
+    831: "PI",  # pin oak (alt)
+    832: "WL",  # willow oak
+    833: "PO",  # post oak
+    837: "SK",  # scarlet oak
+    901: "BW",  # black willow
+    920: "EL",  # American elm
+    951: "WE",  # winged elm
+    999: "OH",  # other hardwood
+}
+
+# Reverse lookup: alpha code to FIA code (first match wins for duplicates)
+ALPHA_TO_FIA: Dict[str, int] = {}
+for _fia, _alpha in sorted(FIA_TO_ALPHA.items()):
+    if _alpha not in ALPHA_TO_FIA:
+        ALPHA_TO_FIA[_alpha] = _fia
+
+
+def get_species_index_from_fia(fia_code: int, variant: str = "SN") -> int:
+    """Get the FVS Fortran species index from an FIA numeric species code.
+
+    Args:
+        fia_code: FIA 3-digit numeric species code (e.g., 131 for loblolly pine).
+        variant: FVS variant identifier (e.g., 'SN', 'PN', 'LS').
+
+    Returns:
+        Integer species index used by the native FVS library.
+
+    Raises:
+        ValueError: If FIA code is not recognized or species not in variant.
+    """
+    if fia_code not in FIA_TO_ALPHA:
+        raise ValueError(
+            f"Unknown FIA species code {fia_code}. "
+            f"Valid codes: {sorted(FIA_TO_ALPHA.keys())}"
+        )
+    alpha = FIA_TO_ALPHA[fia_code]
+    return get_species_index(alpha, variant)
+
+
+def fia_to_alpha(fia_code: int) -> str:
+    """Convert an FIA numeric species code to a 2-letter FVS alpha code.
+
+    Args:
+        fia_code: FIA 3-digit numeric species code.
+
+    Returns:
+        Two-letter FVS species code.
+
+    Raises:
+        ValueError: If FIA code is not recognized.
+    """
+    if fia_code not in FIA_TO_ALPHA:
+        raise ValueError(
+            f"Unknown FIA species code {fia_code}. "
+            f"Valid codes: {sorted(FIA_TO_ALPHA.keys())}"
+        )
+    return FIA_TO_ALPHA[fia_code]
+
+
+def alpha_to_fia(code: str) -> int:
+    """Convert a 2-letter FVS alpha code to an FIA numeric species code.
+
+    Args:
+        code: Two-letter FVS species code.
+
+    Returns:
+        FIA 3-digit numeric species code.
+
+    Raises:
+        ValueError: If alpha code is not recognized.
+    """
+    code_upper = code.upper()
+    if code_upper not in ALPHA_TO_FIA:
+        raise ValueError(
+            f"Unknown species code '{code}'. "
+            f"Valid codes: {sorted(ALPHA_TO_FIA.keys())}"
+        )
+    return ALPHA_TO_FIA[code_upper]
