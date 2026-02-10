@@ -41,7 +41,7 @@ Stand.initialize_planted(tpa, si, species, variant) -> Tree objects -> grow() ->
 
 **Config**: `src/pyfvs/cfg/` with variant subdirectories (sn/, ls/, pn/, wc/, ne/, cs/, op/)
 
-**Native FVS** (optional): `pyfvs.native` subpackage — ctypes bindings to USDA Fortran library. Lazy imports, never fails when absent. `NativeStand` mirrors `Stand` API.
+**Native FVS** (optional): `pyfvs.native` subpackage — ctypes bindings to USDA Fortran library. Lazy imports, never fails when absent. `NativeStand` mirrors `Stand` API. Includes keyword/output file export methods for debugging and reproducibility.
 
 ## Supported Variants
 
@@ -82,6 +82,12 @@ if fvs_library_available('SN'):
         ns.initialize_planted(500, 70, 'LP')
         ns.grow(50)
         native_metrics = ns.get_metrics()  # same keys as Stand
+        # Export simulation files
+        kw = ns.get_keyword_file()        # keyword file contents as string
+        ns.export_keyword_file('/tmp/')   # copy .key to destination
+        out = ns.get_output_file()        # FVS .out file contents as string
+        ns.export_output_file('/tmp/')    # copy .out to destination
+        files = ns.list_output_files()    # list all files in working dir
 ```
 
 ## Key Gotchas
@@ -95,6 +101,9 @@ if fvs_library_available('SN'):
 - PN/WC share models; WC/OP dispatch to PN bark ratio/crown ratio factories
 - Native FVS: NUMCYCLE must be inline (cols 11-20), NOT on supplemental record
 - Native FVS: GCC hidden string lengths appended at END of ctypes arg list
+- Native FVS: `fvsEvmonAttr` and `fvsTreeAttr` require an "action" parameter ("get"/"set")
+- Native FVS: IOSUM array contains [year, age, tpa, total_cuft, merch_cuft, merch_bdft] — NOT BA/SDI/CCF
+- Native FVS: `get_metrics()` computes BA/SDI/QMD from tree-level arrays, not from summary
 
 ## Known Issues
 
