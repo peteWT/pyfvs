@@ -381,6 +381,49 @@ class NativeStand:
 
         return tree_list
 
+    def get_keyword_file(self) -> Optional[str]:
+        """Return the contents of the keyword file used for this simulation.
+
+        Returns:
+            Keyword file contents as a string, or None if not yet initialized.
+        """
+        if self._keyword_file and self._keyword_file.exists():
+            return self._keyword_file.read_text()
+        return None
+
+    def get_keyword_file_path(self) -> Optional[Path]:
+        """Return the path to the keyword file used for this simulation.
+
+        Returns:
+            Path to the .key file, or None if not yet initialized.
+        """
+        return self._keyword_file
+
+    def export_keyword_file(self, dest: str) -> Path:
+        """Copy the keyword file to a destination path.
+
+        Args:
+            dest: Destination file path or directory. If a directory,
+                the file is copied as 'stand.key' inside it.
+
+        Returns:
+            Path to the exported file.
+
+        Raises:
+            FVSNativeError: If no keyword file exists.
+        """
+        if not self._keyword_file or not self._keyword_file.exists():
+            raise FVSNativeError("No keyword file available. Initialize the stand first.")
+
+        dest_path = Path(dest)
+        if dest_path.is_dir():
+            dest_path = dest_path / "stand.key"
+        else:
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+        shutil.copy2(self._keyword_file, dest_path)
+        return dest_path
+
     def get_yield_table(self) -> List[Dict[str, float]]:
         """Get the complete yield table from the FVS simulation.
 
